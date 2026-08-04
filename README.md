@@ -246,5 +246,21 @@
 
 ---
 
+## 11. 당일 복사용 템플릿
+
+`templates/`에 빈 양식 세 개가 있다. 코드가 아니라 서식이므로 재사용 금지 조항과 무관하다.
+**제출용 저장소는 목요일 당일 따로 만들고**, 아래를 복사해 채운다. 이 저장소는 준비·회고용으로 남긴다.
+
+| 템플릿 | 복사 위치 | 작성 시점 | 걸린 점수 |
+|---|---|---|---|
+| [`templates/CLAUDE.md`](templates/CLAUDE.md) | 프로젝트 루트 `CLAUDE.md` | `T+0:55~1:30` | AI 활용 20 |
+| [`templates/AI_USAGE.md`](templates/AI_USAGE.md) | `docs/AI_USAGE.md` | 작업하며 계속 | AI 활용 20 |
+| [`templates/SUBMISSION_README.md`](templates/SUBMISSION_README.md) | 프로젝트 루트 `README.md` | 1일차 뼈대 → 2일차 완성 | 산출물 10 |
+
+세 파일 모두 `____` 빈칸을 남기지 않는 것이 요령이다. 빈칸이 남은 채 제출되면
+채워진 칸까지 신뢰를 잃는다.
+
+---
+
 <sub>공고문 원문 기준 작성 · 일정은 운영 상황에 따라 변경될 수 있음<br>
 웹 버전(체크박스·다크모드): [`playbook.html`](playbook.html)</sub>
