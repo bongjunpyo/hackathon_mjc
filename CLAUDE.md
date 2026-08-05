@@ -2,7 +2,15 @@
 
 - 팀번호 / 팀이름: 1팀 / hackathon--1
 - 팀원: 동제(프론트엔드), 효민(데이터 계층), 준표(데이터 처리)
-- 작성: 2026-08-05 13:50 / 수정: 2026-08-05 14:05 (역할 재정의, 스키마 확장)
+- 작성: 2026-08-05 13:50 / 수정: 14:05 역할 재정의·스키마 확장 / 14:2x 역할별 문서 분리
+
+이 문서는 **세 명 공통 계약**이다. 자기 담당 규칙은 담당 폴더의 `CLAUDE.md`에 따로 있다.
+
+| 담당 | 폴더 | 문서 |
+|---|---|---|
+| 동제 — 프론트엔드 | `index.html`, `style.css`, `js/ui/` | `js/ui/CLAUDE.md` |
+| 효민 — 데이터 계층 | `js/store/` | `js/store/CLAUDE.md` |
+| 준표 — 데이터 처리 | `js/analytics/` | `js/analytics/CLAUDE.md` |
 
 ## 프로젝트
 
@@ -15,11 +23,11 @@
 | 구분 | 선택 | 이유 |
 |---|---|---|
 | 프론트 | HTML / CSS / JavaScript (프레임워크 없음) | 명세서 지정 스택. 210분 안에 빌드 설정 없이 바로 돌아간다 |
-| 데이터 계층 | `js/store.js` — localStorage 래퍼 모듈 | 서버·DB가 금지라 저장 책임을 모듈 하나로 모은다. 스키마·검증·JSON 입출력이 여기 산다 |
-| 데이터 처리 | `js/analytics.js` — 순수 집계 함수 | 저장 형식과 통계 계산을 분리한다. 입력은 배열, 출력은 숫자/배열, 부수효과 없음 |
+| 데이터 계층 | `js/store/store.js` — localStorage 래퍼 | 서버·DB가 금지라 저장 책임을 모듈 하나로 모은다. 스키마·검증·JSON 입출력이 여기 산다 |
+| 데이터 처리 | `js/analytics/analytics.js` — 순수 집계 함수 | 저장 형식과 통계 계산을 분리한다. 입력은 배열, 출력은 숫자/배열, 부수효과 없음 |
 
-서버·데이터베이스·빌드 도구는 쓰지 않는다. "백엔드"라는 역할은 이 프로젝트에 없다 —
-데이터를 다루는 두 사람은 각각 **데이터 계층(효민)**, **데이터 처리(준표)** 를 맡는다.
+서버·데이터베이스·빌드 도구는 쓰지 않는다. **"백엔드"라는 역할은 이 프로젝트에 없다** —
+데이터를 다루는 두 사람은 각각 데이터 계층(효민), 데이터 처리(준표)를 맡는다.
 
 ## 실행
 
@@ -29,8 +37,9 @@ start index.html   # 개발 서버 없음. 크롬으로 파일 직접 연다
 # 빌드: 없음 (빌드 도구 도입 금지)
 ```
 
-- **`type="module"` 금지.** `file://`에서는 ES 모듈이 CORS로 차단된다. 일반 `<script>` 태그를 순서대로 넣고 전역 객체(`Store`, `Analytics`)로 노출한다.
-- 로드 순서: `store.js` → `analytics.js` → `ui.js`
+- **`type="module"` 금지.** `file://`에서는 ES 모듈이 CORS로 차단돼 화면이 백지가 된다.
+  일반 `<script>` 태그를 순서대로 넣고 전역 객체로 노출한다.
+- 로드 순서: `js/store/store.js` → `js/analytics/analytics.js` → `js/ui/ui.js`
 - 크롬은 `file://` 문서들의 localStorage를 공유한다. 폴더 사본을 여러 개 두고 테스트하지 않는다.
 
 ## 데이터 구조
@@ -51,12 +60,41 @@ localStorage 키: `"activities"` (JSON 배열). 활동 1건은 아래 형태다.
 }
 ```
 
-고정 필드는 명세서 요건이므로 **덮지 말고 확장만 한다.** 확장 필드는 전부 없을 수 있다고 보고 읽는다 —
-`analytics.js`는 `weightKg`가 `undefined`인 기록을 만나도 죽지 않아야 한다(집계에서 제외).
+- `date`는 `'YYYY-MM-DD'` 문자열, `createdAt`은 ISO 문자열
+- 고정 필드는 명세서 요건이므로 **덮지 말고 확장만 한다**
+- 확장 필드는 전부 없을 수 있다고 보고 읽는다. `weightKg`가 `undefined`인 기록을 만나도 죽지 않아야 한다(집계에서 제외)
+
+## 인터페이스 계약
+
+**이 시그니처는 세 명의 합의 사항이다. 혼자 바꾸지 않는다.**
+바꿔야 하면 나머지 두 명에게 먼저 말하고, 이 문서를 고친 커밋을 따로 남긴다.
+
+```js
+// js/store/store.js — 효민
+Store.getAll()              // → Activity[]  createdAt 내림차순 (최신순)
+Store.add(input)            // → { ok: true, activity } | { ok: false, errors: { 필드명: '한글 메시지' } }
+Store.remove(id)            // → boolean  (없는 id면 false)
+Store.exportJson()          // → string    (다운로드용 JSON 문자열)
+Store.importJson(text)      // → { ok, added, skipped, message }
+Store.seedSampleData()      // → number    (생성된 건수)
+Store.clearAll()            // → void
+```
+
+```js
+// js/analytics/analytics.js — 준표
+// 전부 순수 함수. 인자로 받은 배열만 읽고, DOM·localStorage를 만지지 않는다.
+Analytics.summary(list)        // → { totalCount, totalMembers, avgMembers, totalMin, avgMin }
+Analytics.monthlyCount(list)   // → [{ month: '2026-08', count }]        오름차순
+Analytics.byCategory(list)     // → [{ category, count, totalMin }]      건수 내림차순
+Analytics.weightTrend(list)    // → [{ date, weightKg }]                 weightKg 있는 것만, 날짜 오름차순
+Analytics.kcalBalance(list)    // → [{ date, kcalIn, kcalOut, net }]     둘 중 하나라도 있는 날만
+```
+
+`errors`의 키는 필드명 그대로 쓴다: `title`, `date`, `memberCount`, `category`, `durationMin`, `weightKg`, `kcalIn`.
 
 ## 검증 항목
 
-`store.js`가 저장 직전에 검사한다. UI 쪽 `required`/`max` 속성은 편의일 뿐, 최종 방어선은 스토어다.
+`store.js`가 저장 직전에 검사한다. UI의 `required`/`max` 속성은 편의일 뿐, **최종 방어선은 스토어**다.
 
 **필수 (명세서 요건, 하나라도 어기면 감점)**
 - `title`이 비어 있으면 저장하지 않는다
@@ -65,24 +103,18 @@ localStorage 키: `"activities"` (JSON 배열). 활동 1건은 아래 형태다.
 - 삭제는 확인 절차를 거친다
 
 **확장 필드**
-- `category`는 위 세 값 중 하나. 그 외 값은 거부
+- `category`는 `'유산소' | '근력' | '스트레칭'` 중 하나. 그 외 값은 거부
 - `durationMin`은 1 이상의 정수
 - `weightKg`, `kcalIn`은 미입력 허용. 입력했다면 0보다 큰 수만 허용
-- 빈 문자열은 `0`이 아니라 미입력으로 처리한다
+- **빈 문자열은 `0`이 아니라 미입력으로 처리한다** (0kg가 평균에 섞이면 통계가 무너진다)
 
-## 파일 소유권
+## 경계 규칙
 
-한 파일은 한 사람이 맡는다. 에이전트에게도 담당 범위 밖을 고치게 두지 않는다.
+이 세 줄이 세 명이 동시에 작업할 수 있는 근거다. 어기면 병합할 때 터진다.
 
-| 경로 | 담당 | 책임 |
-|---|---|---|
-| `index.html`, `style.css`, `js/ui.js` | 동제 | 마크업, 스타일, DOM 렌더링, 이벤트 바인딩 |
-| `js/store.js` | 효민 | localStorage 읽기·쓰기, 스키마, 검증, JSON 내보내기·가져오기, 샘플 데이터 생성 |
-| `js/analytics.js` | 준표 | 월별 활동 횟수, 카테고리별 분포, 체중 추이, 칼로리 수지 집계 |
-
-**경계 규칙**: `ui.js`는 localStorage를 직접 만지지 않는다. 항상 `Store`를 거친다.
-`analytics.js`는 DOM도 localStorage도 만지지 않는다. 배열을 받아 값을 돌려줄 뿐이다.
-이 경계가 세 명이 동시에 작업할 수 있는 근거다.
+- `ui.js`는 **localStorage를 직접 만지지 않는다.** 항상 `Store`를 거친다.
+- `analytics.js`는 **DOM도 localStorage도 만지지 않는다.** 배열을 받아 값을 돌려줄 뿐이다.
+- `store.js`는 **화면을 모른다.** 에러를 `alert`하지 않고 `errors` 객체로 돌려준다.
 
 ## 샘플 데이터
 
@@ -95,7 +127,7 @@ localStorage 키: `"activities"` (JSON 배열). 활동 1건은 아래 형태다.
 - 화면에 "샘플" 표시를 남겨 실제 기록과 구분한다
 
 이건 요청된 기능이므로 아래 "하지 말 것"의 더미 데이터 금지 조항에 걸리지 않는다.
-반대로, **버튼을 통하지 않은 더미 데이터 생성은 여전히 금지**다.
+반대로 **버튼을 통하지 않은 더미 데이터 생성은 여전히 금지**다.
 
 ## 코딩 규칙
 
@@ -124,7 +156,8 @@ localStorage 키: `"activities"` (JSON 배열). 활동 1건은 아래 형태다.
 ## 하지 말 것
 
 - `main`을 깨뜨리는 커밋. 데모는 항상 `main`에서 띄운다.
-- 담당 파일 밖 수정.
+- 담당 폴더 밖 파일 수정.
+- 인터페이스 계약을 혼자 바꾸는 것.
 - API 키·비밀번호를 코드나 커밋에 남기는 것.
 - 데모 시나리오에 보이지 않는 기능 구현.
 - 서버·데이터베이스·빌드 도구 도입.
@@ -141,12 +174,26 @@ localStorage 키: `"activities"` (JSON 배열). 활동 1건은 아래 형태다.
 
 ## 현재 진행 상황
 
-- [ ] `store.js` — 저장·조회·삭제 + 검증 (효민)
-- [ ] 활동 등록 폼 (동제)
-- [ ] 활동 목록 조회 — 최신순, 빈 목록 안내 (동제)
-- [ ] 활동 삭제 — 확인 절차 (동제 + 효민)
-- [ ] 샘플 데이터 생성 버튼 (효민)
-- [ ] `analytics.js` — 월별 횟수, 카테고리 분포 (준표)
-- [ ] 체중 추이 / 칼로리 수지 (준표)
-- [ ] JSON 내보내기·가져오기 (효민)
-- [ ] README.md 작성
+**효민 (데이터 계층)**
+- [ ] `store.js` 뼈대 + `getAll` / `add` / `remove`
+- [ ] 검증 7종
+- [ ] `seedSampleData()`
+- [ ] `exportJson` / `importJson`
+
+**동제 (프론트엔드)**
+- [ ] `index.html` 뼈대 + script 태그
+- [ ] 활동 등록 폼
+- [ ] 목록 렌더링 (최신순, 빈 목록 안내)
+- [ ] 삭제 + 확인창
+- [ ] 통계 화면 렌더링
+- [ ] `style.css`
+
+**준표 (데이터 처리)**
+- [ ] `analytics.js` 뼈대 + `summary`
+- [ ] `monthlyCount` / `byCategory`
+- [ ] `weightTrend`
+- [ ] `kcalBalance`
+
+**공통**
+- [ ] README.md
+- [ ] `docs/AI_USAGE.md` 채우기
