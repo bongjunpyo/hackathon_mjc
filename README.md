@@ -80,6 +80,63 @@ data/depts/*.json  (+ _report.json 품질 지표)
 
 **과목 식별자는 코드가 결정론적으로 조립한다.** 원본 과목명에 `Ⅰ`(U+2160) · `I`(라틴) · `1`이 섞여 있어, 문자열로 주고받으면 체크박스 하나가 어긋나 "미이수"로 오판된다. 정규화 슬러그로 수렴시켰다 — 전 학과 776과목 충돌 0건.
 
+## 데이터 아키텍처
+
+저장소를 **두 층으로 분리했다.** 과목 데이터는 DB에 넣지 않는다.
+
+```
+┌─ 교육과정 데이터 (읽기 전용) ────────────────────────────┐
+│  data/depts/*.json      34개 학과 · 842과목 · 직무 라벨   │
+│  파이프라인이 생성하고 서버는 읽기만 한다                  │
+│  catalog.py 가 유일한 창구 — 로드 시점에 경계 검증         │
+└──────────────────────────────────────────────────────────┘
+┌─ 유저 데이터 (CRUD) ─────────────────────────────────────┐
+│  PostgreSQL 16 · SQLAlchemy 2.0 + psycopg                │
+│  users · completed_courses · saved_roadmaps               │
+└──────────────────────────────────────────────────────────┘
+```
+
+**왜 나눴나.** 과목 데이터를 DB에 넣으면 DB가 죽을 때 코어(게스트 → 입력 → 로드맵)까지 죽는다. 지금은 **DB가 없어도 서버가 뜨고** 로그인 계열만 503으로 떨어진다. 게스트 모드가 필수 경로라 이렇게 해야 한다.
+
+### 테이블
+
+| 테이블 | 컬럼 | 비고 |
+|---|---|---|
+| `users` | `id` · `student_id`(unique) · `name` · `email`(unique) · `dept_id` · `password_hash` · `created_at` · `email_verified_at` · `verification_token` · `verification_expires_at` · `exchange_code` · `exchange_expires_at` | 비밀번호는 bcrypt 해시. 인증·교환 토큰에 만료시각 동반 |
+| `completed_courses` | `id` · `user_id`(FK) · `course_id` · `year` · `semester` | **`course_id`로 저장한다.** 과목명으로 저장하면 `Ⅰ/I/1` 표기 혼재로 매칭이 깨진다 |
+| `saved_roadmaps` | `id` · `user_id`(FK) · `target_job` · `roadmap_json` · `created_at` | 직무별 1개 — 같은 직무로 다시 저장하면 덮어쓴다 |
+
+`completed_courses` · `saved_roadmaps`는 `users`에 `cascade="all, delete-orphan"`으로 묶여 있다.
+
+### CRUD 대응
+
+| | 대상 | 엔드포인트 | 동작 |
+|---|---|---|---|
+| **C**reate | `users` | `POST /auth/signup` → 201 | 가입. 토큰을 주지 않는다 — 이메일 인증을 마쳐야 로그인된다 |
+| | `saved_roadmaps` | `POST /me/roadmaps` → 201 | 로드맵 저장 |
+| | `completed_courses` | `PUT /me/courses` | 이수 과목 행 삽입 |
+| **R**ead | 세 테이블 전부 | `GET /me` | 내 정보 + 이수 과목 + 저장 로드맵 |
+| **U**pdate | `users` | `GET /auth/verify` · `POST /auth/exchange` · `POST /auth/resend` | 인증 완료 표시, 1회용 교환 코드 발급·소진, 재발송 |
+| | `saved_roadmaps` | `POST /me/roadmaps` | **같은 `target_job`이면 덮어쓴다** — 시연 중 여러 번 눌러도 목록이 쌓이지 않게 |
+| | `completed_courses` | `PUT /me/courses` | 전체 교체 (아래 Delete 참조) |
+| **D**elete | `completed_courses` | `PUT /me/courses` | **교체 의미로 구현.** 기존 행을 지우고 받은 목록으로 다시 채운다 |
+| | 자식 행 전체 | ORM cascade | `users` 삭제 시 `delete-orphan`으로 함께 삭제 |
+
+> ⚠️ **독립 `DELETE` 엔드포인트는 만들지 않았다.** 회원 탈퇴·개별 과목 삭제는 데모 시나리오에 등장하지 않는다. 삭제 자체는 `PUT /me/courses`의 교체 동작과 ORM cascade로 이미 일어난다. 서비스로 운영하려면 `DELETE /me`(탈퇴)를 추가해야 한다.
+
+### 마이그레이션
+
+앱 시작 시 `Base.metadata.create_all()`을 쓴다. Alembic을 넣지 않았다 — 스키마가 3개 테이블로 고정되고 해커톤 기간에 변경이 없었다. **스키마를 바꾸면 볼륨을 지워야 한다** (`docker compose down -v`).
+
+### 무결성
+
+| 장치 | 어디서 |
+|---|---|
+| `student_id` · `email` 유일성 | DB unique 제약 + 가입 시 409 `ALREADY_REGISTERED` |
+| 중복 `course_id` 제거 | `catalog.resolve`와 `validator` **양쪽에서** — 중복을 흘리면 학점이 두 번 세어져 졸업요건이 뚫린다 |
+| 타임존 | 전 컬럼 `DateTime(timezone=True)`. SQLite는 naive를 주므로 비교 전에 UTC로 되돌린다 |
+| 교환 코드 | 60초 · **1회용**. JWT를 리다이렉트 URL에 싣지 않기 위한 것 |
+
 ## 트랙 B — 학교용 진단 리포트
 
 같은 데이터를 학교 쪽에서 본다. 외부 데이터 없이 **학교 자체 데이터 간 정합성**만으로 성립한다.
@@ -152,7 +209,7 @@ cd hackathon_mjc
 ```bash
 cd server
 uv sync
-uv run pytest          # 151개 테스트 (검증기 · 엔진 · 카탈로그 · 인증 · 트랙 B)
+uv run pytest          # 153개 테스트 (검증기 · 엔진 · 카탈로그 · 인증 · 트랙 B)
 uv run fastapi dev main.py   # API + 프론트 빌드 정적 서빙 (web/dist가 있으면)
 ```
 
@@ -212,7 +269,7 @@ uv run python build_report.py         # 트랙 B 진단 → data/reports/*.json
 
 | | |
 |---|---|
-| 테스트 | 151개 |
+| 테스트 | 153개 |
 | 변이 검사 | 10종, 전부 검출 |
 | 파이프라인 | 34개 학과 · 842과목 · **코드 파싱 100% · LLM 폴백 0회** |
 | `course_id` 충돌 | 776과목 **0건** |
