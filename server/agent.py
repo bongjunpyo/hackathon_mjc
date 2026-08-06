@@ -61,18 +61,22 @@ PROMPT = """당신은 명지전문대학 학생의 학기별 수강 로드맵을
 ## 수강 가능 과목 (이 목록의 course_id만 사용한다)
 {catalog}
 
-## 졸업요건
-- 총 {total}학점 · 교양 {liberal}학점 · 전공 {major}학점
-- 교양선택 {liberal_bucket}학점은 별도 배치되므로 당신은 신경 쓰지 않는다
+## 졸업요건 (검증기가 판정하는 것)
+- 전공 {major}학점 이상 · 교양필수 {liberal}학점 · {semester_count}학기 재학
+- 총 {total}학점 중 나머지는 학생이 교양선택·일반선택으로 채운다. 위 목록에 없는
+  과목이므로 **당신은 배치하지 않는다.**
 
 ## 규칙
 1. **course_id는 위 목록에서만 고른다.** 목록에 없는 id를 만들면 그 과목은 버려진다.
 2. 목표 직무(`{target_job}`)로 표시된 과목을 우선 배치한다. 이게 이 로드맵의 존재 이유다.
 3. `required: true`인 과목은 반드시 넣는다.
-4. 한 학기 {max_credits}학점을 넘기지 않는다.
-5. 선수 관계가 이름에서 드러나면(예: `C언어I` → `C언어II`) 순서를 지킨다.
-6. 남은 학기를 고르게 채운다. 한 학기를 비우고 다른 학기에 몰지 않는다.
-7. `note`에는 그 학기에 준비하면 좋을 자격증이나 현장실습 시점을 한 줄로 적는다.
+4. **목록의 과목을 최대한 배치한다.** 전공 {major}학점은 최소치이지 목표가 아니다.
+   학기당 상한을 넘지 않는 선에서 들을 수 있는 과목을 남기지 않는다 — 남긴 과목은
+   학생이 스스로 채워야 할 몫이 된다.
+5. 한 학기 {max_credits}학점을 넘기지 않는다.
+6. 선수 관계가 이름에서 드러나면(예: `C언어I` → `C언어II`) 순서를 지킨다.
+7. 남은 학기를 고르게 채운다. 한 학기를 비우고 다른 학기에 몰지 않는다.
+8. `note`에는 그 학기에 준비하면 좋을 자격증이나 현장실습 시점을 한 줄로 적는다.
 
 ## 이 학과가 안내한 자격증
 {certificates}
@@ -147,11 +151,10 @@ def generate(spec, feedback=None, attempt=1):
         semesters=", ".join(f"{y}학년 {s}학기" for y, s in remaining),
         catalog=_catalog_lines(pool, job),
         total=req["total_credits"],
-        # 검증기 룰 이름과 맞춘다 — 교양은 "필수 이수 학점"이고,
-        # 교양선택은 아래 liberal_bucket으로 따로 준다
+        # 검증기 룰 이름과 맞춘다 — 여기서 교양은 "필수 이수 학점"만 가리킨다.
         liberal=req["liberal_required"],
         major=req["major_credits"],
-        liberal_bucket=dept.get("liberal_elective_credits", 0),
+        semester_count=req["semesters"],
         max_credits=MAX_CREDITS_PER_SEMESTER,
         certificates=", ".join(dept.get("certificates", [])) or "(없음)",
         feedback=FEEDBACK_BLOCK.format(feedback=feedback) if feedback else "",
@@ -217,8 +220,10 @@ def _materialize(plan, by_id, remaining, dept, job):
 
     semesters.sort(key=lambda s: (s["year"], s["semester"]))
 
-    from planner import _place_certificates, _place_liberal_bucket
+    # 교양선택·일반선택 블록은 깔지 않는다. 학과 문서에 그 과목이 없어 지어내는
+    # 셈이 되고, 검증기도 총학점을 미달로 잡지 않는다 (`validator.py` 참조).
+    # 남은 학점은 `validation.remaining_credits`로 화면에 알린다.
+    from planner import _place_certificates
 
-    _place_liberal_bucket(dept, semesters)
     _place_certificates(dept, semesters)
     return {"semesters": semesters, "reasoning": plan.reasoning}
