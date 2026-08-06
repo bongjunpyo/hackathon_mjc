@@ -100,6 +100,10 @@ export default function Report() {
 
   const r = state.data;
   const dept = DEPT_BY_ID[deptId];
+  // 대응 없는 진로(0% · 매칭 라벨 0)를 뒤로 뺀다 — 첫인상이 진단서가 되게
+  const isUnmatched = (j) => j.coverage_pct === 0 && j.matched_labels.length === 0;
+  const covered = r.jobs.filter((j) => !isUnmatched(j));
+  const unmatched = r.jobs.filter(isUnmatched);
 
   return (
     <section className="flex flex-col gap-6">
@@ -125,18 +129,35 @@ export default function Report() {
           그 직무로 라벨링된 과목의 학점이 전공 학점에서 차지하는 비율입니다.
         </p>
         <ul className="flex flex-col gap-3">
-          {r.jobs.map((j) => (
+          {covered.map((j) => (
             <JobRow key={j.job} job={j} />
           ))}
         </ul>
-        {/* 진로와 라벨이 같은 열에서 나오는 동안은 결손이 구조적으로 0이다 (이슈 #25).
-            "결손 0건"을 진단 결과인 척 내놓지 않는다 */}
-        {r.jobs.every((j) => j.gaps.length === 0) && (
-          <p className="rounded-lg border border-dashed border-edge p-3 text-xs text-steel">
-            결손 0건입니다. 다만 현재 진로 목록이 교육과정표 인재양성유형 열에서 나오고
-            있어서, 두 값이 같은 출처인 동안은 결손이 구조적으로 잡히지 않습니다
-            (이슈 #25). 학과 소개 페이지의 진로가 별도로 수집되면 이 항목이 의미를 갖습니다.
-          </p>
+
+        {/* 0%짜리를 빈 막대로 섞어 두면 "데이터가 안 나왔다"로 읽힌다.
+            대응 없음은 이 리포트의 결과지 고장이 아니다 — 따로 묶어 그렇게 쓴다 */}
+        {unmatched.length > 0 && (
+          <div className="flex flex-col gap-2 rounded-xl border-2 border-gold bg-gold/15 px-4 py-3.5">
+            <b className="text-navy">
+              ⚠ 교육과정에 대응이 없는 진로{" "}
+              <span className="font-mono tabular-nums">{unmatched.length}종</span>
+            </b>
+            <p className="text-sm text-ink-2">
+              학과 소개 페이지가 홍보하는 진로인데, 교육과정표 인재양성유형 열에 같은 직무가
+              없습니다. 학생이 이 진로를 목표로 잡으면 어느 과목을 들어야 하는지 학교 문서
+              안에서 답이 나오지 않습니다.
+            </p>
+            <ul className="flex flex-wrap gap-1.5">
+              {unmatched.map((j) => (
+                <li
+                  key={j.job}
+                  className="rounded-lg border border-gold/60 bg-white px-2.5 py-1 text-sm text-navy"
+                >
+                  {j.job}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
 

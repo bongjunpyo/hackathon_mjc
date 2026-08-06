@@ -20,7 +20,7 @@ function Nav() {
     }`;
   return (
     <header className="sticky top-0 z-40 border-b border-edge bg-white/85 backdrop-blur">
-      <nav className="mx-auto flex max-w-6xl items-center gap-2 px-5 py-3">
+      <nav className="mx-auto flex max-w-6xl items-center gap-2 px-5 py-3 2xl:max-w-7xl">
         <Link to="/" className="mr-auto flex items-center gap-2.5">
           <img src="/logo-mark.png" alt="" className="h-7 w-auto" />
           <span className="font-extrabold tracking-tight text-navy">MJC 취업 로드맵</span>
@@ -64,8 +64,8 @@ function Footer() {
     "text-sm text-white/75 underline decoration-white/30 underline-offset-4 transition-colors hover:text-gold hover:decoration-gold";
 
   return (
-    <footer className="mt-16 bg-navy text-white">
-      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="mt-16 shrink-0 bg-navy text-white">
+      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 2xl:max-w-7xl">
         <div className={`${col} sm:col-span-2 lg:col-span-1`}>
           {/* navy 배경에서는 원본(짙은 남색 그라디언트)이 묻힌다 — 흰 실루엣으로 뒤집는다 */}
           <img
@@ -124,7 +124,7 @@ function Footer() {
       </div>
 
       <div className="border-t border-white/15">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1 px-5 py-5 font-mono text-xs text-white/55">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1 px-5 py-5 font-mono text-xs text-white/55 2xl:max-w-7xl">
           <span>2026 명지전문대학 RISE사업단 AI 해커톤 출품작</span>
           <span className="text-white/30">·</span>
           {/* 학교 공식 서비스로 오인되면 안 된다 — 진학·졸업 판단은 학과 확인이 최종이다 */}
@@ -166,8 +166,11 @@ export default function App() {
   return (
     <AppProvider>
       <BrowserRouter>
+        {/* 내용이 짧아도 푸터가 화면 하단에 앉게 — mt-16만으로는 아래 흰 띠가 남는다
+            (이슈 #80: /app/login에서 푸터 아래 120px 공백 실측) */}
+        <div className="flex min-h-dvh flex-col">
         <Nav />
-        <main className="mx-auto max-w-6xl px-5 py-8">
+        <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 2xl:max-w-7xl">
           <VerifyExchange />
           {/* 화면 경로는 /app/* 로 묶는다 — 동결된 API 경로(/roadmap, /report/*, /auth/*)와
               충돌하면 dev 프록시와 프로덕션 catch-all 양쪽에서 화면이 API로 새어나간다 */}
@@ -186,6 +189,7 @@ export default function App() {
           </Routes>
         </main>
         <Footer />
+        </div>
       </BrowserRouter>
     </AppProvider>
   );
