@@ -167,9 +167,16 @@ export const MOCK_FAILED_VALIDATION = {
   major_credits: 60,
   liberal_credits: 12,
   semesters: 6,
+  // fix 문구는 server/validator.py의 FIXES 템플릿과 같은 형식이다
   details: [
-    { rule: "total_credits", label: "총 학점", required: 110, actual: 104, shortfall: 6 },
-    { rule: "major_credits", label: "전공 학점", required: 66, actual: 60, shortfall: 6 },
+    {
+      rule: "total_credits", label: "총 학점", required: 110, actual: 104, shortfall: 6,
+      fix: "아무 과목으로든 6학점을 더 채우세요",
+    },
+    {
+      rule: "major_credits", label: "전공 학점", required: 66, actual: 60, shortfall: 6,
+      fix: "전공 과목으로 6학점을 더 채우세요",
+    },
   ],
 };
 
