@@ -176,9 +176,11 @@
 .lamp.ls::after { left: 26px; }
 .lamp.rs::after { right: 26px; }
 
-/* 행선판 */
+/* 행선판 — 기둥 끝(판 아래 114px)이 노면(55%)에 닿도록 아래를 기준으로 앉힌다.
+   소실점(46%)에 세로 중앙 정렬하면 명패가 길수록 지면 아래로 파고들어
+   노면 평면이 그 부분을 잘라먹는다 (preserve-3d라 두 평면이 실제로 교차한다). */
 .signpost {
-  position: absolute; left: 50%; top: 46%;
+  position: absolute; left: 50%; bottom: calc(45% + 114px);
   width: min(420px, 72vw);
   transform-style: preserve-3d;
 }
@@ -306,9 +308,9 @@
   border-radius: 4px; padding: 3px 9px;
 }
 
-/* 도착 게이트 */
+/* 도착 게이트 — 행선판과 같은 이유로 아래 기준. 기둥이 없으니 노면에서 24px 띄운다 */
 .gate {
-  position: absolute; left: 50%; top: 44%;
+  position: absolute; left: 50%; bottom: calc(45% + 24px);
   width: min(520px, 82vw);
   text-align: center;
   transform-style: preserve-3d;

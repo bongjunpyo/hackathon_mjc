@@ -185,7 +185,7 @@ export default function Corridor({ semesters, targetJob, stats, onSelect }) {
               );
             })}
 
-            <div className="gate" style={{ transform: `translate3d(-50%, -50%, ${gateZ}px)` }}>
+            <div className="gate" style={{ transform: `translate3d(-50%, 0, ${gateZ}px)` }}>
               <div className="gate-board">
                 <div className="gate-kicker">FINAL DESTINATION</div>
                 <div className="gate-title">{targetJob}</div>
@@ -226,7 +226,7 @@ function SignPost({ ref, s, index, z, prev, next, onSelect }) {
       ref={ref}
       className="signpost"
       data-z={z}
-      style={{ transform: `translate3d(-50%, -50%, ${z}px)` }}
+      style={{ transform: `translate3d(-50%, 0, ${z}px)` }}
       role="button"
       tabIndex={0}
       aria-label={`${s.name} 상세 보기`}

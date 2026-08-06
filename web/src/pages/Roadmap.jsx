@@ -1,12 +1,17 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useApp } from "../store";
+import ExternalPanel from "../components/ExternalPanel";
+import { certExternal, certName, certTip, externalFor } from "../lib/external";
 
-/* 졸업요건 4종 — 값 키는 API 응답(DESIGN.md §5), 라벨은 화면용.
-   미달 항목은 details[].rule로 찾아 붙인다. */
+/* 검증기가 **판정하는** 요건 3종 — 값 키는 API 응답(DESIGN.md §5), 라벨은 화면용.
+   미달 항목은 details[].rule로 찾아 붙인다.
+
+   총학점은 여기 없다. 교육과정표에 교양선택·일반선택 과목이 없어서 우리가 배치할 수
+   없고, 판정 근거도 없다. 배치 학점과 남은 학점을 따로 알린다 (server/validator.py). */
 const REQUIREMENTS = [
-  { key: "total_credits", rule: "total_credits", label: "총 학점", unit: "학점" },
   { key: "major_credits", rule: "major_credits", label: "전공", unit: "학점" },
-  { key: "liberal_credits", rule: "liberal_credits", label: "교양", unit: "학점" },
+  { key: "liberal_credits", rule: "liberal_required", label: "교양필수", unit: "학점" },
   { key: "semesters", rule: "semesters", label: "재학", unit: "학기" },
 ];
 
@@ -21,9 +26,20 @@ function ValidationBadge({ validation }) {
         ok ? "bg-navy text-white" : "border-2 border-gold bg-gold/15 text-navy"
       }`}
     >
-      <span className="font-bold">
-        {ok ? "✓ 졸업요건 충족 — 검증기 통과" : "⚠ 졸업요건 미달 항목이 있습니다"}
-      </span>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span className="font-bold">
+          {ok ? "✓ 졸업요건 충족 — 검증기 통과" : "⚠ 졸업요건 미달 항목이 있습니다"}
+        </span>
+        {/* 보증하는 것과 학생 몫을 한 줄에서 갈라 보여준다.
+           "100% 졸업 보장"으로 뭉개면 근거 없는 주장이 된다 (PR #27) */}
+        {validation.total_credits != null && (
+          <span className="font-mono text-xs tabular-nums opacity-80">
+            배치 {validation.total_credits}학점
+            {validation.remaining_credits > 0 &&
+              ` · 졸업까지 ${validation.remaining_credits}학점은 교양선택·일반선택으로 채웁니다`}
+          </span>
+        )}
+      </div>
 
       {/* 항목별 충족 상태 — 4종을 모두 보여준다 (issue #5) */}
       <ul className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-xs tabular-nums">
@@ -77,27 +93,71 @@ function SemesterCard({ s }) {
         {s.goal && <p className="mt-1 text-sm text-ink-2">{s.goal}</p>}
         <ul className="mt-3 space-y-2">
           {s.courses.map((c) => (
-            <li key={c.course_id} className="text-sm">
-              <span className="font-semibold">{c.name}</span>
-              {c.why && <span className="block text-ink-2">{c.why}</span>}
-            </li>
+            <CourseRow key={c.course_id} course={c} />
           ))}
         </ul>
         {s.certificates?.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-col gap-2">
             {s.certificates.map((c) => (
-              <span
-                key={c.name}
-                title={c.tip}
-                className="rounded-md border border-gold/60 bg-gold/15 px-2.5 py-1 text-xs font-bold text-navy"
-              >
-                🎫 {c.name}
-              </span>
+              <CertRow key={certName(c)} cert={c} />
             ))}
           </div>
         )}
       </div>
     </li>
+  );
+}
+
+/* 외부 시스템이 걸린 과목은 이름이 버튼이 된다. 눌러야 안내가 펼쳐지고,
+   이동은 그 안에서 한 번 더 선택한다 — 바로 링크를 걸면 로그인 벽에서 흐름이 끊긴다. */
+function CourseRow({ course }) {
+  const ext = externalFor(course);
+  const [open, setOpen] = useState(false);
+
+  return (
+    <li className="text-sm">
+      {ext ? (
+        <button
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="font-semibold text-navy underline decoration-gold decoration-2 underline-offset-4 transition-[scale] duration-150 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-gold"
+        >
+          {course.name} <span className="font-mono text-xs">{open ? "▲" : "▾ 어디서?"}</span>
+        </button>
+      ) : (
+        <span className="font-semibold">{course.name}</span>
+      )}
+      {course.why && <span className="block text-ink-2">{course.why}</span>}
+      {open && (
+        <div className="mt-2">
+          <ExternalPanel info={ext} />
+        </div>
+      )}
+    </li>
+  );
+}
+
+function CertRow({ cert }) {
+  const [open, setOpen] = useState(false);
+  const name = certName(cert);
+  const tip = certTip(cert);
+  if (!name) return null;
+  return (
+    <div>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        title={tip}
+        className="rounded-md border border-gold/60 bg-gold/15 px-2.5 py-1 text-xs font-bold text-navy transition-[scale] duration-150 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-gold"
+      >
+        🎫 {name} <span className="font-mono">{open ? "▲" : "▾ 시험일정"}</span>
+      </button>
+      {open && (
+        <div className="mt-2">
+          <ExternalPanel info={certExternal(name)} />
+        </div>
+      )}
+    </div>
   );
 }
 

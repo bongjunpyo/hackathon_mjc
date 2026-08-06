@@ -2,7 +2,7 @@
    게스트/토큰 분기와 목데이터 폴백이 전부 여기 모여 있다. */
 
 import { DEPT_BY_ID, DEPTS } from "./depts";
-import { pathFor } from "./curricula";
+import { lookupCourses, pathFor } from "./curricula";
 
 const TOKEN_KEY = "mjc_access_token";
 const TIMEOUT_MS = 4000;
@@ -61,44 +61,58 @@ export async function postRoadmap({ deptId, year, semester, completedCourses, ta
   } catch {
     // 서버 미연결 폴백 — 교육과정표의 표준 이수 경로를 그대로 보여준다.
     // AI가 재배치한 로드맵이 아니므로 화면에서 source로 구분해 표시한다.
-    return { ...standardPath(deptId, targetJob), source: "curriculum" };
+    return {
+      ...standardPath({ deptId, targetJob, year, semester, completedCourses }),
+      source: "curriculum",
+    };
   }
 }
 
-/** 교육과정표 기준 표준 경로 + 규칙 검증 요약 (server/validator.py와 같은 룰) */
-function standardPath(deptId, targetJob) {
+/** 교육과정표 기준 표준 경로 + 규칙 검증 요약.
+
+    룰은 server/validator.py와 같아야 한다. 총학점은 **미달로 잡지 않는다** —
+    남은 몫은 학생이 교양선택·일반선택으로 채우는 자유 학점이고, 우리 데이터에
+    그 과목이 없어서 판정할 근거가 없다. 몇 학점 남았는지만 알린다. */
+function standardPath({ deptId, targetJob, year = 1, semester = 1, completedCourses = [] }) {
   const dept = DEPT_BY_ID[deptId];
-  const semesters = pathFor(deptId, targetJob, dept?.years) ?? [];
-  const all = semesters.flatMap((s) => s.courses);
+  const semesters = pathFor(deptId, targetJob, dept?.years, { year, semester }) ?? [];
+
+  // 로드맵은 **남은 학기**만 담는다. 이수분을 합치지 않으면 2학년 학생은 어떤
+  // 로드맵으로도 요건을 못 채운다 (server/validator.py와 같은 이유)
+  const done = lookupCourses(deptId, completedCourses);
+  const all = semesters.flatMap((s) => s.courses).concat(done);
   const sum = (cat) =>
     all.filter((c) => !cat || c.category === cat).reduce((a, c) => a + c.credits, 0);
+  const passedSemesters = (year - 1) * 2 + (semester - 1);
 
   const req = dept?.years === 2
-    ? { total: 75, liberal: 6, major: 45, semesters: 4 }
-    : { total: 110, liberal: 10, major: 66, semesters: 6 };
+    ? { total: 75, liberal: 3, major: 45, semesters: 4 }
+    : { total: 110, liberal: 3, major: 66, semesters: 6 };
   const actual = {
     total_credits: sum(), liberal_credits: sum("교양"),
-    major_credits: sum("전공"), semesters: semesters.length,
+    major_credits: sum("전공"), semesters: semesters.length + passedSemesters,
   };
   const LABEL = {
-    total_credits: "총 학점", liberal_credits: "교양 학점",
-    major_credits: "전공 학점", semesters: "재학 학기",
+    liberal_required: "교양필수", major_credits: "전공 학점", semesters: "재학 학기",
   };
   const FIX = {
-    total_credits: (n) => `아무 과목으로든 ${n}학점을 더 채우세요`,
-    liberal_credits: (n) => `교양 과목으로 ${n}학점을 더 채우세요`,
+    liberal_required: (n) => `교양필수(인성채플·성경과삶) ${n}학점을 넣으세요`,
     major_credits: (n) => `전공 과목으로 ${n}학점을 더 채우세요`,
     semesters: (n) => `과목을 ${n}개 학기에 더 나눠 배치하세요`,
   };
-  const details = Object.entries({
-    total_credits: req.total, liberal_credits: req.liberal,
-    major_credits: req.major, semesters: req.semesters,
-  })
-    .filter(([k, need]) => actual[k] < need)
-    .map(([k, need]) => ({
-      rule: k, label: LABEL[k], required: need, actual: actual[k],
-      shortfall: need - actual[k], fix: FIX[k](need - actual[k]),
+  // 판정 가능한 룰만 본다 — total_credits는 여기 없다 (server/validator.py와 동일)
+  const CHECKS = {
+    liberal_required: [req.liberal, actual.liberal_credits],
+    major_credits: [req.major, actual.major_credits],
+    semesters: [req.semesters, actual.semesters],
+  };
+  const details = Object.entries(CHECKS)
+    .filter(([, [need, has]]) => has < need)
+    .map(([rule, [need, has]]) => ({
+      rule, label: LABEL[rule], required: need, actual: has,
+      shortfall: need - has, fix: FIX[rule](need - has),
     }));
+  const remaining_credits = Math.max(0, req.total - actual.total_credits);
 
   // ?fail=1 — 검증 미달 화면을 API 없이 리허설한다 (발표 훅 장면).
   // 실제 데이터로 통과하는 학과에서 전공 6학점을 깎아 미달을 만든다.
@@ -111,7 +125,8 @@ function standardPath(deptId, targetJob) {
         passed: false,
         ...actual,
         major_credits: major,
-        total_credits: actual.total_credits - (actual.major_credits - major),
+        total_credits: actual.total_credits - short,
+        remaining_credits: remaining_credits + short,
         details: [{
           rule: "major_credits", label: LABEL.major_credits,
           required: req.major, actual: major,
@@ -120,7 +135,10 @@ function standardPath(deptId, targetJob) {
       },
     };
   }
-  return { semesters, validation: { passed: details.length === 0, ...actual, details } };
+  return {
+    semesters,
+    validation: { passed: details.length === 0, ...actual, remaining_credits, details },
+  };
 }
 
 export async function getDepts() {
