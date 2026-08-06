@@ -1,0 +1,429 @@
+/* 행선판 복도 3D 씬 — web/reference/walk-concept.html에서 포팅.
+   Tailwind로 옮기지 않고 손으로 튜닝한 CSS를 그대로 유지한다 (원근·세그먼트 좌표가 값에 묶여 있음).
+   색 토큰은 index.css @theme의 --color-* 를 참조한다. */
+
+.corridor {
+  --navy: var(--color-navy);
+  --navy-deep: var(--color-navy-deep);
+  --sky: var(--color-sky);
+  --sky-soft: var(--color-sky-soft);
+  --gold: var(--color-gold);
+  --hall: var(--color-hall);
+  --hall-far: #dce7f3;
+  --floor: #e7eef7;
+  --figure: var(--color-navy);
+  --ink: var(--color-ink);
+  --ink-2: var(--color-ink-2);
+  --steel: var(--color-steel);
+  --surface: #fff;
+  --edge: var(--color-edge);
+  --board: var(--color-navy);
+  --board-ink: #fff;
+  --f-mono: var(--font-mono);
+  --t-xs: 0.75rem;
+  --t-sm: 0.8125rem;
+  --t-base: 0.9375rem;
+  --t-md: 1.0625rem;
+  --t-lg: 1.5rem;
+  --t-xl: 2.25rem;
+  --gut: clamp(20px, 5vw, 64px);
+}
+
+/* 의도적 단일 테마 — 명지전문대 홈페이지처럼 밝은 낮 야외 톤으로 고정 */
+
+
+/* ================= 인트로 ================= */
+
+@media (prefers-color-scheme: dark) { .intro h1 em { color: var(--sky); } }
+
+
+/* ================= 복도 (핵심) ================= */
+
+.hallway { position: relative; height: 615vh; }
+.stage {
+  position: sticky; top: 0; height: 100vh;
+  overflow: hidden;
+  perspective: 950px;
+  perspective-origin: 50% 46%;
+  background:
+    /* 하늘 → 지평선 → 보도 */
+    linear-gradient(
+      #BFE0F8 0%, #D8ECFB 30%, #EDF6FE 54.6%,
+      #DCE3EA 55%, #E9EDF1 74%, #F2F4F6 100%);
+}
+/* 해 — 우상단 */
+.stage::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle 220px at 82% 12%,
+    color-mix(in srgb, var(--gold) 42%, #fff) 0%,
+    color-mix(in srgb, var(--gold) 18%, transparent) 34%,
+    transparent 62%);
+  pointer-events: none;
+}
+/* 소실점 대기 원근 — 지평선 부근만 얇게 */
+.stage::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 46% 16% at 50% 55%, rgba(255,255,255,.9), transparent 62%);
+  pointer-events: none;
+}
+/* 지평선 스카이라인 (원경 캠퍼스) */
+.skyline {
+  position: absolute; left: 0; right: 0; top: 55%;
+  height: 74px; translate: 0 -100%;
+  color: var(--navy);
+  opacity: .14;
+  pointer-events: none;
+}
+.skyline svg { width: 100%; height: 100%; display: block; }
+/* 구름 */
+.cloud {
+  position: absolute;
+  width: 150px; height: 34px; border-radius: 999px;
+  background: rgba(255,255,255,.92);
+  filter: blur(1px);
+  box-shadow: 0 6px 18px rgba(0,45,101,.05);
+  pointer-events: none;
+}
+.cloud::before, .cloud::after {
+  content: ""; position: absolute; border-radius: 50%;
+  background: inherit;
+}
+.cloud::before { width: 62px; height: 52px; left: 24px; top: -24px; }
+.cloud::after  { width: 46px; height: 38px; right: 26px; top: -16px; }
+.cloud.c1 { top: 10%; left: -160px; animation: drift 76s linear infinite; }
+.cloud.c2 { top: 22%; left: -160px; scale: .62; opacity: .8; animation: drift 104s linear infinite; animation-delay: -48s; }
+@keyframes drift { to { translate: calc(100vw + 340px) 0; } }
+.scene {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(calc(var(--p, 0) * var(--depth)));
+  will-change: transform;
+}
+
+/* 도로·안전선·펜스는 역 간격(GAP) 세그먼트로 분할 —
+   한 장짜리 거대 평면은 앵커가 카메라 뒤로 가는 순간 통째로 컬링된다 */
+.railseg {
+  position: absolute; left: 50%; top: 55%;
+  width: 8px; height: 302px;
+  translate: -50% 0;
+  transform-origin: top center;
+  background: repeating-linear-gradient(
+    to bottom, var(--gold) 0 44px, transparent 44px 87.5px);
+  opacity: .9;
+  pointer-events: none;
+}
+.tacseg {
+  position: absolute; left: 50%; top: 55%;
+  width: 26px; height: 302px;
+  translate: -50% 0;
+  transform-origin: top center;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--gold) 72%, transparent) 0 9px,
+    transparent 9px 26.25px);
+  opacity: .5;
+  pointer-events: none;
+}
+.fenceseg {
+  position: absolute; left: 50%; top: calc(55% - 30px);
+  width: 1054px; height: 30px;
+  transform-origin: left bottom;
+  background:
+    linear-gradient(to bottom, var(--steel) 0 3px, transparent 3px),
+    repeating-linear-gradient(90deg,
+      color-mix(in srgb, var(--steel) 85%, var(--navy)) 0 4px,
+      transparent 4px 105px);
+  opacity: .4;
+  pointer-events: none;
+}
+/* 가로등 — 역 사이마다 양옆 */
+.lamp {
+  position: absolute; left: 50%; top: calc(55% - 168px);
+  width: 8px; height: 168px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--steel) 55%, #fff) 0%,
+    var(--steel) 45%,
+    color-mix(in srgb, var(--steel) 60%, var(--navy)) 100%);
+  border-radius: 4px 4px 0 0;
+  pointer-events: none;
+}
+.lamp::before {          /* 도로 쪽으로 뻗는 암 */
+  content: ""; position: absolute; top: 2px;
+  width: 30px; height: 6px; border-radius: 3px;
+  background: inherit;
+}
+.lamp.ls::before { left: 4px; }
+.lamp.rs::before { right: 4px; }
+.lamp::after {           /* 등 헤드 */
+  content: ""; position: absolute; top: -2px;
+  width: 16px; height: 12px; border-radius: 8px 8px 3px 3px;
+  background: var(--gold);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.lamp.ls::after { left: 26px; }
+.lamp.rs::after { right: 26px; }
+
+/* 행선판 */
+.signpost {
+  position: absolute; left: 50%; top: 46%;
+  translate: -50% -50%;
+  width: min(420px, 72vw);
+  transform-style: preserve-3d;
+}
+.signboard {
+  position: relative;
+  background: linear-gradient(178deg,
+    color-mix(in srgb, var(--board) 88%, #fff) 0%,
+    var(--board) 22%,
+    color-mix(in srgb, var(--board) 90%, #000) 100%);
+  color: var(--board-ink);
+  border-radius: 14px;
+  padding: 15px 20px 12px;
+  /* 보더 대신 레이어드 섀도 + 인셋 헤어라인 */
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    0 3px 8px rgba(0, 26, 61, 0.28),
+    0 20px 52px rgba(0, 26, 61, 0.38);
+  border-bottom: 5px solid var(--gold);   /* 노선색 띠 */
+}
+/* 나사 2점 (상단 모서리) */
+.signboard::before, .signboard::after {
+  content: ""; position: absolute; top: 9px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.5), rgba(255,255,255,.12));
+}
+.signboard::before { left: 10px; }
+.signboard::after  { right: 10px; }
+.sign-route {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: var(--t-xs); color: var(--sky);
+  font-family: var(--f-mono); letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.sign-route .dir {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.sign-route .dir i {
+  font-style: normal;
+  width: 17px; height: 17px; border-radius: 50%;
+  display: inline-grid; place-items: center;
+  background: color-mix(in srgb, var(--sky) 22%, transparent);
+  color: var(--sky); font-size: 0.6rem;
+}
+.sign-route .dir.next i { background: var(--gold); color: var(--navy-deep); }
+.sign-name {
+  text-align: center;
+  font-size: var(--t-lg); font-weight: 800; letter-spacing: 0.01em;
+  margin-block: 7px 3px;
+  text-wrap: balance;
+}
+.sign-name small {
+  display: block; font-size: 0.6875rem; font-weight: 600;
+  color: color-mix(in srgb, var(--sky) 72%, #fff);
+  letter-spacing: 0.22em; margin-top: 3px;
+}
+/* 역번호 캡슐 — 지하철 문법 */
+.sign-line {
+  position: absolute; top: -14px; left: 50%; translate: -50% 0;
+  height: 26px; padding-inline: 11px;
+  border-radius: 999px;
+  background: var(--gold); color: var(--navy-deep);
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--f-mono); font-weight: 800; font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  box-shadow:
+    0 0 0 3px var(--hall),
+    0 3px 9px rgba(0,0,0,.25);
+}
+.plaque {
+  margin-top: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 12px 16px;
+  box-shadow:
+    inset 0 0 0 1px var(--edge),
+    0 2px 6px rgba(0, 26, 61, 0.08),
+    0 10px 26px rgba(0, 26, 61, 0.12);
+  display: flex; flex-direction: column; gap: 7px;
+}
+/* 행선판 인터랙션 — 클릭하면 학기 상세 */
+.signpost { cursor: pointer; }
+.signpost:hover .signboard,
+.signpost:focus-visible .signboard {
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    0 3px 8px rgba(0, 26, 61, 0.28),
+    0 20px 52px rgba(0, 26, 61, 0.38),
+    0 0 0 3px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.signpost:focus-visible { outline: none; }
+
+/* 학기 상세 오버레이 */
+.course-card {
+  border-radius: 12px;
+  background: var(--sky-soft);
+  box-shadow: inset 0 0 0 1px var(--edge);
+  padding: 12px 16px;
+}
+.course-card b { display: block; color: var(--navy); margin-bottom: 3px; }
+.course-card p { margin: 0; font-size: var(--t-sm); color: var(--ink-2); }
+.cert-card {
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--gold) 16%, var(--surface));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--gold) 55%, transparent);
+  padding: 12px 16px;
+}
+.cert-card b { display: block; color: var(--navy); margin-bottom: 3px; }
+.cert-card p { margin: 0; font-size: var(--t-sm); color: var(--ink-2); }
+
+/* 기둥 — 행선판을 바닥에 앉힌다 (.signpost 기준) */
+.pole {
+  position: absolute; top: 100%; width: 7px; height: 118px;
+  margin-top: -4px;
+  z-index: -1;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--steel) 60%, var(--hall)) 0%,
+    var(--steel) 45%,
+    color-mix(in srgb, var(--steel) 45%, #000) 100%);
+  border-radius: 0 0 3px 3px;
+}
+.pole.l { left: 13%; }
+.pole.r { right: 13%; }
+.pole::after {              /* 바닥 접지 그림자 */
+  content: ""; position: absolute; bottom: -5px; left: 50%;
+  translate: -50% 0;
+  width: 30px; height: 9px; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0,26,61,.32), transparent 70%);
+}
+.plaque ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.plaque li { font-size: var(--t-sm); color: var(--ink-2); padding-left: 12px; position: relative; }
+.plaque li::before {
+  content: ""; position: absolute; left: 0; top: .58em;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--sky);
+}
+.plaque .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.plaque .credits { font-family: var(--f-mono); font-size: var(--t-xs); color: var(--steel); }
+.cert {
+  align-self: flex-start;
+  font-size: var(--t-xs); font-weight: 700;
+  color: var(--navy-deep);
+  background: var(--gold);
+  border-radius: 4px; padding: 3px 9px;
+}
+
+/* 도착 게이트 */
+.gate {
+  position: absolute; left: 50%; top: 44%;
+  translate: -50% -50%;
+  width: min(520px, 82vw);
+  text-align: center;
+  transform-style: preserve-3d;
+}
+.gate-board {
+  background: linear-gradient(160deg, var(--navy), var(--navy-deep));
+  border-radius: 18px;
+  color: #fff;
+  padding: 34px 30px 30px;
+  box-shadow:
+    inset 0 0 0 2.5px var(--gold),
+    inset 0 0 0 4px rgba(255,255,255,.12),
+    0 6px 18px rgba(0, 26, 61, 0.3),
+    0 30px 80px rgba(0, 26, 61, 0.45),
+    0 0 64px color-mix(in srgb, var(--gold) 26%, transparent);
+  animation: gate-glow 2.6s ease-in-out infinite;
+}
+@keyframes gate-glow {
+  0%, 100% { box-shadow:
+    inset 0 0 0 2.5px var(--gold), inset 0 0 0 4px rgba(255,255,255,.12),
+    0 6px 18px rgba(0,26,61,.3), 0 30px 80px rgba(0,26,61,.45),
+    0 0 44px color-mix(in srgb, var(--gold) 20%, transparent); }
+  50% { box-shadow:
+    inset 0 0 0 2.5px var(--gold), inset 0 0 0 4px rgba(255,255,255,.12),
+    0 6px 18px rgba(0,26,61,.3), 0 30px 80px rgba(0,26,61,.45),
+    0 0 84px color-mix(in srgb, var(--gold) 38%, transparent); }
+}
+.gate-kicker { font-family: var(--f-mono); font-size: var(--t-xs); letter-spacing: 0.22em; color: var(--sky); }
+.gate-title { font-size: var(--t-xl); font-weight: 800; margin-block: 10px 6px; }
+.gate-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 14px;
+  background: var(--gold); color: var(--navy-deep);
+  font-weight: 800; font-size: var(--t-base);
+  border-radius: 999px; padding: 8px 20px;
+}
+.gate-sub { color: var(--sky); font-size: var(--t-sm); margin-top: 12px; }
+
+/* 걷는 캐릭터 — SVG 인물 (등에 가방, 걷기 사이클) */
+.walker {
+  position: absolute; left: 50%; bottom: 8vh;
+  translate: -50% 0;
+  width: 74px; height: 118px;
+  z-index: 5;
+}
+.walker svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.w-shadow { fill: rgba(0, 26, 61, 0.28); transition: transform .3s; transform-origin: 30px 94px; }
+.w-figure { fill: var(--figure); }
+.w-bag    { fill: var(--gold); }
+.w-cap    { fill: var(--sky); }
+.w-leg, .w-arm { transform-box: fill-box; transform-origin: 50% 8%; }
+.w-body   { transform-origin: 30px 60px; }
+
+.walker.walking .w-body  { animation: w-bob .62s ease-in-out infinite; }
+.walker.walking .w-shadow{ animation: w-shade .62s ease-in-out infinite; }
+.walker.walking .w-leg.a { animation: w-swing .62s ease-in-out infinite; }
+.walker.walking .w-leg.b { animation: w-swing .62s ease-in-out infinite; animation-delay: -.31s; }
+.walker.walking .w-arm.a { animation: w-swing-s .62s ease-in-out infinite; animation-delay: -.31s; }
+.walker.walking .w-arm.b { animation: w-swing-s .62s ease-in-out infinite; }
+
+@keyframes w-bob   { 0%,100% { transform: translateY(0) }  50% { transform: translateY(-3.5px) } }
+@keyframes w-shade { 0%,100% { transform: scaleX(1) }      50% { transform: scaleX(.86) } }
+@keyframes w-swing   { 0%,100% { transform: rotate(24deg) } 50% { transform: rotate(-24deg) } }
+@keyframes w-swing-s { 0%,100% { transform: rotate(15deg) } 50% { transform: rotate(-15deg) } }
+
+/* 진행 HUD — 지하철 노선도식 */
+.hud {
+  position: absolute; left: 50%; bottom: 3vh; translate: -50% 0;
+  z-index: 6;
+  display: flex; align-items: center; gap: 0;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  padding: 10px 18px;
+}
+.hud .stop {
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 2.5px solid var(--figure);
+  background: var(--surface);
+  transition: background .25s, border-color .25s;
+}
+.hud .stop.past { background: var(--figure); }
+.hud .stop.here { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 30%, transparent); }
+.hud .seg { width: 26px; height: 2.5px; background: var(--edge); }
+.hud .seg.past { background: var(--figure); }
+.hud .label {
+  margin-left: 14px;
+  font-family: var(--f-mono); font-size: var(--t-xs);
+  color: var(--ink-2); letter-spacing: 0.04em;
+  min-width: 9ch;
+}
+
+/* ================= 도착 후 섹션 ================= */
+
+
+
+/* ================= reduced motion ================= */
+/* 정적 전체 보기 — prefers-reduced-motion 자동 적용 + 버튼 수동 토글(.static-mode) */
+@media (prefers-reduced-motion: reduce) {
+  .hallway { height: auto; }
+  .stage { position: relative; height: auto; overflow: visible; perspective: none; background: var(--hall); }
+  .stage::before, .stage::after { display: none; }
+  .scene { position: static; transform: none !important; display: flex; flex-direction: column; gap: 26px; padding: 48px var(--gut); align-items: center; }
+  .signpost, .gate { position: static; translate: none; transform: none !important; opacity: 1 !important; visibility: visible !important; }
+  .railseg, .tacseg, .fenceseg, .lamp, .walker, .hud, .scroll-cue, .cloud, .skyline { display: none; }
+}
+/* 수동 전체 보기 토글은 제거 — 걷기 모드 단일 (2026-08-06 결정).
+   위 reduced-motion 블록이 접근성 폴백을 계속 담당한다. */
