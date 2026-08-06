@@ -14,6 +14,7 @@ from course_id import assign_course_ids
 from schema import Course
 
 # 열 이름 → 스키마 필드. 값은 표기 흔들림에 대비한 후보 목록이다.
+# `NCS기반`·`현장중심`은 헤더 2행에만 있는 하위 열이다.
 COLUMNS = {
     "name": ("교과목명",),
     "year": ("편성학년",),
@@ -21,7 +22,12 @@ COLUMNS = {
     "credits": ("편성학점",),
     "category": ("이수구분",),
     "talent_type": ("비고",),
+    "ncs": ("NCS기반",),
+    "field_based": ("현장중심", "현장중심교과"),
 }
+
+# 이게 없으면 과목을 만들 수 없다. 나머지는 있으면 쓰고 없으면 넘어간다.
+REQUIRED = ("name", "year", "semester", "credits", "category")
 
 # 이수구분 원문 → 스키마 category. `통합전공`은 자유전공학과가 쓴다.
 CATEGORY = {"전공과정": "전공", "통합전공": "전공", "교양과정": "교양", "일반선택": "일반선택"}
@@ -53,14 +59,18 @@ def _normalize_label(raw: str) -> str | None:
     return re.sub(r"(?<=[가-힣])\s+(?=[가-힣])", "", label) or None
 
 
-def _find_columns(header: list[str]) -> dict[str, int]:
+def _find_columns(*header_rows: list[str]) -> dict[str, int]:
+    """헤더는 2행이다. `NCS기반` 같은 하위 열은 2행에만 있으므로 함께 훑는다."""
     index = {}
     for field, candidates in COLUMNS.items():
-        for i, cell in enumerate(header):
-            if cell.strip() in candidates:
-                index[field] = i
+        for row in header_rows:
+            for i, cell in enumerate(row):
+                if cell.strip() in candidates:
+                    index[field] = i
+                    break
+            if field in index:
                 break
-    missing = [f for f in COLUMNS if f not in index and f != "talent_type"]
+    missing = [f for f in REQUIRED if f not in index]
     if missing:
         raise HeaderNotFound(f"필수 열 없음: {missing}")
     return index
@@ -81,13 +91,17 @@ def parse_courses(table: str, dept_id: str) -> list[Course]:
     if not lines:
         raise HeaderNotFound("표가 비어 있음")
 
-    header = [c.strip() for c in lines[0].split("|")]
-    col = _find_columns(header)
+    rows = [[c.strip() for c in l.split("|")] for l in lines]
+    col = _find_columns(rows[0], rows[1] if len(rows) > 1 else [])
+
+    def marked(cells: list[str], field: str) -> bool:
+        """체크 표시(■·○·V)가 있으면 True. 빈 칸이면 False."""
+        i = col.get(field)
+        return bool(i is not None and i < len(cells) and cells[i].strip())
 
     courses = []
-    for line in lines[1:]:
-        cells = [c.strip() for c in line.split("|")]
-        if len(cells) <= max(col.values()):
+    for cells in rows[1:]:
+        if len(cells) <= max(col[f] for f in REQUIRED):
             continue
 
         name = _normalize_name(cells[col["name"]])
@@ -110,8 +124,10 @@ def parse_courses(table: str, dept_id: str) -> list[Course]:
                 category=CATEGORY.get(raw_category, "일반선택"),
                 required=False,
                 talent_type=_normalize_label(talent) if talent else None,
-                ncs="NCS" in line,
-                field_based=any(k in name for k in ("현장실습", "캡스톤디자인", "인턴십")),
+                ncs=marked(cells, "ncs"),
+                # 표에 `현장중심` 열이 없는 학과는 과목명으로 판단한다.
+                field_based=marked(cells, "field_based")
+                or any(k in name for k in ("현장실습", "캡스톤디자인", "인턴십")),
             )
         )
 

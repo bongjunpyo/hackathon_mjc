@@ -1,0 +1,98 @@
+{
+  "dept_id": "idm",
+  "dept_name": "산업경영공학과",
+  "years": 2,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "물류・유통관리자",
+      "coverage_pct": 52.6,
+      "credits": 30,
+      "covered_courses": [
+        "경영과학",
+        "물류시스템경영",
+        "데이터분석실습",
+        "공급사슬관리",
+        "경제성공학",
+        "회계정보시스템",
+        "물류관리실무",
+        "AID실무캡스톤디자인",
+        "원가경영",
+        "스마트공급망관리"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "생산・품질관리자",
+      "coverage_pct": 47.4,
+      "credits": 27,
+      "covered_courses": [
+        "산업경영공학개론",
+        "통계학",
+        "품질경영",
+        "생산관리",
+        "인간공학",
+        "제품연구개발",
+        "설비관리",
+        "안전경영",
+        "실험계획법"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    }
+  ],
+  "certificates": {
+    "total": 12,
+    "evaluated": 3,
+    "supported": 0,
+    "unsupported": [
+      "컴퓨터활용능력",
+      "정보처리산업기사",
+      "전자상거래관리사"
+    ],
+    "unevaluated": [
+      "품질관리산업기사",
+      "산업안전산업기사",
+      "물류관리사",
+      "유통관리사",
+      "전산회계 운용사",
+      "사무자동화산업기사",
+      "기술지도사",
+      "ISO 9000/14000 품질경영진단사/심사원",
+      "CPIM"
+    ],
+    "detail": [
+      {
+        "certificate": "컴퓨터활용능력",
+        "courses": [],
+        "matched": false
+      },
+      {
+        "certificate": "정보처리산업기사",
+        "courses": [],
+        "matched": false
+      },
+      {
+        "certificate": "전자상거래관리사",
+        "courses": [],
+        "matched": false
+      }
+    ]
+  },
+  "ncs_ratio": 57.9,
+  "field_based_courses": [
+    "AID실무캡스톤디자인"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "dept_id": "mjcjp",
+  "dept_name": "일본어과",
+  "years": 2,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "일본비즈니스･서비스전문가",
+      "coverage_pct": 60.0,
+      "credits": 36,
+      "covered_courses": [
+        "시청각일본어",
+        "일본어입문",
+        "일본어강독I",
+        "일본문화의이해",
+        "일본진로탐색디자인씽킹",
+        "일본어문법",
+        "일본어강독II",
+        "기초 JLPT",
+        "일본취업전략캡스톤디자인",
+        "비즈니스일본어",
+        "심화 JLPT",
+        "일본문학사"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "일본어통･번역콘텐츠융합전문가",
+      "coverage_pct": 40.0,
+      "credits": 24,
+      "covered_courses": [
+        "기초일본어회화",
+        "일본어작문I",
+        "초급일본어회화",
+        "일본어작문II",
+        "일본어원서독해",
+        "중급일본어회화",
+        "일한번역연습",
+        "고급일본어회화"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    }
+  ],
+  "certificates": {
+    "total": 7,
+    "evaluated": 0,
+    "supported": 0,
+    "unsupported": [],
+    "unevaluated": [
+      "일본어능력시험(JLPT",
+      "JPT)",
+      "관광통역안내원",
+      "번역사",
+      "토익(TOEIC)",
+      "DCS",
+      "CRS"
+    ],
+    "detail": []
+  },
+  "ncs_ratio": 0.0,
+  "field_based_courses": [
+    "일본취업전략캡스톤디자인"
+  ]
+}

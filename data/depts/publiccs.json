@@ -26,7 +26,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -38,7 +38,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -50,7 +50,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -62,7 +62,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -74,7 +74,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -86,7 +86,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -98,7 +98,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -110,7 +110,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -134,7 +134,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": true
     },
     {
@@ -146,7 +146,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -158,7 +158,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -170,7 +170,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -194,7 +194,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -206,7 +206,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "공공행정서비스",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {

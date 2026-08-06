@@ -1,0 +1,67 @@
+{
+  "dept_id": "publiccs",
+  "dept_name": "공공행정서비스과",
+  "years": 2,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "공공행정서비스",
+      "coverage_pct": 100.0,
+      "credits": 54,
+      "covered_courses": [
+        "행정학개론",
+        "조직론",
+        "자치행정론",
+        "사무자동화",
+        "인사행정론",
+        "공공관리론",
+        "재무행정론",
+        "정책학원론",
+        "조사방법론",
+        "공직적성NCS",
+        "공기업캡스톤디자인",
+        "행정법Ⅰ",
+        "AI-행정업무론",
+        "행정법Ⅱ",
+        "정부기업관계론",
+        "통계학",
+        "공공빅데이터론",
+        "정책분석평가론"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    }
+  ],
+  "certificates": {
+    "total": 6,
+    "evaluated": 1,
+    "supported": 0,
+    "unsupported": [
+      "컴퓨터활용능력"
+    ],
+    "unevaluated": [
+      "공인행정관리사",
+      "정책분석평가사",
+      "사회조사분석사",
+      "MOS(Microsoft Office Specialist)",
+      "ITQ마스터"
+    ],
+    "detail": [
+      {
+        "certificate": "컴퓨터활용능력",
+        "courses": [],
+        "matched": false
+      }
+    ]
+  },
+  "ncs_ratio": 83.3,
+  "field_based_courses": [
+    "공기업캡스톤디자인"
+  ]
+}
