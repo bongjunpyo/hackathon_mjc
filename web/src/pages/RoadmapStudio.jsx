@@ -8,6 +8,7 @@ import ValidationBar from "../components/track/ValidationBar";
 import Walker from "../components/track/Walker";
 import { postRoadmap } from "../lib/api";
 import { DEPT_BY_ID, realJobs } from "../lib/depts";
+import { bestJob } from "../lib/jobmatch";
 import { useApp } from "../store";
 import demo from "../fixtures/roadmap-demo.json";
 
@@ -40,19 +41,40 @@ export default function RoadmapStudio() {
   const [roadmap, setRoadmap] = useState(null);
   const [error, setError] = useState(null);
   const [cursor, setCursor] = useState(0);
+  const [mapNote, setMapNote] = useState(null); // 타이핑 직무 → 라벨 매핑 안내
   // 패널은 캐릭터가 **도착한 뒤** 연다 — 클릭 즉시 열리면 걷기가 장식이 된다
   const [arrived, setArrived] = useState(0);
   const jobRef = useRef(input.targetJob); // 생성 시점의 직무 — 컨트롤을 바꿔도 트랙은 그대로
   const { setRoadmap: shareRoadmap } = useApp(); // 3D 걷기 모드(/app/walk)와 공유
   const navigate = useNavigate();
 
-  async function generate() {
+  async function generate(override) {
     setPhase("GENERATING");
     setError(null);
-    jobRef.current = input.targetJob;
+    setMapNote(null);
+
+    /* 타이핑한 직무는 서버 목록의 정확한 값으로 옮겨 보낸다 (서버는 목록 밖 400).
+       대응이 없으면 직무 미정 모드로 — 서버가 배정 학점 기준으로 추천한다. */
+    const typed = (override?.targetJob ?? input.targetJob).trim();
+    const dept = DEPT_BY_ID[input.deptId];
+    const jobs = realJobs([...(dept?.careers ?? []), ...(dept?.promoted ?? [])]);
+    let sendJob = typed;
+    if (typed && !jobs.includes(typed)) {
+      const matched = bestJob(typed, jobs);
+      if (matched) {
+        sendJob = matched;
+        setMapNote(`입력하신 '${typed}' → 가장 가까운 교육과정 라벨 '${matched}'로 역산했습니다`);
+      } else {
+        sendJob = "";
+        setMapNote(`'${typed}'에 대응하는 이 학과 라벨이 없습니다 — 배정 학점 기준 추천으로 그렸습니다`);
+      }
+    }
+
+    jobRef.current = sendJob || "추천 직무";
     try {
-      const data = await postRoadmap(input, { strict: true });
+      const data = await postRoadmap({ ...input, targetJob: sendJob }, { strict: true });
       setRoadmap(data);
+      if (data.target_job) jobRef.current = data.target_job; // 미정 모드가 채택한 직무
       setArrived(0);
       setCursor(data.semesters.length > 0 ? 1 : 0); // 입학 → 첫 학기로 걸어간다
       setPhase(data.validation?.passed ? "READY" : "PARTIAL");
@@ -133,6 +155,38 @@ export default function RoadmapStudio() {
           </div>
         )}
 
+        {/* 직무 미정·자유 입력의 결과를 숨기지 않는다 — 어떤 직무로 그렸고 왜인지 */}
+        {!dimmed && mapNote && (
+          <p className="rounded-lg border border-dashed border-edge bg-sky-soft/60 p-3 text-sm text-ink-2">
+            {mapNote}
+          </p>
+        )}
+        {!dimmed && shown.job_recommended && (
+          <div className="flex flex-col gap-2 rounded-xl border-2 border-gold bg-gold/15 px-4 py-3">
+            <b className="text-navy">
+              직무 미정 — 배정 학점이 가장 많은 <span className="mark-gold">{shown.target_job}</span>로 그렸습니다
+            </b>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="font-mono text-xs text-steel">다른 후보</span>
+              {(shown.recommended_jobs ?? []).map((r) => (
+                <button
+                  key={r.job}
+                  onClick={() => {
+                    setInput((cur) => ({ ...cur, targetJob: r.job }));
+                    generate({ targetJob: r.job });
+                  }}
+                  className={`rounded-lg border px-2.5 py-1 text-xs font-bold transition-[background-color,scale] duration-150 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-gold ${
+                    r.job === shown.target_job
+                      ? "border-navy bg-navy text-white"
+                      : "border-edge bg-white text-navy hover:bg-sky-soft"
+                  }`}
+                >
+                  {r.job} · {r.credits}학점
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {!dimmed && (
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1">
