@@ -12,7 +12,10 @@ Category = Literal["전공", "교양", "일반선택"]
 
 
 class Course(BaseModel):
-    course_id: str = Field(description="dept_id-학년-학기-슬러그 (예: itc-1-1-internet-prog)")
+    course_id: str = Field(
+        description="dept_id-정규화된_과목명 (예: itc-프로그래밍언어실습1). "
+        "학년·학기는 들어가지 않는다 — 생성 규칙은 course_id.py, 확정 근거는 DESIGN.md §5"
+    )
     name: str = Field(description="교과목명. 원본의 깨진 공백을 정규화한 표시용 이름")
     year: int
     semester: int
