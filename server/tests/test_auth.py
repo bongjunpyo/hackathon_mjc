@@ -1,3 +1,5 @@
+import io
+import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -452,3 +454,71 @@ def test_약관에_동의하지_않으면_가입이_막힌다(client):
 
     assert res.status_code == 400
     assert res.json()["error"]["code"] == "TERMS_REQUIRED"
+
+
+# --- 콘솔 폴백 ---
+
+
+def cp949_console(monkeypatch):
+    """한국어 Windows의 기본 콘솔 인코딩을 흉내 낸다.
+
+    pytest는 stdout을 자체 캡처 객체로 바꿔치기해서 인코딩을 타지 않는다. 그래서
+    실서버에서만 500이 나는 이 경로를 전체 테스트가 통과하면서 놓쳤다.
+    **픽스처에서 갈아끼우면 안 된다** — pytest가 call 단계에 캡처를 다시 걸어 덮어쓴다.
+    """
+    monkeypatch.setattr(mailer, "SMTP_HOST", None)  # 콘솔 폴백으로 몰아넣는다
+    monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(io.BytesIO(), encoding="cp949"))
+
+
+def test_한글_콘솔에서도_인증번호_요청이_죽지_않는다(monkeypatch):
+    """SMTP 미설정 폴백이 콘솔에 못 찍는 문자를 쓰면 요청이 통째로 500이 됐다."""
+    from main import app
+
+    client = TestClient(app, raise_server_exceptions=False)
+    cp949_console(monkeypatch)
+
+    res = client.post("/auth/email/code", json={"email": "other@example.com"})
+
+    assert res.status_code == 200
+
+
+def test_한글_콘솔에서도_회원가입이_죽지_않는다(monkeypatch):
+    from main import app
+
+    client = TestClient(app, raise_server_exceptions=False)
+    cp949_console(monkeypatch)
+
+    res = client.post("/auth/signup", json=SIGNUP)
+
+    assert res.status_code == 201
+
+
+# --- SMTP 설정 읽기 ---
+
+
+def test_env를_빈_값으로_남겨두면_기본값이_나온다(monkeypatch):
+    """`.env.example`을 복사하면 안 채운 줄이 `KEY=`로 남는다.
+
+    os.getenv(key, default)는 키가 없을 때만 기본값을 준다. 그래서 빈 문자열이
+    기본값을 밀어내고 들어와, SMTP_FROM이 ''가 되고 `MAIL FROM:<>`으로 나갔다.
+    """
+    monkeypatch.setenv("SMTP_FROM", "")
+
+    assert mailer._env("SMTP_FROM", "no-reply@mjc.ac.kr") == "no-reply@mjc.ac.kr"
+
+
+def test_보내는_사람에_표시_이름이_붙는다(monkeypatch):
+    """주소만 넣으면 받은 편지함에 발송 계정 이메일이 그대로 뜬다."""
+    monkeypatch.setattr(mailer, "SMTP_FROM", "no-reply@mjc.ac.kr")
+    monkeypatch.setattr(mailer, "SMTP_FROM_NAME", "MJC 취업 로드맵")
+
+    message = mailer._compose("s@example.com", "제목", "본문", "<p>본문</p>")
+
+    assert message["From"] == "MJC 취업 로드맵 <no-reply@mjc.ac.kr>"
+    # 한글 표시 이름이 전송용으로 직렬화될 때 깨지지 않아야 한다
+    assert b"no-reply@mjc.ac.kr" in message.as_bytes()
+
+
+def test_발신_주소를_안_정하면_계정_이메일을_쓴다():
+    """Brevo처럼 인증된 발신자가 따로 있으면 SMTP_FROM으로 덮는다."""
+    assert mailer._env("SMTP_FROM", "sender@example.com") == "sender@example.com"
