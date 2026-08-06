@@ -12,9 +12,9 @@ export const setToken = (t) => localStorage.setItem(TOKEN_KEY, t);
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
 export const isGuest = () => !getToken();
 
-async function call(path, { method = "GET", body } = {}) {
+async function call(path, { method = "GET", body, timeoutMs = TIMEOUT_MS } = {}) {
   const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => ctl.abort(), timeoutMs);
   try {
     const res = await fetch(path, {
       method,
@@ -45,10 +45,15 @@ export class ApiError extends Error {
 /* 로드맵 생성. 서버가 아직 없으면 목데이터로 폴백한다 —
    폴백 여부를 source로 돌려주므로 화면에서 "목데이터" 배지를 띄울 수 있다.
    (거짓 데모 방지: 플레이북 §10) */
-export async function postRoadmap({ deptId, year, semester, completedCourses, targetJob }) {
+export async function postRoadmap(
+  { deptId, year, semester, completedCourses, targetJob },
+  { strict = false } = {},
+) {
   try {
+    // LLM 생성은 검증 루프 3회까지 돌면 2분을 넘을 수 있다 — 150s (docs/frontend/API.md)
     const data = await call("/roadmap", {
       method: "POST",
+      timeoutMs: 150_000,
       body: {
         dept_id: deptId,
         current_year: year,
@@ -58,8 +63,11 @@ export async function postRoadmap({ deptId, year, semester, completedCourses, ta
       },
     });
     return { ...data, source: "api" };
-  } catch {
-    // 서버 미연결 폴백 — 교육과정표의 표준 이수 경로를 그대로 보여준다.
+  } catch (err) {
+    // strict(v2 스튜디오): 폴백 대신 ERROR 상태로 — 서버가 죽었는데 조용히
+    // 표준 경로를 보여주면 "AI가 짰다"는 화면 표시가 거짓이 된다
+    if (strict) throw err;
+    // v1 폴백 — 교육과정표의 표준 이수 경로를 그대로 보여준다.
     // AI가 재배치한 로드맵이 아니므로 화면에서 source로 구분해 표시한다.
     return {
       ...standardPath({ deptId, targetJob, year, semester, completedCourses }),

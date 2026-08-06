@@ -1,56 +1,161 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import ControlBar from "../components/track/ControlBar";
 import TrackCanvas from "../components/track/TrackCanvas";
 import SemesterPanel from "../components/track/SemesterPanel";
 import ValidationBar from "../components/track/ValidationBar";
+import Walker from "../components/track/Walker";
+import { postRoadmap } from "../lib/api";
 import demo from "../fixtures/roadmap-demo.json";
 
-/* v2 메인 — 2D 트랙 스튜디오 (DESIGN §2).
-   P1: 픽스처(실측 LLM 응답)로 트랙·패널·배지를 그린다. 컨트롤 바 + API 연동은 P3.
+/* v2 메인 — 2D 트랙 스튜디오 (DESIGN §2). 상태 5종:
+   INIT(예시 트랙 흐림) → GENERATING(제자리걸음+문구) → READY | PARTIAL | ERROR.
    캐릭터 위치(cursor)는 "보고 있는 학기" — 이동은 API를 다시 부르지 않는다. */
+
+const GEN_STEPS = [
+  "교육과정표에서 후보 과목을 고르는 중…",
+  "AI가 학기별로 과목을 배치하는 중…",
+  "졸업요건 검증기로 확인하는 중…",
+  "미달이면 사유를 실어 다시 짜게 하는 중…",
+];
+
 export default function RoadmapStudio() {
-  const roadmap = demo;
-  const semesters = roadmap.semesters;
-  const targetJob = "시스템관리·운용엔지니어"; // P3에서 컨트롤 바 상태로 대체
-  const goalNode = semesters.length + 1;
-
+  const [input, setInput] = useState({
+    deptId: "itc",
+    year: 1,
+    semester: 1,
+    completedCourses: [],
+    targetJob: "시스템관리·운용엔지니어",
+  });
+  const [phase, setPhase] = useState("INIT");
+  const [roadmap, setRoadmap] = useState(null);
+  const [error, setError] = useState(null);
   const [cursor, setCursor] = useState(0);
+  const jobRef = useRef(input.targetJob); // 생성 시점의 직무 — 컨트롤을 바꿔도 트랙은 그대로
 
-  // 노드 i → 학기: 1..n. 입학(0)·종착(n+1)은 패널을 닫는다
-  const semIndex = cursor >= 1 && cursor <= semesters.length ? cursor - 1 : null;
+  async function generate() {
+    setPhase("GENERATING");
+    setError(null);
+    jobRef.current = input.targetJob;
+    try {
+      const data = await postRoadmap(input, { strict: true });
+      setRoadmap(data);
+      setCursor(data.semesters.length > 0 ? 1 : 0); // 입학 → 첫 학기로 걸어간다
+      setPhase(data.validation?.passed ? "READY" : "PARTIAL");
+    } catch (err) {
+      setError(err?.message ?? "서버에 연결할 수 없습니다");
+      setPhase("ERROR");
+    }
+  }
+
+  const shown = phase === "READY" || phase === "PARTIAL" ? roadmap : demo;
+  const semesters = shown.semesters;
+  const targetJob = phase === "INIT" || phase === "GENERATING" ? "목표 직무" : jobRef.current;
+  const dimmed = phase === "INIT" || phase === "GENERATING" || phase === "ERROR";
+  const semIndex = !dimmed && cursor >= 1 && cursor <= semesters.length ? cursor - 1 : null;
 
   return (
     <section className="flex flex-col gap-4 py-6">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-2xl font-extrabold tracking-tight">
-          {targetJob}<span className="text-ink-2">까지의 노선</span>
-        </h2>
-        <span className="font-mono text-xs text-steel">
-          역을 누르면 캐릭터가 걸어가고 학기 상세가 열립니다
-        </span>
-      </div>
+      <ControlBar
+        value={input}
+        onChange={setInput}
+        onGenerate={generate}
+        loading={phase === "GENERATING"}
+      />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
-        <TrackCanvas
-          semesters={semesters}
-          targetJob={targetJob}
-          cursor={cursor}
-          passed={roadmap.validation?.passed}
-          shortfallRules={roadmap.validation?.passed ? [] : roadmap.validation?.details}
-          onSelect={setCursor}
-        />
+        <div className="relative">
+          <div className={dimmed ? "opacity-35 blur-[2px] transition-[opacity,filter] duration-500" : "transition-[opacity,filter] duration-500"}>
+            <TrackCanvas
+              semesters={semesters}
+              targetJob={targetJob}
+              cursor={dimmed ? 0 : cursor}
+              passed={!dimmed && shown.validation?.passed}
+              shortfallRules={phase === "PARTIAL" ? shown.validation?.details : []}
+              onSelect={dimmed ? () => {} : setCursor}
+            />
+          </div>
+
+          {phase === "INIT" && (
+            <Overlay>
+              <p className="max-w-[36ch] text-balance text-center text-lg font-bold text-navy">
+                학과와 목표 직무를 고르면 여기에 당신의 노선이 그려집니다
+              </p>
+            </Overlay>
+          )}
+          {phase === "GENERATING" && <Generating />}
+          {phase === "ERROR" && (
+            <Overlay>
+              <p className="font-bold text-navy">로드맵을 만들지 못했습니다</p>
+              <p className="max-w-[44ch] text-center text-sm text-ink-2">{error}</p>
+              <button
+                onClick={generate}
+                className="rounded-xl bg-navy px-5 py-2 font-bold text-white transition-[background-color,scale] duration-200 hover:bg-navy-deep active:scale-[0.96]"
+              >
+                다시 시도
+              </button>
+            </Overlay>
+          )}
+        </div>
+
         {semIndex != null && (
           <SemesterPanel
             semester={semesters[semIndex]}
             index={semIndex}
-            targetJob={targetJob}
+            targetJob={jobRef.current}
             isLast={semIndex === semesters.length - 1}
             onNext={() => setCursor(cursor + 1)}
-            onGraduate={() => setCursor(goalNode)}
+            onGraduate={() => setCursor(semesters.length + 1)}
           />
         )}
       </div>
 
-      <ValidationBar validation={roadmap.validation} engine={roadmap.engine} />
+      {/* 미달 사유 — 검증기가 잡아냈다는 증거 화면 (DESIGN §2.5 PARTIAL) */}
+      {phase === "PARTIAL" && shown.validation?.details?.length > 0 && (
+        <div className="flex flex-col gap-1.5 rounded-xl border-2 border-gold bg-gold/15 px-4 py-3">
+          <b className="text-navy">검증기가 미달을 잡았습니다 — 재생성 {shown.attempts ?? 3}회 후에도 남은 항목</b>
+          {shown.validation.details.map((d) => (
+            <p key={d.rule} className="text-sm text-ink-2">
+              ✗ {d.label} {d.actual}/{d.required} → {d.fix}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {!dimmed && (
+        <ValidationBar validation={shown.validation} engine={shown.engine} />
+      )}
+
+      {phase === "READY" && shown.job_match?.note && (
+        <p className="rounded-lg border border-dashed border-edge p-3 text-xs text-steel">
+          ⚠ {shown.job_match.note}
+        </p>
+      )}
     </section>
+  );
+}
+
+function Overlay({ children }) {
+  return (
+    <div className="absolute inset-0 grid place-items-center">
+      <div className="flex flex-col items-center gap-3 rounded-2xl bg-white/90 px-8 py-6 shadow-[0_8px_30px_rgba(0,26,61,.14)] backdrop-blur-sm">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* 27초 침묵을 연출로 — 제자리걸음 + 단계 문구 순환 (DESIGN §2.5) */
+function Generating() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setStep((s) => (s + 1) % GEN_STEPS.length), 3200);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <Overlay>
+      <Walker className="walking" style={{ position: "static", translate: "none" }} />
+      <p className="font-mono text-sm text-navy" aria-live="polite">{GEN_STEPS[step]}</p>
+      <p className="text-xs text-steel">보통 30초 안에 끝납니다 — 검증에 걸리면 최대 3회 다시 짭니다</p>
+    </Overlay>
   );
 }
