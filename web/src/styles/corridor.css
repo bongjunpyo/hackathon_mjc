@@ -46,10 +46,12 @@
   perspective: 950px;
   perspective-origin: 50% 46%;
   background:
-    /* 하늘 → 지평선 → 보도 */
+    /* 하늘 → 지평선 → 보도.
+       55% 아래는 .walkseg 바탕색(#e8edf2)과 같아야 한다 — 3D 노면 세그먼트는
+       근경 가장자리가 화면 y 59~70%에서 컬링돼 끊기는데, 톤이 다르면 그 선이 이음매로 보인다. */
     linear-gradient(
       #BFE0F8 0%, #D8ECFB 30%, #EDF6FE 54.6%,
-      #DCE3EA 55%, #E9EDF1 74%, #F2F4F6 100%);
+      #e8edf2 55%, #e4e9ef 100%);
 }
 /* 해 — 우상단 */
 .stage::before {
@@ -93,6 +95,22 @@
 .cloud.c1 { top: 10%; left: -160px; animation: drift 76s linear infinite; }
 .cloud.c2 { top: 22%; left: -160px; scale: .62; opacity: .8; animation: drift 104s linear infinite; animation-delay: -48s; }
 @keyframes drift { to { translate: calc(100vw + 340px) 0; } }
+/* 근경 점자블록 — 3D 노면 세그먼트는 화면 y 59~70%에서 컬링돼 유도선이 허공에서 끊긴다.
+   소실점(50% 46%)에서 노면 앵커(55%)의 46px 폭을 지나는 직선을 그대로 연장한 삼각형이라
+   3D 쪽이 어디서 잘리든 폭이 정확히 이어진다. 하단 반폭 = 23px × (100−46)/(55−46) = 138px —
+   뷰포트 높이와 무관한 상수다. 블록 무늬는 이 깊이에서 한 장이 화면을 덮으므로 단색으로 둔다. */
+.nearfield {
+  position: absolute; left: 50%; top: 46%; bottom: 0;
+  width: 276px;
+  translate: -50% 0;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: linear-gradient(
+    color-mix(in srgb, var(--gold) 72%, #fff) 0 6%,
+    var(--gold) 20%);
+  /* 근경일수록 옅게 — 폭이 그대로면 화면 하단을 노랑이 지배한다 */
+  mask-image: linear-gradient(#000 0 34%, rgba(0, 0, 0, 0.28) 100%);
+  pointer-events: none;
+}
 .scene {
   position: absolute; inset: 0;
   transform-style: preserve-3d;
@@ -330,15 +348,19 @@
 .gate-sub { color: var(--sky); font-size: var(--t-sm); margin-top: 12px; }
 
 /* 걷는 캐릭터 — SVG 인물 (등에 가방, 걷기 사이클) */
+/* 접지점 = 그림자 중심(viewBox cy=88 → 박스의 88%)을 노면 y=80%에 앉힌다.
+   지평선이 46%라 원근상 정확한 키는 이보다 크지만(머리가 지평선에 닿는다)
+   그러면 머리가 행선판을 가린다 — 의도적으로 덜 키운다. */
 .walker {
-  position: absolute; left: 50%; bottom: 5vh;
-  translate: -50% 0;
+  position: absolute; left: 50%; top: 80%;
+  translate: -50% -88%;
+  scale: 1.28;
   width: 104px; height: 166px;
   z-index: 5;
-  transform-origin: 50% 100%;
+  transform-origin: 50% 88%;
 }
 .walker svg { width: 100%; height: 100%; display: block; overflow: visible; }
-.w-shadow { fill: rgba(0, 26, 61, 0.28); transition: transform .3s; transform-origin: 30px 94px; }
+.w-shadow { fill: rgba(0, 26, 61, 0.28); transition: transform .3s; transform-origin: 30px 88px; }
 .w-figure { fill: var(--figure); }
 .w-bag    { fill: var(--gold); }
 .w-cap    { fill: var(--sky); }
@@ -403,7 +425,7 @@
   .stage::before, .stage::after { display: none; }
   .scene { position: static; transform: none !important; display: flex; flex-direction: column; gap: 26px; padding: 48px var(--gut); align-items: center; }
   .signpost, .gate { position: static; translate: none; transform: none !important; opacity: 1 !important; visibility: visible !important; }
-  .walkseg, .fenceseg, .lamp, .walker, .hud, .scroll-cue, .cloud, .skyline { display: none; }
+  .walkseg, .fenceseg, .lamp, .walker, .hud, .scroll-cue, .cloud, .skyline, .nearfield { display: none; }
 }
 /* 수동 전체 보기 토글은 제거 — 걷기 모드 단일 (2026-08-06 결정).
    위 reduced-motion 블록이 접근성 폴백을 계속 담당한다. */
