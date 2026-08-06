@@ -127,7 +127,7 @@ data/depts/*.json  (+ _report.json 품질 지표)
 
 | | 대상 | 엔드포인트 | 동작 |
 |---|---|---|---|
-| **C**reate | `users` | `POST /auth/signup` → 201 | 가입. 토큰을 주지 않는다 — 이메일 인증을 마쳐야 로그인된다 |
+| **C**reate | `users` | `POST /auth/signup` → 201 | 가입. 인증번호 티켓(`/auth/email/code`→`verify`)과 함께면 즉시 토큰 발급, 없으면 인증 링크를 눌러야 로그인된다 |
 | | `saved_roadmaps` | `POST /me/roadmaps` → 201 | 로드맵 저장 |
 | | `completed_courses` | `PUT /me/courses` | 이수 과목 행 삽입 |
 | **R**ead | 세 테이블 전부 | `GET /me` | 내 정보 + 이수 과목 + 저장 로드맵 |
@@ -224,8 +224,9 @@ cd hackathon_mjc
 ```bash
 cd server
 uv sync
-uv run pytest          # 160개 테스트 (검증기 · 엔진 · 카탈로그 · 인증 · 트랙 B)
+uv run pytest          # 165개 테스트 (검증기 · 엔진 · 카탈로그 · 인증 · 트랙 B)
 uv run fastapi dev main.py   # API + 프론트 빌드 정적 서빙 (web/dist가 있으면)
+# 이메일 인증은 SMTP 없이 동작한다 — 인증번호가 서버 콘솔에 찍힌다 (server/EMAIL.md)
 ```
 
 **프론트**
@@ -288,7 +289,7 @@ uv run python build_report.py         # 트랙 B 진단 → data/reports/*.json
 
 | | |
 |---|---|
-| 테스트 | 160개 |
+| 테스트 | 165개 |
 | 변이 검사 | 10종, 전부 검출 |
 | 파이프라인 | 34개 학과 · 842과목 · **코드 파싱 100% · LLM 폴백 0회** |
 | `course_id` 충돌 | 776과목 **0건** |
