@@ -158,6 +158,44 @@ data/depts/*.json  (+ _report.json 품질 지표)
 
 **졸업요건 결손도 하나 찾았다.** 드론정보공학과는 2026학년도 교육과정표의 전공 15과목을 **전부 이수해도 43학점** — 학교 공통 졸업요건(2년제 전공 45학점)에 2학점 모자란다. 원본 PDF를 학기별로 재집계해 확정했다(11+11+12+9=43). 검증기 274개 시나리오 전수 검사에서 남는 미달 2건이 정확히 이 학과다 — 엔진의 실패가 아니라 **어떤 로드맵으로도 통과할 수 없는 입력**이고, 이런 불일치를 찾아내는 것이 트랙 B의 존재 이유다.
 
+## 시스템 아키텍처
+
+```
+                    [브라우저 — React SPA (web/dist)]
+                         │  fetch — lib/api.js 단일 창구, 과목은 course_id로만
+                         ▼
+┌───────────────────── FastAPI (server/) ─────────────────────┐
+│                                                             │
+│  GET  /depts · /report/{id} ──────▶ data/depts/*.json       │
+│                                     (읽기 전용 시드)          │
+│  POST /roadmap ──▶ 추천 엔진(결정론 규칙) ⇄ 졸업요건 검증기    │
+│                    └ MJC_ENGINE=llm 시 Claude 비교 모드       │
+│                                                             │
+│  /auth/* · /me/* ─────────────────▶ PostgreSQL              │
+│  (JWT 액세스+리프레시, 이메일 인증)     (유저 데이터 전용)       │
+│                                                             │
+│  StaticFiles ◀── web/dist (빌드 산출물, /app/* SPA 폴백)      │
+└─────────────────────────────────────────────────────────────┘
+                         ▲
+        [pipeline/] 수집·추출 — mjc.ac.kr 게시판·학과 페이지
+        PDF 35개 → 파싱 → 검증 → data/*.json  (쓰기는 파이프라인만)
+```
+
+**저장소가 둘로 나뉜 것이 의도다.** 학사 데이터(과목·직무·자격증)는 파이프라인이 생성하는 읽기 전용 JSON — 원천이 학교 문서라 서비스에서 수정될 일이 없고, DB 없이도 코어가 돈다. DB는 서비스가 만들어내는 유저 데이터만 담는다.
+
+### 데이터별 CRUD
+
+| 데이터 (저장소) | Create | Read | Update | Delete |
+|---|---|---|---|---|
+| 회원 `users` (PostgreSQL) | `POST /auth/signup` — 이메일 인증번호(`/auth/email/code`→`verify`) 후 가입 | `GET /me` | — | — |
+| 이수 내역 `completed_courses` (PostgreSQL) | `PUT /me/courses` | `GET /me` | `PUT /me/courses` (전체 교체) | 같은 PUT에서 체크 해제 = 삭제 |
+| 저장 로드맵 `saved_roadmaps` (PostgreSQL) | `POST /me/roadmaps` | `GET /me` | — | — |
+| 세션 (JWT) | `POST /auth/login` | — | `POST /auth/refresh` (토큰 갱신) | 클라이언트 토큰 폐기 |
+| 학과·과목·자격증 (`data/*.json`) | 파이프라인만 | `GET /depts` · `GET /report/{id}` | 파이프라인 재실행 | — |
+| 로드맵 생성 결과 | `POST /roadmap` (비저장 — 게스트 경로) | 응답 즉시 | 재생성 = 새 Create | 저장 안 하면 소멸 |
+
+회원 수정·탈퇴, 로드맵 삭제는 **의도적으로 범위 밖**이다 — 데모에 보이지 않는 기능은 만들지 않는다는 팀 원칙(CLAUDE.md)에 따라, 해커톤 범위에서 실제 흐름(가입→인증→이수 관리→로드맵 저장)에 필요한 연산만 구현했다.
+
 ## 실행 방법
 
 ```bash
