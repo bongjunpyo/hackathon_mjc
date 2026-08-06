@@ -312,6 +312,11 @@
     "청소년지도사",
     "평생교육사"
   ],
+  "talent_types": [
+    "청소년상담사",
+    "청소년지도사",
+    "평생교육사"
+  ],
   "liberal_elective_credits": 3,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0

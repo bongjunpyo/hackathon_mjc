@@ -9,14 +9,15 @@ export const CURRICULA = {"AI미디어디자인학과":{"sem":[{"y":1,"s":1,"c":
 
 /** 목표 직무 기준 표준 이수 경로.
 
-교육과정표에는 전공만 실린다. 교양선택(liberal_elective_credits)과 나머지 일반선택은
-표에 없으므로 여기서 블록으로 배치한다 — 안 하면 교양 룰이 항상 미달로 잡힌다
-(P1 PR #16 경고). 실제 배치 판단은 로드맵 에이전트 몫이고, 여기서는 학기에 고르게 나눈다. */
-export function pathFor(deptId, job, years) {
+교육과정표에 실린 과목만 배치한다. 교양선택·일반선택은 표에 없어서 어떤 과목인지
+모르는데, 블록으로 지어 넣으면 "일반선택 5학점"이 과목인 척 화면을 채운다.
+서버(server/planner.py)도 같은 이유로 짓지 않는다 — 남은 학점은 숫자로만 알린다. */
+export function pathFor(deptId, job, years, from) {
   const d = CURRICULA[deptId];
   if (!d) return null;
 
   const base = d.sem
+    .filter((s) => !from || (s.y - 1) * 2 + s.s >= (from.year - 1) * 2 + from.semester)
     .map((s) => ({
       year: s.y,
       semester: s.s,
@@ -30,17 +31,6 @@ export function pathFor(deptId, job, years) {
     }))
     .filter((s) => s.courses.length > 0);
 
-  if (base.length === 0) return base;
-
-  const sum = (cat) =>
-    base.flatMap((s) => s.courses).filter((c) => !cat || c.category === cat)
-      .reduce((a, c) => a + c.credits, 0);
-  const need = (years ?? 3) === 2 ? { total: 75 } : { total: 110 };
-
-  spread(base, "교양선택", "교양", d.lib ?? 0);
-  // sum()은 base를 참조하므로 위에서 넣은 교양선택이 이미 반영돼 있다 — 다시 빼지 않는다
-  spread(base, "일반선택", "일반선택", Math.max(0, need.total - sum()));
-
   return base.map((s) => ({
     ...s,
     credits: s.courses.reduce((a, c) => a + c.credits, 0),
@@ -48,21 +38,34 @@ export function pathFor(deptId, job, years) {
   }));
 }
 
-/** 학점 블록을 학기에 고르게 나눠 넣는다. */
-function spread(semesters, label, category, credits) {
-  if (credits <= 0) return;
-  const n = semesters.length;
-  const per = Math.floor(credits / n);
-  let rest = credits - per * n;
-  semesters.forEach((s, i) => {
-    const cr = per + (rest-- > 0 ? 1 : 0);
-    if (cr <= 0) return;
-    s.courses.push({
-      course_id: `${label}-${i}`,
-      name: `${label} ${cr}학점`,
-      credits: cr,
-      category,
-      why: "교육과정표에 열거되지 않는 선택 이수분 — 학기에 고르게 배치했습니다",
-    });
-  });
+
+/** 현재 위치(year/semester) **이전** 학기의 과목 — 이수 체크 후보.
+    지나간 학기만 보여준다. 아직 안 온 학기를 "이수했다"고 체크할 수는 없다. */
+export function coursesBefore(deptId, year, semester) {
+  const d = CURRICULA[deptId];
+  if (!d) return [];
+  const now = (year - 1) * 2 + semester;
+  return d.sem
+    .filter((s) => (s.y - 1) * 2 + s.s < now && s.c.length > 0)
+    .map((s) => ({
+      year: s.y,
+      semester: s.s,
+      courses: s.c.map((c) => ({
+        course_id: c.id, name: c.n, credits: c.cr, category: c.cat,
+      })),
+    }));
+}
+
+/** 이수 체크 후보 전체의 course_id — 기본값(전부 이수)에 쓴다. */
+export const allCourseIdsBefore = (deptId, year, semester) =>
+  coursesBefore(deptId, year, semester).flatMap((s) => s.courses.map((c) => c.course_id));
+
+/** course_id → 과목. 폴백 검증이 이수분 학점을 합산할 때 쓴다. */
+export function lookupCourses(deptId, courseIds) {
+  const d = CURRICULA[deptId];
+  if (!d) return [];
+  const byId = new Map(
+    d.sem.flatMap((s) => s.c).map((c) => [c.id, { credits: c.cr, category: c.cat }]),
+  );
+  return courseIds.map((id) => byId.get(id)).filter(Boolean);
 }

@@ -111,14 +111,19 @@ def main() -> None:
         info = info_by_name.get(re.sub(r"[^\w가-힣]", "", name))
         if info:
             dept.certificates = info["certificates"]
-            dept.careers = [t["name"] for t in info["talent_types"]]
+            dept.careers = info["careers"]
             dept.faculty_type_code = info["faculty_type_code"]
 
-        # 진로 선택지는 교과과정표 비고 열의 직무 라벨이 1순위다 — 과목과 직접
-        # 연결돼 있어 트랙 B 매칭에 그대로 쓸 수 있다.
+        # 인재양성유형은 비고 열의 라벨이 1순위다 — 과목에 직접 붙어 있어
+        # 트랙 B 커버리지를 바로 계산할 수 있다. 학과 소개 페이지의 표는 보조.
         labels = sorted({c.talent_type for c in dept.courses if c.talent_type})
-        if labels:
-            dept.careers = labels
+        dept.talent_types = labels or [t["name"] for t in (info or {}).get("talent_types", [])]
+
+        # 진로를 못 뽑은 학과가 있다. 드론정보공학과처럼 페이지가 직업명이 아니라
+        # 취업처("한국국토정보공사, 통신사…")를 나열하는 경우다. 선택지가 비면
+        # 입력 화면에서 목표 직무를 고를 수 없으므로 인재양성유형으로 대신한다.
+        if not dept.careers:
+            dept.careers = dept.talent_types
 
         (out_dir / f"{dept_id}.json").write_text(
             dept.model_dump_json(indent=2), encoding="utf-8"

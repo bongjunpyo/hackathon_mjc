@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../store";
 import { DEPTS, DEPT_BY_ID, creditGap, yearsOf } from "../lib/depts";
+import { allCourseIdsBefore, coursesBefore } from "../lib/curricula";
 
 export default function Input() {
   const { input, setInput, generate, loading } = useApp();
@@ -8,6 +10,31 @@ export default function Input() {
 
   const dept = DEPT_BY_ID[input.deptId] ?? DEPTS[0];
   const gap = creditGap(dept);
+  const past = coursesBefore(dept.id, input.year, input.semester);
+  const checked = new Set(input.completedCourses);
+
+  /* 지나간 학기는 들었다고 보는 게 기본값이다 — 재수강·미이수만 학생이 푼다.
+     빈 목록에서 시작하면 2학년 학생이 스무 개를 일일이 눌러야 한다. */
+  useEffect(() => {
+    setInput((cur) => ({
+      ...cur,
+      completedCourses: allCourseIdsBefore(cur.deptId, cur.year, cur.semester),
+    }));
+  }, [input.deptId, input.year, input.semester, setInput]);
+
+  function toggle(courseId) {
+    const next = new Set(input.completedCourses);
+    next.has(courseId) ? next.delete(courseId) : next.add(courseId);
+    setInput({ ...input, completedCourses: [...next] });
+  }
+
+  function toggleSemester(sem) {
+    const ids = sem.courses.map((c) => c.course_id);
+    const allOn = ids.every((id) => checked.has(id));
+    const next = new Set(input.completedCourses);
+    ids.forEach((id) => (allOn ? next.delete(id) : next.add(id)));
+    setInput({ ...input, completedCourses: [...next] });
+  }
 
   /* 학과를 바꾸면 학년·직무가 그 학과 기준으로 다시 잡혀야 한다.
      3학년이던 학생이 2년제 학과를 고르면 없는 학년이 남는다. */
@@ -108,11 +135,58 @@ export default function Input() {
         </p>
       )}
 
-      {/* TODO: 이수 과목 체크 — course_id 기반, data/depts/*.json의 courses 사용 */}
-      <p className="rounded-lg border border-dashed border-edge bg-sky-soft/60 p-3 font-mono text-xs text-steel">
-        이수 과목 체크는 다음 단계입니다. 지금은 {input.year}학년 {input.semester}학기 기준으로
-        남은 전체 노선을 생성합니다.
-      </p>
+      {past.length > 0 ? (
+        <fieldset className="flex flex-col gap-3">
+          <legend className={label}>이수 과목 ({input.completedCourses.length}과목)</legend>
+          <p className="text-sm text-ink-2">
+            지나간 학기는 들은 것으로 표시했습니다. 재수강이나 미이수 과목만 체크를 푸세요.
+          </p>
+          {past.map((sem) => {
+            const ids = sem.courses.map((c) => c.course_id);
+            const allOn = ids.every((id) => checked.has(id));
+            return (
+              <div key={`${sem.year}-${sem.semester}`} className="rounded-xl border border-edge p-3.5">
+                <div className="mb-2 flex items-baseline justify-between gap-3">
+                  <b className="text-sm text-navy">
+                    {sem.year}학년 {sem.semester}학기
+                  </b>
+                  <button
+                    type="button"
+                    onClick={() => toggleSemester(sem)}
+                    className="rounded-md px-2 py-1 font-mono text-xs text-steel transition-[background-color,scale] duration-150 hover:bg-sky-soft active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-gold"
+                  >
+                    {allOn ? "전체 해제" : "전체 선택"}
+                  </button>
+                </div>
+                <ul className="flex flex-col gap-1">
+                  {sem.courses.map((c) => (
+                    <li key={c.course_id}>
+                      <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-[background-color] duration-150 hover:bg-sky-soft/70">
+                        <input
+                          type="checkbox"
+                          checked={checked.has(c.course_id)}
+                          onChange={() => toggle(c.course_id)}
+                          className="size-4 accent-navy"
+                        />
+                        <span className={checked.has(c.course_id) ? "" : "text-steel line-through"}>
+                          {c.name}
+                        </span>
+                        <span className="ml-auto font-mono text-xs tabular-nums text-steel">
+                          {c.credits}학점
+                        </span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </fieldset>
+      ) : (
+        <p className="rounded-lg border border-dashed border-edge bg-sky-soft/60 p-3 font-mono text-xs text-steel">
+          1학년 1학기는 이수한 학기가 없습니다. 전체 노선을 생성합니다.
+        </p>
+      )}
 
       <button
         type="submit"

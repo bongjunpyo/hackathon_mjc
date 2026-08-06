@@ -69,10 +69,22 @@ def keywords_for(cert: str) -> tuple[str, ...]:
 def diagnose(dept: dict) -> dict:
     courses = dept["courses"]
     major = [c for c in courses if c["category"] == "전공"]
-    total_major_credits = sum(c["credits"] for c in major) or 1
+
+    # 커버리지의 모집단은 **교양을 뺀 전 과목**이다 (이슈 #34).
+    #
+    # 분모를 전공으로만 잡으면 100%를 넘는다 — 유아교육학과는 교직 과정 27학점이
+    # 일반선택으로 편성돼 있는데 직무 라벨은 붙어 있어서, 분자가 분모를 초과한다
+    # (68/71 = 133.8%). 반대로 분자를 전공으로 좁히면 그 27학점이 집계에서 사라져
+    # 실제 직무 교육과정을 축소 보고하게 된다.
+    #
+    # 교양은 직무와 무관하므로 모집단에서 뺀다. 라벨이 전공 밖에 붙은 학과는
+    # 34개 중 2곳(유아교육 27학점 · 사회체육 6학점)뿐이라, 나머지 32개 학과는
+    # 값이 전과 동일하다.
+    pool = [c for c in courses if c["category"] != "교양"]
+    total_credits = sum(c["credits"] for c in pool) or 1
 
     by_job = defaultdict(list)
-    for c in major:
+    for c in pool:
         if c["talent_type"]:
             by_job[c["talent_type"]].append(c)
 
@@ -83,13 +95,13 @@ def diagnose(dept: dict) -> dict:
         gaps = []
         if not any(y == 1 for y, _ in semesters):
             gaps.append("1학년에 이 직무 과목이 없어 조기 진로 결정이 어렵다")
-        if credits < total_major_credits * 0.2:
-            gaps.append(f"전공 학점의 {credits / total_major_credits:.0%}만 배정돼 선택지가 좁다")
+        if credits < total_credits * 0.2:
+            gaps.append(f"교육과정의 {credits / total_credits:.0%}만 배정돼 선택지가 좁다")
 
         jobs.append(
             {
                 "job": job,
-                "coverage_pct": round(credits / total_major_credits * 100, 1),
+                "coverage_pct": round(credits / total_credits * 100, 1),
                 "credits": credits,
                 "covered_courses": [c["name"] for c in cs],
                 "semesters": [f"{y}-{s}" for y, s in semesters],

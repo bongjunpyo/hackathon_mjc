@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import ExternalPanel from "./ExternalPanel";
+import { certExternal, certName, certTip, externalFor } from "../lib/external";
 
 /* 행선판 클릭 → 학기 상세. 시안의 .detail CSS 대신 Tailwind로 다시 짰다. */
 export default function SemesterDetail({ semester, index, onClose }) {
@@ -21,6 +23,8 @@ export default function SemesterDetail({ semester, index, onClose }) {
 
   if (!open) return null;
   const cert = semester.certificates?.[0];
+  const cName = certName(cert);
+  const cTip = certTip(cert);
 
   return (
     <div
@@ -64,31 +68,36 @@ export default function SemesterDetail({ semester, index, onClose }) {
           <h4 className="font-mono text-xs uppercase tracking-[0.12em] text-steel">
             이수 과목 · 왜 이 학기인가
           </h4>
-          {semester.courses.map((c) => (
-            <div
-              key={c.course_id ?? c.name}
-              className="rounded-xl bg-sky-soft px-4 py-3 inset-ring inset-ring-edge"
-            >
-              <b className="mb-0.5 block text-navy">{c.name}</b>
-              {c.why && <p className="text-sm text-ink-2">{c.why}</p>}
-            </div>
-          ))}
+          {semester.courses.map((c) => {
+            const ext = externalFor(c);
+            return (
+              <div key={c.course_id ?? c.name} className="flex flex-col gap-2">
+                <div className="rounded-xl bg-sky-soft px-4 py-3 inset-ring inset-ring-edge">
+                  <b className="mb-0.5 block text-navy">{c.name}</b>
+                  {c.why && <p className="text-sm text-ink-2">{c.why}</p>}
+                </div>
+                {/* 현장실습·산학인턴십은 "어디서"가 학교 시스템에 있다 */}
+                <ExternalPanel info={ext} />
+              </div>
+            );
+          })}
 
-          {cert && (
+          {cName && (
             <>
               <h4 className="mt-1 font-mono text-xs uppercase tracking-[0.12em] text-steel">
                 자격증 타이밍
               </h4>
               <div className="rounded-xl bg-gold/15 px-4 py-3 inset-ring-[1.5px] inset-ring-gold/55">
-                <b className="mb-0.5 block text-navy">🎫 {cert.name}</b>
-                {cert.tip && <p className="text-sm text-ink-2">{cert.tip}</p>}
+                <b className="mb-0.5 block text-navy">🎫 {cName}</b>
+                {cTip && <p className="text-sm text-ink-2">{cTip}</p>}
               </div>
+              <ExternalPanel info={certExternal(cName)} />
             </>
           )}
 
           <p className="border-t border-dashed border-edge pt-3 text-xs text-steel">
-            추천 근거: 교육과정표(이수구분·인재양성유형) × NCS 직무기술서 매핑 — 데모 목데이터.
-            실서비스에서는 검증기 통과 결과와 함께 제공됩니다.
+            추천 근거: 교육과정표(이수구분·인재양성유형) × NCS 직무기술서 매핑.
+            외부 시스템 링크는 학교·기관 공식 페이지로 연결됩니다.
           </p>
         </div>
       </div>

@@ -287,10 +287,16 @@
   ],
   "careers": [
     "문학교사",
+    "독서 지도사",
+    "논술 지도사",
+    "글쓰기교사"
+  ],
+  "talent_types": [
+    "문학교사",
     "창작가",
     "출판〮편집〮홍보전문가"
   ],
-  "liberal_elective_credits": 3,
+  "liberal_elective_credits": 9,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }

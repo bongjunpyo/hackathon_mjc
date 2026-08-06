@@ -210,11 +210,28 @@
       "field_based": false
     }
   ],
-  "certificates": [],
+  "certificates": [
+    "초경량무인비행장치(멀티콥터: 1종",
+    "2종",
+    "3종",
+    "4종) 조종자",
+    "초경량무인비행장치(멀티콥터) 지도조종자",
+    "초경량무인비행장치(멀티콥터) 실기평가조종자",
+    "초경량비행장치무인 헬리콥터 조종자",
+    "측량 및 지형 공간정보 기사",
+    "지도제작기능사 등",
+    "드론교육지도자. 드론항공촬영 전문가. 드론코딩전문가",
+    "드론농업방제사",
+    "드론제작정비사. 드론원격운용조종사",
+    "항공무선통신사"
+  ],
   "careers": [
     "드론운용전문가"
   ],
-  "liberal_elective_credits": 3,
+  "talent_types": [
+    "드론운용전문가"
+  ],
+  "liberal_elective_credits": 29,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }

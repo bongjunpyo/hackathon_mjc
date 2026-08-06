@@ -416,11 +416,16 @@
   ],
   "certificates": [],
   "careers": [
+    "영화편집기사",
+    "영화사운드디자이너",
+    "조명디자이너"
+  ],
+  "talent_types": [
     "공연연출가",
     "연기자",
     "연기자, 공연연출가"
   ],
-  "liberal_elective_credits": 7,
+  "liberal_elective_credits": 11,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }

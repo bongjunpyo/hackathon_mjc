@@ -490,10 +490,17 @@
     "• 유치원 정교사 2급 자격증 • 보육교사 2급 자격증"
   ],
   "careers": [
+    "유치원 교사",
+    "공사립유치원 교사",
+    "어린이집 교사",
+    "국공립 및 민간어린이집 교사",
+    "교구 제작자"
+  ],
+  "talent_types": [
     "영유아교사",
     "영유아교사, 유아체육지도"
   ],
-  "liberal_elective_credits": 7,
+  "liberal_elective_credits": 9,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }

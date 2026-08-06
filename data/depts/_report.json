@@ -75,7 +75,7 @@
     "major_required": 45,
     "major_short": 2,
     "job_labels": 1,
-    "certificates": 0
+    "certificates": 13
   },
   {
     "dept_name": "문예창작과",
@@ -192,7 +192,7 @@
     "major_required": 45,
     "major_short": 0,
     "job_labels": 1,
-    "certificates": 23
+    "certificates": 9
   },
   {
     "dept_name": "산업경영공학과",
@@ -379,7 +379,7 @@
     "major_required": 45,
     "major_short": 0,
     "job_labels": 3,
-    "certificates": 25
+    "certificates": 26
   },
   {
     "dept_name": "컴퓨터공학과",

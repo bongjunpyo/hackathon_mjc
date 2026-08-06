@@ -314,11 +314,25 @@
     "샵마스터"
   ],
   "careers": [
+    "패션디자이너",
+    "텍스타일디자이너",
+    "인테리어소품디자이너",
+    "벽지디자이너",
+    "직물분야의 디자이너",
+    "CAD디자이너",
+    "팬시용품디자이너",
+    "액세서리 디자이너",
+    "문화상품디자이너",
+    "리빙상품디자이너",
+    "테이블웨어디자이너",
+    "온라인마켓터 인터넷쇼핑몰 디자이너"
+  ],
+  "talent_types": [
     "공통",
     "리빙상품디자이너",
     "패션디자이너"
   ],
-  "liberal_elective_credits": 3,
+  "liberal_elective_credits": 9,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }
