@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DEPTS, DEPT_BY_ID, yearsOf } from "../../lib/depts";
+import { DEPTS, DEPT_BY_ID, realJobs, yearsOf } from "../../lib/depts";
 import { allCourseIdsBefore, coursesBefore } from "../../lib/curricula";
 
 /* 컨트롤 바 (DESIGN §2.2) — Input.jsx(v1)의 로직 이식.
@@ -7,7 +7,7 @@ import { allCourseIdsBefore, coursesBefore } from "../../lib/curricula";
    서버(jobmap)가 둘 다 받으므로 어느 쪽을 골라도 로드맵이 나온다. */
 export default function ControlBar({ value, onChange, onGenerate, loading }) {
   const dept = DEPT_BY_ID[value.deptId] ?? DEPTS[0];
-  const jobs = [...dept.careers, ...(dept.promoted ?? []).filter((j) => !dept.careers.includes(j))];
+  const jobs = realJobs([...dept.careers, ...(dept.promoted ?? []).filter((j) => !dept.careers.includes(j))]);
   const [drawer, setDrawer] = useState(false);
   const past = coursesBefore(dept.id, value.year, value.semester);
   const checked = new Set(value.completedCourses);
@@ -26,7 +26,7 @@ export default function ControlBar({ value, onChange, onGenerate, loading }) {
       ...cur,
       deptId,
       year: Math.min(cur.year, next.years),
-      targetJob: next.careers[0] ?? next.promoted?.[0] ?? "",
+      targetJob: realJobs([...next.careers, ...(next.promoted ?? [])])[0] ?? "",
     }));
   }
 

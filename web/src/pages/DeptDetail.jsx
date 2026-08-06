@@ -1,5 +1,5 @@
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import { DEPT_BY_ID } from "../lib/depts";
+import { DEPT_BY_ID, realJobs } from "../lib/depts";
 import { CURRICULA } from "../lib/curricula";
 
 /* 학과 상세 (DESIGN §4) — 학기별 커리큘럼 표 + CTA.
@@ -29,9 +29,9 @@ export default function DeptDetail() {
 
       <dl className="flex flex-col gap-3 rounded-xl bg-sky-soft px-4 py-3.5 inset-ring inset-ring-edge">
         {[
-          ["인재양성유형", dept.careers, "교육과정표가 과목마다 붙인 직무 — 로드맵은 이 값으로 역산합니다"],
+          ["인재양성유형", realJobs(dept.careers), "교육과정표가 과목마다 붙인 직무 — 로드맵은 이 값으로 역산합니다"],
           ["취득 자격증", cur?.cert ?? [], null],
-          ["진로", (dept.promoted ?? []).filter((j) => !dept.careers.includes(j)), "학과 소개 페이지 기준"],
+          ["진로", realJobs(dept.promoted ?? []).filter((j) => !dept.careers.includes(j)), "학과 소개 페이지 기준"],
         ].map(([k, items, note]) =>
           items.length === 0 ? null : (
             <div key={k}>
