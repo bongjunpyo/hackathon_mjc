@@ -7,7 +7,12 @@ import { allCourseIdsBefore, coursesBefore } from "../../lib/curricula";
    서버(jobmap)가 둘 다 받으므로 어느 쪽을 골라도 로드맵이 나온다. */
 export default function ControlBar({ value, onChange, onGenerate, loading }) {
   const dept = DEPT_BY_ID[value.deptId] ?? DEPTS[0];
-  const jobs = realJobs([...dept.careers, ...(dept.promoted ?? []).filter((j) => !dept.careers.includes(j))]);
+  /* 두 목록은 성격이 다르다 — 섞어 놓으면 "공학과에 왜 전산 실습 교사가?"처럼 읽힌다.
+     라벨 직무는 과목과 연결돼 역산이 걸리고, 홍보 진로는 학과 소개 페이지 원문(참고)이다. */
+  const labelJobs = realJobs(dept.careers);
+  const promotedJobs = realJobs(
+    (dept.promoted ?? []).filter((j) => !dept.careers.includes(j)),
+  );
   const [drawer, setDrawer] = useState(false);
   const past = coursesBefore(dept.id, value.year, value.semester);
   const checked = new Set(value.completedCourses);
@@ -70,7 +75,13 @@ export default function ControlBar({ value, onChange, onGenerate, loading }) {
           onChange={(e) => onChange((cur) => ({ ...cur, targetJob: e.target.value }))}
         />
         <datalist id="job-options">
-          {jobs.map((j) => <option key={j} value={j} />)}
+          {/* option label = 드롭다운의 보조 설명줄 (크롬 기준). 미지원 브라우저는 값만 보인다 */}
+          {labelJobs.map((j) => (
+            <option key={j} value={j} label="교육과정 직무 — 과목 역산 가능" />
+          ))}
+          {promotedJobs.map((j) => (
+            <option key={j} value={j} label="학과 안내 진로 (참고)" />
+          ))}
         </datalist>
         {past.length > 0 && (
           <button type="button" onClick={() => setDrawer((v) => !v)} aria-expanded={drawer}
