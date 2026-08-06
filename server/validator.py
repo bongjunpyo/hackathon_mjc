@@ -1,16 +1,19 @@
 """졸업요건 검증기 — 순수 규칙 코드. LLM을 쓰지 않는다."""
 
 # 출처: docs/DESIGN.md §5 졸업요건 룰
+# 교육과정표는 전공 과목만 담는다. 교양선택·일반선택은 학과 문서에 없으므로
+# 우리가 배치할 수 없고, 지어내지도 않는다 — 몇 학점 남았는지만 알려준다.
+# 그래서 passed는 **판정할 수 있는 것**만 본다: 전공 · 교양필수 · 재학학기.
 REQUIREMENTS = {
-    2: {"total_credits": 75, "liberal_credits": 6, "major_credits": 45, "semesters": 4},
-    3: {"total_credits": 110, "liberal_credits": 10, "major_credits": 66, "semesters": 6},
+    2: {"total_credits": 75, "liberal_required": 3, "major_credits": 45, "semesters": 4},
+    3: {"total_credits": 110, "liberal_required": 3, "major_credits": 66, "semesters": 6},
 }
 
 CATEGORIES = {"전공", "교양", "일반선택"}
 
 LABELS = {
     "total_credits": "총 학점",
-    "liberal_credits": "교양 학점",
+    "liberal_required": "교양필수",
     "major_credits": "전공 학점",
     "semesters": "재학 학기",
     "malformed_course": "과목 형식 오류",
@@ -18,7 +21,7 @@ LABELS = {
 
 FIXES = {
     "total_credits": "아무 과목으로든 {shortfall}학점을 더 채우세요",
-    "liberal_credits": "교양 과목으로 {shortfall}학점을 더 채우세요",
+    "liberal_required": "교양필수(인성채플·성경과삶) {shortfall}학점을 넣으세요",
     "major_credits": "전공 과목으로 {shortfall}학점을 더 채우세요",
     "semesters": "과목을 {shortfall}개 학기에 더 나눠 배치하세요",
     "malformed_course": (
@@ -80,6 +83,8 @@ def validate_roadmap(semesters, years, completed=None, completed_semesters=0):
     major = _credits(courses, "전공")
     semester_count = len(semesters) + completed_semesters
 
+    remaining = max(0, req["total_credits"] - total)
+
     details = []
     if malformed:
         # 깨진 과목은 집계에서 빼되 버리지 않는다 — 재생성이 뭘 고칠지 알아야 한다.
@@ -94,8 +99,9 @@ def validate_roadmap(semesters, years, completed=None, completed_semesters=0):
                 "fix": FIXES["malformed_course"].format(shortfall=malformed),
             }
         )
-    _check(details, "total_credits", req["total_credits"], total)
-    _check(details, "liberal_credits", req["liberal_credits"], liberal)
+    # 총학점은 미달로 잡지 않는다. 남은 몫은 학생이 교양선택·일반선택으로 채우는
+    # 자유 학점이고, 우리 데이터에 그 과목이 없어서 판정할 근거가 없다
+    _check(details, "liberal_required", req["liberal_required"], liberal)
     _check(details, "major_credits", req["major_credits"], major)
     _check(details, "semesters", req["semesters"], semester_count)
 
@@ -105,5 +111,6 @@ def validate_roadmap(semesters, years, completed=None, completed_semesters=0):
         "liberal_credits": liberal,
         "major_credits": major,
         "semesters": semester_count,
+        "remaining_credits": remaining,
         "details": details,
     }

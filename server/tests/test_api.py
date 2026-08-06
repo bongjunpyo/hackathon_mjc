@@ -47,6 +47,7 @@ def test_roadmap은_동결_스펙_형태를_낸다(client):
         "major_credits",
         "liberal_credits",
         "semesters",
+        "remaining_credits",
         "details",
     }
 
@@ -88,11 +89,8 @@ def test_이수_과목을_보내면_검증에_반영된다(client):
     assert body["validation"]["semesters"] >= 2
 
 
-def test_교양선택_버킷이_교양_학점으로_집계된다(client):
-    """교육과정표에 교양 과목이 열거되지 않는다(liberal_elective_credits 버킷으로만 온다).
-
-    블록으로 안 깔면 교양 학점이 0으로 집계돼 **항상** 미달이고 max_retries만 태운다.
-    """
+def test_남은_학점을_알려준다(client):
+    """교육과정표에 교양선택·일반선택이 없다. 지어내지 않고 몇 학점 남았는지만 알린다."""
     body = client.post(
         "/roadmap",
         json={
@@ -104,16 +102,10 @@ def test_교양선택_버킷이_교양_학점으로_집계된다(client):
         },
     ).json()
 
-    blocks = [
-        c
-        for s in body["semesters"]
-        for c in s["courses"]
-        if c["category"] == "교양" and "교양선택" in c["name"]
-    ]
-    assert sum(b["credits"] for b in blocks) == 7  # 픽스처의 liberal_elective_credits
-    # 교양필수 3 + 교양선택 7 = 10 (3년제 기준 충족)
-    assert body["validation"]["liberal_credits"] == 10
-    assert not any(d["rule"] == "liberal_credits" for d in body["validation"]["details"])
+    v = body["validation"]
+    assert v["liberal_credits"] == 3  # 교양필수(인성채플1 + 성경과삶2)뿐
+    assert v["remaining_credits"] == 110 - v["total_credits"]
+    assert v["passed"] is True  # 전공·교양필수·학기는 충족
 
 
 def test_depts가_목표_직무_선택지를_준다(client):
