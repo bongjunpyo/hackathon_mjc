@@ -107,7 +107,7 @@
   "tier": 1,
   "courses": [
     {
-      "course_id": "itc-1-1-prog1",   // 동결 검토 반영: API는 id로만 주고받음 (과목명 문자열 매칭 금지 — Ⅰ/I/1 표기 혼재)
+      "course_id": "itc-프로그래밍언어실습1",   // 생성 규칙은 아래. API는 id로만 주고받음 (과목명 문자열 매칭 금지)
       "name": "프로그래밍언어실습Ⅰ",
       "year": 1,
       "semester": 1,
@@ -126,14 +126,36 @@
 }
 ```
 
+### course_id 생성 규칙 (이슈 #9 — 확정)
+
+`{dept_id}-{정규화된 과목명}` — **코드가 조립한다. LLM은 id를 짓지 않는다.**
+LLM이 지으면 재추출·재시도마다 값이 달라져 프론트·DB·검증기가 어긋난다.
+
+| 단계 | 처리 | 예 |
+|---|---|---|
+| 1 | NFKC 정규화 (전각 → 반각) | `Ⅰ`(U+2160) → `I` |
+| 2 | 끝에 붙은 로마숫자 → 아라비아 (**값으로 변환**, 글자 수 아님) | `합주실기 IV` → `합주실기4` |
+| 3 | 공백·구분자·괄호기호 제거 (**괄호 안 내용은 보존**) | `보육교사(인성)론` → `보육교사인성론` |
+| 4 | 소문자화 | `IT활용` → `it활용` |
+
+- **로마숫자는 값으로 변환한다.** 글자 수로 세면 `IV`(4)와 `II`(2)가 같은 값이 되어 충돌한다 — 실용음악과 `합주실기 II`/`합주실기 IV`에서 실제 발생.
+- **괄호 안 내용은 지우지 않는다.** `프로그램개발과평가(캡스톤디자인)`처럼 과목을 구분하는 정보다 (전 학과 6건).
+- **동명이과목**은 `(학년, 학기, 원본 행 순서)` 정렬 후 뒤쪽에 `-2`, `-3`. 정렬 기준 고정이 결정론의 조건.
+- 원본 교과과정표에 **학수번호 컬럼 없음** (35개 학과 전수 확인) — 조립이 유일한 선택지.
+- 구현은 `pipeline/course_id.py` 한 곳. **이름→id를 다른 곳에서 다시 계산하지 않는다** — 필요하면 `data/*.json`을 조회한다.
+
+검증: 전 학과 776과목에 적용해 충돌 0건.
+
 ### API 스펙 (v1 — P2↔P3 계약)
 
 ```
 POST /roadmap
   in:  { dept_id, current_year, current_semester, completed_courses: [course_id], target_job }
   out: { semesters: [ { year, semester, courses: [...], certificates: [...], notes } ],
-         validation: { passed, total_credits, major_credits, liberal_credits,
-                       details: [ { rule, required, actual, shortfall } ] } }
+         validation: { passed, total_credits, major_credits, liberal_credits, semesters,
+                       details: [ { rule, label, required, actual, shortfall } ] } }
+  # 졸업요건 4종(총학점·교양·전공·재학학기)을 모두 최상위에 — 배지 UI 항목별 충족 표시용
+  # label: 화면 표시용 한글명 ("전공 학점" 등). rule은 기계용 키
   # 동결 검토 반영: details는 구조화 배열 — 재생성 프롬프트에 그대로 투입 + 발표 화면 표시
   # 재생성 루프 상한 max_retries=3. 초과 시 passed=false + 부분 로드맵을 "정상 응답"으로 반환 (에러 아님)
 
@@ -156,7 +178,7 @@ PUT  /me/courses    → 이수내역 저장
 | 테이블 | 컬럼 |
 |---|---|
 | users | id, student_id(unique), name, dept_id, password_hash, created_at |
-| completed_courses | user_id, course_name, year, semester |
+| completed_courses | user_id, **course_id**, year, semester |
 | saved_roadmaps | user_id, target_job, roadmap_json, created_at |
 
 - 실행: `docker compose up -d db` (postgres 컨테이너) — README에 명시
