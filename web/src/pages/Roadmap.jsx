@@ -62,6 +62,8 @@ function ValidationBadge({ validation }) {
 }
 
 function SemesterCard({ s }) {
+  // 동결 계약(DESIGN.md §5)의 semesters[]에는 credits가 없다 — 과목에서 합산한다
+  const credits = s.credits ?? s.courses.reduce((a, c) => a + (c.credits ?? 0), 0);
   return (
     <li className="relative pl-11">
       <span className="absolute left-[7px] top-6 size-3.5 rounded-full border-[3px] border-navy bg-white" />
@@ -70,7 +72,7 @@ function SemesterCard({ s }) {
           <h3 className="font-extrabold text-navy">
             {s.year}학년 {s.semester}학기
           </h3>
-          <span className="font-mono text-xs tabular-nums text-steel">{s.credits}학점</span>
+          <span className="font-mono text-xs tabular-nums text-steel">{credits}학점</span>
         </div>
         {s.goal && <p className="mt-1 text-sm text-ink-2">{s.goal}</p>}
         <ul className="mt-3 space-y-2">
