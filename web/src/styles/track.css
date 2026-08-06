@@ -67,7 +67,8 @@
 .tbranch-g.cert .tbranch-label { fill: var(--color-navy); transition: font-size 0.15s; }
 /* 분기는 누를 수 있다 — "외 N"의 나머지가 학기 패널에 있다 */
 .tbranch-g.cert { cursor: pointer; }
-.tbranch-g.cert:focus-visible { outline: none; }
+/* SVG g의 기본 포커스 사각형을 끈다 — 신호는 점·이름표 확대가 준다 */
+.tbranch-g.cert:focus, .tbranch-g.cert:focus-visible { outline: none; }
 .tbranch-hit { fill: transparent; }
 .tbranch-g.cert:hover .tbranch-dot,
 .tbranch-g.cert:focus-visible .tbranch-dot { r: 15; stroke-width: 5; }

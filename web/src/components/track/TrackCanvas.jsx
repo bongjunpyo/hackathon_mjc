@@ -10,31 +10,64 @@ import Walker from "./Walker";
 /* 2D 트랙 캔버스 (DESIGN §2.3).
    cursor = 캐릭터가 서 있는 노드 인덱스 (0=입학, 1..n=학기, n+1=★종착).
    이동·선택은 전부 부모 상태 — 여기는 좌표와 그리기만 안다. */
-export default function TrackCanvas({ semesters, targetJob, cursor, passed, shortfallRules, onSelect }) {
+export default function TrackCanvas({ semesters, targetJob, cursor, passed, shortfallRules, onSelect, onArrive }) {
   const meta = trackNodes(semesters, targetJob);
   const { nodes, path, at, height } = buildTrack(meta.length);
   const goal = meta.length - 1;
   const target = Math.min(cursor, goal);
 
-  /* 캐릭터는 목표 노드까지 **한 역씩** 걷는다 (DESIGN §2.4).
+  /* 캐릭터는 목표 지점까지 **한 역씩** 걷는다 (DESIGN §2.4).
      left·top을 한 번에 바꾸면 행을 건널 때 트랙 밖 대각선으로 질러간다 —
-     서펜타인의 인접 노드는 한 축으로만 다르므로 역 단위 홉은 항상 트랙 위다. */
+     서펜타인의 인접 노드는 한 축으로만 다르므로 역 단위 홉은 항상 트랙 위다.
+
+     cursor는 소수일 수 있다 — i-0.5는 구간 중앙(자격증 분기 지점)이다.
+     인접 노드 사이는 직선이라 선형 보간이 정확히 트랙 위 좌표다. */
+  const coord = (p) => {
+    const k = Math.floor(p);
+    const f = p - k;
+    if (!f || k >= goal) return nodes[Math.min(k, goal)];
+    const a = nodes[k];
+    const b = nodes[k + 1];
+    return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
+  };
+  const atOf = (p) => {
+    const k = Math.floor(p);
+    const f = p - k;
+    if (!f || k >= goal) return at[Math.min(k, goal)];
+    return at[k] + (at[k + 1] - at[k]) * f;
+  };
+
   const [pos, setPos] = useState(target);
   const dirRef = useRef(1);
+  const arriveRef = useRef(onArrive);
+  arriveRef.current = onArrive;
   useEffect(() => {
-    if (pos === target) return;
+    // 학과를 바꿔 노드 수가 줄면 옛 pos가 범위를 벗어난다 — 먼저 안으로 끌어온다
+    if (pos > goal) {
+      setPos(goal);
+      return;
+    }
+    if (pos === target) {
+      arriveRef.current?.(pos);
+      return;
+    }
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setPos(target);
       return;
     }
-    const next = pos + Math.sign(target - pos);
-    if (nodes[next].x !== nodes[pos].x) dirRef.current = Math.sign(nodes[next].x - nodes[pos].x);
+    const dir = Math.sign(target - pos);
+    // 소수 위치에서는 먼저 정수 역으로 붙고, 마지막 홉만 반 걸음일 수 있다
+    const next = !Number.isInteger(pos)
+      ? (dir > 0 ? Math.ceil(pos) : Math.floor(pos))
+      : Math.abs(target - pos) < 1 ? target : pos + dir;
+    const dx = coord(next).x - coord(pos).x;
+    if (dx) dirRef.current = Math.sign(dx);
     const t = setTimeout(() => setPos(next), 360);
     return () => clearTimeout(t);
-  }, [pos, target]); // eslint-disable-line react-hooks/exhaustive-deps -- nodes는 count에서 파생
+  }, [pos, target, goal]); // eslint-disable-line react-hooks/exhaustive-deps -- coord는 count에서 파생
   const moving = pos !== target;
   // 종착에서는 게이트 판을 가리지 않게 앞(트랙 위)에 세운다 — 3D의 CAM_STOP과 같은 이유
-  const stand = pos === goal ? { x: nodes[goal].x - 150, y: nodes[goal].y } : nodes[pos];
+  const stand = pos >= goal ? { x: nodes[goal].x - 150, y: nodes[goal].y } : coord(pos);
 
   // 미달(PARTIAL)이면 캐릭터가 멈춘 지점 뒤 학기를 붉게 (DESIGN §2.5)
   const shortfall = (shortfallRules?.length ?? 0) > 0;
@@ -51,7 +84,7 @@ export default function TrackCanvas({ semesters, targetJob, cursor, passed, shor
           d={path}
           pathLength="100"
           strokeDasharray="100"
-          strokeDashoffset={100 - at[pos]}
+          strokeDashoffset={100 - atOf(Math.min(pos, goal))}
         />
         <path className="track-dots" d={path} />
 
@@ -85,8 +118,8 @@ export default function TrackCanvas({ semesters, targetJob, cursor, passed, shor
               role="button"
               tabIndex={0}
               aria-label={`${m.title} 자격증 ${extra + 1}종 보기`}
-              onClick={() => onSelect(i)}
-              onKeyDown={(e) => e.key === "Enter" && onSelect(i)}
+              onClick={() => onSelect(i - 0.5)}
+              onKeyDown={(e) => e.key === "Enter" && onSelect(i - 0.5)}
             >
               <path className="tbranch" d={`M ${mx} ${my} L ${cx} ${cy}`} />
               <circle className="tbranch-hit" cx={cx} cy={cy} r="34" />

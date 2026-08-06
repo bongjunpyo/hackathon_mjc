@@ -39,6 +39,8 @@ export default function RoadmapStudio() {
   const [roadmap, setRoadmap] = useState(null);
   const [error, setError] = useState(null);
   const [cursor, setCursor] = useState(0);
+  // 패널은 캐릭터가 **도착한 뒤** 연다 — 클릭 즉시 열리면 걷기가 장식이 된다
+  const [arrived, setArrived] = useState(0);
   const jobRef = useRef(input.targetJob); // 생성 시점의 직무 — 컨트롤을 바꿔도 트랙은 그대로
   const { setRoadmap: shareRoadmap } = useApp(); // 3D 걷기 모드(/app/walk)와 공유
   const navigate = useNavigate();
@@ -50,6 +52,7 @@ export default function RoadmapStudio() {
     try {
       const data = await postRoadmap(input, { strict: true });
       setRoadmap(data);
+      setArrived(0);
       setCursor(data.semesters.length > 0 ? 1 : 0); // 입학 → 첫 학기로 걸어간다
       setPhase(data.validation?.passed ? "READY" : "PARTIAL");
     } catch (err) {
@@ -62,7 +65,12 @@ export default function RoadmapStudio() {
   const semesters = shown.semesters;
   const targetJob = phase === "INIT" || phase === "GENERATING" ? "목표 직무" : jobRef.current;
   const dimmed = phase === "INIT" || phase === "GENERATING" || phase === "ERROR";
-  const semIndex = !dimmed && cursor >= 1 && cursor <= semesters.length ? cursor - 1 : null;
+  // 도착 지점 기준 학기. i-0.5(분기)는 그 구간이 이끄는 학기 i다
+  const semNode = Math.ceil(arrived);
+  const semIndex =
+    !dimmed && arrived === cursor && semNode >= 1 && semNode <= semesters.length
+      ? semNode - 1
+      : null;
 
   return (
     <section className="flex flex-col gap-4 py-6">
@@ -86,6 +94,7 @@ export default function RoadmapStudio() {
               passed={!dimmed && shown.validation?.passed}
               shortfallRules={phase === "PARTIAL" ? shown.validation?.details : []}
               onSelect={dimmed ? () => {} : setCursor}
+              onArrive={setArrived}
             />
           </div>
 
@@ -154,7 +163,7 @@ export default function RoadmapStudio() {
             index={semIndex}
             targetJob={jobRef.current}
             isLast={semIndex === semesters.length - 1}
-            onNext={() => setCursor(cursor + 1)}
+            onNext={() => setCursor(Math.floor(cursor) + 1)}
             onGraduate={() => setCursor(semesters.length + 1)}
           />
         )}
