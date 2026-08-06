@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -16,7 +17,7 @@ import auth
 import catalog
 import db
 from catalog import CatalogError
-from errors import ApiError, api_error_handler
+from errors import ApiError, api_error_handler, validation_error_handler
 from loop import generate_roadmap
 from planner import naive_generate
 
@@ -29,6 +30,7 @@ async def lifespan(_):
 
 app = FastAPI(title="MJC 취업 로드맵 에이전트", lifespan=lifespan)
 app.add_exception_handler(ApiError, api_error_handler)
+app.add_exception_handler(RequestValidationError, validation_error_handler)
 
 # 부가 기능. 10:00 컷 시 이 한 줄만 빼면 코어는 그대로 돈다
 app.include_router(auth.router)

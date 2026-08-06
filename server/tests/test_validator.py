@@ -145,6 +145,63 @@ def test_이수분을_합쳐도_모자라면_남은_양만_요구한다():
     assert detail["shortfall"] == 12
 
 
+# --- LLM이 만든 로드맵은 스키마 보장이 없다 ---
+#
+# 검증기는 LLM 출력을 잡는 장치인데, 정작 LLM이 필드를 빠뜨렸다고 검증기가 죽으면
+# 재생성 루프가 스스로 고칠 기회조차 없이 데모가 멈춘다.
+
+
+def bad_roadmap(*courses):
+    return [{"year": 1, "semester": 1, "courses": list(courses)}]
+
+
+def test_필드가_빠진_과목에_죽지_않는다():
+    result = validate_roadmap(bad_roadmap({"course_id": "x", "name": "과목"}), years=3)
+
+    assert result["passed"] is False
+    assert find(result["details"], "malformed_course")
+
+
+def test_credits가_문자열이면_형식_오류로_잡는다():
+    result = validate_roadmap(bad_roadmap({"credits": "3", "category": "전공"}), years=3)
+
+    detail = find(result["details"], "malformed_course")
+    assert "credits" in detail["fix"]
+
+
+def test_모르는_category는_형식_오류로_잡는다():
+    result = validate_roadmap(bad_roadmap({"credits": 3, "category": "전공선택"}), years=3)
+
+    assert find(result["details"], "malformed_course")
+
+
+def test_형식_오류는_재생성_프롬프트에_개수가_들어간다():
+    result = validate_roadmap(
+        bad_roadmap({"credits": 3}, {"category": "전공"}, {"credits": 3, "category": "전공"}),
+        years=3,
+    )
+
+    detail = find(result["details"], "malformed_course")
+    assert detail["actual"] == 2  # 정상 1개, 깨진 것 2개
+    assert "2" in detail["fix"]
+
+
+def test_깨진_과목이_섞여도_정상_과목은_집계한다():
+    # 전부 버리면 재생성이 뭘 고쳐야 할지 모른다
+    courses = [{"credits": 3, "category": "전공"}, {"name": "깨진 과목"}]
+
+    result = validate_roadmap(bad_roadmap(*courses), years=3)
+
+    assert result["major_credits"] == 3
+
+
+def test_모르는_학제는_죽지_않고_3년제로_본다():
+    # 경계(catalog)가 먼저 막지만, 검증기 자체도 KeyError로 죽지 않아야 한다
+    result = validate_roadmap(roadmap(6, major=66, liberal=10, general=34), years=4)
+
+    assert result["passed"] is True
+
+
 # --- 동결 계약 (docs/DESIGN.md §5) ---
 
 

@@ -233,6 +233,85 @@ def test_이수내역은_덮어쓴다(client):
     assert client.get("/me", headers=auth).json()["completed_courses"] == ["itc-운영체제"]
 
 
+# --- 비밀번호 규칙 ---
+
+
+def test_짧은_비밀번호는_거부한다(client):
+    res = client.post("/auth/signup", json={**SIGNUP, "password": "1234"})
+
+    assert res.status_code == 422
+    # 검증 실패도 lib/api.js가 읽는 형식이어야 한다
+    assert res.json()["error"]["message"]
+    assert res.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_이메일_형식이_아니면_거부한다(client):
+    res = client.post("/auth/signup", json={**SIGNUP, "email": "골뱅이없음"})
+
+    assert res.status_code == 422
+    assert res.json()["error"]["message"]
+
+
+# --- 로드맵 저장 ---
+
+
+def logged_in(client):
+    code = link_code(client)
+    token = client.post("/auth/exchange", json={"code": code}).json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+ROADMAP = {"semesters": [{"year": 1, "semester": 1, "courses": []}], "validation": {"passed": True}}
+
+
+def test_로드맵을_저장하면_me에서_보인다(client):
+    auth = logged_in(client)
+
+    res = client.post(
+        "/me/roadmaps",
+        json={"target_job": "네트워크 엔지니어", "roadmap": ROADMAP},
+        headers=auth,
+    )
+
+    assert res.status_code == 201
+    saved = client.get("/me", headers=auth).json()["saved_roadmaps"]
+    assert saved[0]["target_job"] == "네트워크 엔지니어"
+    assert saved[0]["roadmap"]["validation"]["passed"] is True
+
+
+def test_같은_직무로_다시_저장하면_덮어쓴다(client):
+    # 시연 중 여러 번 저장해도 목록이 쌓이지 않게
+    auth = logged_in(client)
+    client.post("/me/roadmaps", json={"target_job": "네트워크 엔지니어", "roadmap": ROADMAP}, headers=auth)
+
+    client.post(
+        "/me/roadmaps",
+        json={"target_job": "네트워크 엔지니어", "roadmap": {**ROADMAP, "v": 2}},
+        headers=auth,
+    )
+
+    saved = client.get("/me", headers=auth).json()["saved_roadmaps"]
+    assert len(saved) == 1
+    assert saved[0]["roadmap"]["v"] == 2
+
+
+def test_다른_직무는_따로_쌓인다(client):
+    auth = logged_in(client)
+    client.post("/me/roadmaps", json={"target_job": "네트워크 엔지니어", "roadmap": ROADMAP}, headers=auth)
+
+    client.post("/me/roadmaps", json={"target_job": "AI 개발자", "roadmap": ROADMAP}, headers=auth)
+
+    assert len(client.get("/me", headers=auth).json()["saved_roadmaps"]) == 2
+
+
+def test_토큰_없이는_저장할_수_없다(client):
+    res = client.post(
+        "/me/roadmaps", json={"target_job": "네트워크 엔지니어", "roadmap": ROADMAP}
+    )
+
+    assert res.status_code == 401
+
+
 # --- 코어는 인증과 무관하게 살아야 한다 ---
 
 

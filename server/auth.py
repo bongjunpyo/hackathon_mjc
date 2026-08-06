@@ -13,7 +13,7 @@ import secrets
 from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Header, Response
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 
 import db
@@ -40,10 +40,10 @@ EXCHANGE_TTL = timedelta(seconds=60)
 
 
 class SignupIn(BaseModel):
-    student_id: str
-    name: str
+    student_id: str = Field(min_length=4, max_length=32)
+    name: str = Field(min_length=1, max_length=64)
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, description="최소 8자")
     dept_id: str
 
 
@@ -66,6 +66,11 @@ class RefreshIn(BaseModel):
 
 class CoursesIn(BaseModel):
     completed_courses: list[str] = []
+
+
+class RoadmapIn(BaseModel):
+    target_job: str = Field(min_length=1)
+    roadmap: dict
 
 
 def _session():
@@ -248,6 +253,29 @@ def put_courses(body: CoursesIn, authorization: str = Header(default=None)):
         session.add(user)
         session.commit()
         return {"completed_courses": [c.course_id for c in user.completed]}
+
+
+@router.post("/me/roadmaps", status_code=201)
+def save_roadmap(body: RoadmapIn, authorization: str = Header(default=None)):
+    """같은 직무로 다시 저장하면 덮어쓴다 — 시연 중 여러 번 눌러도 목록이 쌓이지 않게."""
+    with _session() as session:
+        user = current_user(session, authorization)
+        existing = next(
+            (r for r in user.roadmaps if r.target_job == body.target_job), None
+        )
+        if existing:
+            existing.roadmap_json = json.dumps(body.roadmap, ensure_ascii=False)
+            session.add(existing)
+        else:
+            user.roadmaps.append(
+                models.SavedRoadmap(
+                    target_job=body.target_job,
+                    roadmap_json=json.dumps(body.roadmap, ensure_ascii=False),
+                )
+            )
+            session.add(user)
+        session.commit()
+        return {"target_job": body.target_job}
 
 
 def _tokens(user):

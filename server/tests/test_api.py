@@ -88,6 +88,34 @@ def test_이수_과목을_보내면_검증에_반영된다(client):
     assert body["validation"]["semesters"] >= 2
 
 
+def test_교양선택_버킷이_교양_학점으로_집계된다(client):
+    """교육과정표에 교양 과목이 열거되지 않는다(liberal_elective_credits 버킷으로만 온다).
+
+    블록으로 안 깔면 교양 학점이 0으로 집계돼 **항상** 미달이고 max_retries만 태운다.
+    """
+    body = client.post(
+        "/roadmap",
+        json={
+            "dept_id": "itc",
+            "current_year": 1,
+            "current_semester": 1,
+            "completed_courses": [],
+            "target_job": "네트워크 엔지니어",
+        },
+    ).json()
+
+    blocks = [
+        c
+        for s in body["semesters"]
+        for c in s["courses"]
+        if c["category"] == "교양" and "교양선택" in c["name"]
+    ]
+    assert sum(b["credits"] for b in blocks) == 7  # 픽스처의 liberal_elective_credits
+    # 교양필수 3 + 교양선택 7 = 10 (3년제 기준 충족)
+    assert body["validation"]["liberal_credits"] == 10
+    assert not any(d["rule"] == "liberal_credits" for d in body["validation"]["details"])
+
+
 def test_없는_학과는_404와_에러_형식(client):
     res = client.post(
         "/roadmap",
