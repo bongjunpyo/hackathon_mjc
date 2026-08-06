@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import ControlBar from "../components/track/ControlBar";
+import ControlBar, { UNDECIDED } from "../components/track/ControlBar";
 import TrackCanvas from "../components/track/TrackCanvas";
 import SemesterPanel from "../components/track/SemesterPanel";
 import CertPanel from "../components/track/CertPanel";
@@ -26,17 +26,15 @@ const GEN_STEPS = [
 export default function RoadmapStudio() {
   // 랜딩(행선지)·학과 상세(학과)가 선택을 실어 보낸다 (DESIGN §4)
   const handoff = useLocation().state ?? {};
-  const [input, setInput] = useState(() => {
-    const deptId = handoff.deptId ?? "itc";
-    const dept = DEPT_BY_ID[deptId];
-    return {
-      deptId,
-      year: 1,
-      semester: 1,
-      completedCourses: [],
-      targetJob: handoff.targetJob ?? realJobs([...(dept?.careers ?? []), ...(dept?.promoted ?? [])])[0] ?? "",
-    };
-  });
+  const [input, setInput] = useState(() => ({
+    // 예시를 미리 골라 두지 않는다 — 고른 것처럼 보이면 학생이 안 바꾸고 생성한다
+    deptId: handoff.deptId ?? "",
+    year: "",
+    semester: 1,
+    completedCourses: [],
+    jobChoice: handoff.targetJob ?? "",
+    targetJob: handoff.targetJob ?? "",
+  }));
   const [phase, setPhase] = useState("INIT");
   const [roadmap, setRoadmap] = useState(null);
   const [error, setError] = useState(null);
@@ -55,7 +53,8 @@ export default function RoadmapStudio() {
 
     /* 타이핑한 직무는 서버 목록의 정확한 값으로 옮겨 보낸다 (서버는 목록 밖 400).
        대응이 없으면 직무 미정 모드로 — 서버가 배정 학점 기준으로 추천한다. */
-    const typed = (override?.targetJob ?? input.targetJob).trim();
+    const undecided = input.jobChoice === UNDECIDED && !override?.targetJob;
+    const typed = undecided ? "" : (override?.targetJob ?? input.targetJob).trim();
     const dept = DEPT_BY_ID[input.deptId];
     const jobs = realJobs([...(dept?.careers ?? []), ...(dept?.promoted ?? [])]);
     let sendJob = typed;
@@ -172,7 +171,7 @@ export default function RoadmapStudio() {
                 <button
                   key={r.job}
                   onClick={() => {
-                    setInput((cur) => ({ ...cur, targetJob: r.job }));
+                    setInput((cur) => ({ ...cur, jobChoice: r.job, targetJob: r.job }));
                     generate({ targetJob: r.job });
                   }}
                   className={`rounded-lg border px-2.5 py-1 text-xs font-bold transition-[background-color,scale] duration-150 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-gold ${
