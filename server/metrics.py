@@ -1,7 +1,10 @@
 """검증기 효과 측정 — 설계서 §9.
 
 재생성 루프를 끄고(1차 생성만) 켰을 때(최대 3회) 졸업요건 충족률을 비교한다.
-결과는 README에 그대로 싣는다.
+
+**재는 대상은 결정론적 planner다. LLM이 아니다.** "LLM 단독 27%"로 부르면 거짓이 된다 —
+심사에서 "27%는 어느 모델입니까"에 답이 없다. "1차 생성 27%"가 정확한 표현이다.
+LLM 수치를 원하면 ANTHROPIC_API_KEY를 넣고 generate를 agent.generate로 바꿔 다시 잰다.
 
     uv run python metrics.py            # 표 출력
     uv run python metrics.py --md       # README용 마크다운
@@ -85,7 +88,7 @@ def _pct(n, d):
 def render(m, markdown=False):
     b = "**" if markdown else ""
     lines = []
-    lines.append(f"시나리오 {m['total']}개 (전 학과 × 목표 직무 × 재학 시점 2종)")
+    lines.append(f"시나리오 {m['total']}개 (전 학과 × 목표 직무 × 재학 시점 2종) — 결정론적 planner 기준")
     lines.append("")
     lines.append("| 검증기 재생성 루프 | 졸업요건 충족 | 충족률 |")
     lines.append("|---|---:|---:|")

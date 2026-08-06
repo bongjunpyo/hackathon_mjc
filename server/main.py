@@ -5,6 +5,7 @@
 API 라우터를 먼저 걸고 StaticFiles는 맨 마지막에 마운트한다.
 """
 
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -87,11 +88,39 @@ def post_roadmap(req: RoadmapRequest):
         "completed_semesters": (req.current_year - 1) * 2 + (req.current_semester - 1),
     }
 
-    result = generate_roadmap(spec, generate_roadmap_plan)
+    result, generator = _run(spec)
+    result["generator"] = generator
     if missing:
         # 프론트 체크박스와 데이터가 어긋난 신호. 코어를 죽이지는 않되 숨기지도 않는다
         result["unknown_courses"] = missing
     return result
+
+
+def pick_generator():
+    """API 키가 있으면 LLM 에이전트, 없으면 결정론적 planner.
+
+    두 생성기가 같은 계약(spec, feedback, attempt)이라 loop에 그대로 꽂힌다.
+    키가 없어도 데모는 돌아야 하므로 planner가 항상 대기한다 — mailer가 SMTP 없으면
+    콘솔로 떨어지는 것과 같은 구조다.
+    """
+    if os.getenv("ANTHROPIC_API_KEY"):
+        from agent import generate as llm_generate
+
+        return llm_generate
+    return generate_roadmap_plan
+
+
+def _run(spec):
+    """LLM이 죽어도 로드맵은 나온다. 무엇이 돌았는지는 응답에 남긴다."""
+    chosen = pick_generator()
+    label = "agent (LLM)" if getattr(chosen, "__module__", "") == "agent" else "planner"
+    try:
+        return generate_roadmap(spec, chosen), label
+    except Exception as e:
+        if chosen is generate_roadmap_plan:
+            raise
+        print(f"[roadmap] LLM 실패({e}) — planner로 대체", flush=True)
+        return generate_roadmap(spec, generate_roadmap_plan), "planner (LLM 실패)"
 
 
 @app.get("/report/{dept_id}")
