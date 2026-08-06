@@ -74,10 +74,15 @@ def extract_tables(pdf_path: Path) -> str:
 
 
 def normalize_liberal(dept: DeptCurriculum) -> DeptCurriculum:
-    """교양필수를 실명으로 주입하고, 교양선택은 필요 학점만 남긴다.
+    """교양필수를 실명으로 주입하고, 선택 학점 버킷을 계산한다.
 
-    교과과정표에는 전공 과목만 실려 있다. 교양선택은 과목마다 학점이 달라
-    열거가 불가능하므로 학점 버킷으로 처리한다 (팀 결정 2026-08-06).
+    교과과정표에는 전공 과목과 교양필수만 실린다. 나머지 선택 과목은 과목마다
+    학점이 달라 열거가 불가능하므로 학점 버킷으로 처리한다 (팀 결정 2026-08-06).
+
+    **버킷은 교양 최소치가 아니라 총학점 기준으로 잡는다.** 교육과정표의 과목을
+    전부 들어도 졸업 총학점에 못 미치는 학과가 34개 중 32개다 — 정보통신공학과는
+    88/110학점이라 22학점이 빈다. 교양 최소치(10 − 필수 3 = 7)만 깔면 검증기의
+    총학점 룰이 어떤 학과에서도 통과하지 못한다.
     """
     rules = GRADUATION_RULES[dept.years]
     existing = {c.name for c in dept.courses}
@@ -98,8 +103,13 @@ def normalize_liberal(dept: DeptCurriculum) -> DeptCurriculum:
             )
         )
 
-    required_credits = sum(i["credits"] for i in LIBERAL_REQUIRED)
-    dept.liberal_elective_credits = max(0, rules["liberal"] - required_credits)
+    offered = sum(c.credits for c in dept.courses)
+    liberal_have = sum(c.credits for c in dept.courses if c.category == "교양")
+    dept.liberal_elective_credits = max(
+        0,
+        rules["liberal"] - liberal_have,  # 교양 최소치를 채우는 몫
+        rules["total"] - offered,  # 총학점을 채우는 몫
+    )
     return dept
 
 

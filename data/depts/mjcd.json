@@ -270,7 +270,8 @@
     "일러스트레이터",
     "북 디자이너",
     "패키지 디자이너",
-    "CI·BI 디자이너",
+    "CI",
+    "BI 디자이너",
     "광고디자이너 학과소개영상"
   ],
   "careers": [
@@ -278,7 +279,12 @@
     "그래픽디자이너/ 브랜드디자이너",
     "브랜드디자이너/그래픽디자이너"
   ],
-  "liberal_elective_credits": 3,
+  "talent_types": [
+    "공통",
+    "그래픽디자이너/ 브랜드디자이너",
+    "브랜드디자이너/그래픽디자이너"
+  ],
+  "liberal_elective_credits": 18,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }

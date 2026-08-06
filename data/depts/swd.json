@@ -299,12 +299,15 @@
     "건강가정사 자격 이수"
   ],
   "careers": [
+    "사회복지직 공무원"
+  ],
+  "talent_types": [
     "건강가정사",
     "사회복지사",
     "사회복지사/건강가정사",
     "사회복지사/사회조사분석사"
   ],
-  "liberal_elective_credits": 3,
+  "liberal_elective_credits": 8,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }

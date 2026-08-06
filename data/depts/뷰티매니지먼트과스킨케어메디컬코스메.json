@@ -310,7 +310,10 @@
   "careers": [
     "피부미용사"
   ],
-  "liberal_elective_credits": 3,
+  "talent_types": [
+    "피부미용사"
+  ],
+  "liberal_elective_credits": 9,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }

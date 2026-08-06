@@ -273,10 +273,13 @@
     "공인회계사"
   ],
   "careers": [
+    "세무사 및 공인회계사"
+  ],
+  "talent_types": [
     "공통",
     "회계·세무사무원"
   ],
-  "liberal_elective_credits": 3,
+  "liberal_elective_credits": 15,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }

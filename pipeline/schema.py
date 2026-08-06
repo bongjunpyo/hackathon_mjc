@@ -37,7 +37,11 @@ class DeptCurriculum(BaseModel):
     tier: int
     courses: list[Course]
     certificates: list[str] = []
+    # 학과 소개 페이지의 **진로** — 입력 화면의 목표 직무 선택지 (이슈 #25).
     careers: list[str] = []
+    # 교과과정표 비고 열의 **인재양성유형** — 과목에 직접 붙은 라벨이라
+    # 트랙 B 커버리지 계산의 축이다. `courses[].talent_type`과 대조할 사전.
+    talent_types: list[str] = []
     # 교양선택은 과목마다 학점이 달라 열거하지 않는다. 필요 학점만 남기고
     # 로드맵 에이전트가 "교양선택 N학점" 블록으로 배치한다 (팀 결정 2026-08-06).
     liberal_elective_credits: int = 0

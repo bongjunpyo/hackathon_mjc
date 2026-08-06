@@ -330,7 +330,11 @@
     "AI영상미디어디자이너",
     "융합미디어기획자"
   ],
-  "liberal_elective_credits": 7,
+  "talent_types": [
+    "AI영상미디어디자이너",
+    "융합미디어기획자"
+  ],
+  "liberal_elective_credits": 35,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }

@@ -339,12 +339,15 @@
     "피복아크용접기능사"
   ],
   "careers": [
+    "국가기술 자격법에 의한 산업기사"
+  ],
+  "talent_types": [
     "AI 기반승강기설치및예지보전엔지니어",
     "AI 기반지능형설계엔지니어",
     "공통",
     "스마트팩토리및기계설비엔지니어"
   ],
-  "liberal_elective_credits": 3,
+  "liberal_elective_credits": 19,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }

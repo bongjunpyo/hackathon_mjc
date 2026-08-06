@@ -377,13 +377,18 @@
     "OCJP(Oracle Certified Java Programmer)"
   ],
   "careers": [
+    "정보보안 분야 엔지니어",
+    "통신 및 네트워크 분야 엔지니어",
+    "컴퓨터응용 분야 엔지니어"
+  ],
+  "talent_types": [
     "컴퓨터응용시스템개발",
     "컴퓨터응용시스템전문가",
     "컴퓨터응용시스템전문가 , 통신및정보호시스템전문가",
     "컴퓨터응용시스템전문가, 통신및정보보호시스템전문가",
     "통신및정보보호시스템전문가"
   ],
-  "liberal_elective_credits": 7,
+  "liberal_elective_credits": 25,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
 }
