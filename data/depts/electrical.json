@@ -62,7 +62,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "ICT-AI 응용제어운용사",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -110,7 +110,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "전기설비시스템실무전문가",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -122,7 +122,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "전기설비시스템실무전문가",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -146,7 +146,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "전기설비시스템실무전문가",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -158,7 +158,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "전력계통해석및설계사",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -170,7 +170,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "전기설비시스템실무전문가",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -218,7 +218,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "전기제어설계설비원",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {

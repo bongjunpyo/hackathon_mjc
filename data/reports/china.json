@@ -1,0 +1,75 @@
+{
+  "dept_id": "china",
+  "dept_name": "중국어비즈니스과",
+  "years": 2,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "중국교역",
+      "coverage_pct": 55.6,
+      "credits": 30,
+      "covered_courses": [
+        "초급중국어작문",
+        "중국어회화Ⅰ",
+        "초급중국어독해",
+        "통번역연습Ⅰ",
+        "중국어회화Ⅱ",
+        "비즈니스중국어작문Ⅰ",
+        "통번역연습Ⅱ",
+        "중급비즈니스중국어",
+        "비즈니스중국어작문Ⅱ",
+        "시사중국어"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "중국관광서비스",
+      "coverage_pct": 44.4,
+      "credits": 24,
+      "covered_courses": [
+        "중국어문법",
+        "중국대중문화디자인씽킹",
+        "여행서비스중국어Ⅰ",
+        "AI기반여행캡스톤디자인",
+        "HSK어법중국어",
+        "여행서비스중국어Ⅱ",
+        "HSK독해연습",
+        "비즈니스중국어실용문"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    }
+  ],
+  "certificates": {
+    "total": 7,
+    "evaluated": 0,
+    "supported": 0,
+    "unsupported": [],
+    "unevaluated": [
+      "중국어능력시험(HSK",
+      "HSKK",
+      "BCT",
+      "CPT",
+      "TSC)",
+      "관관통역안내원",
+      "번역사"
+    ],
+    "detail": []
+  },
+  "ncs_ratio": 72.2,
+  "field_based_courses": [
+    "AI기반여행캡스톤디자인"
+  ]
+}

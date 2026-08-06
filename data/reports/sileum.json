@@ -1,0 +1,62 @@
+{
+  "dept_id": "sileum",
+  "dept_name": "실용음악과",
+  "years": 2,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "실용음악전문인",
+      "coverage_pct": 100.0,
+      "credits": 54,
+      "covered_courses": [
+        "실용음악화성학I",
+        "뮤직비지니스I",
+        "시창 〮 청음I",
+        "디자인 씽킹 레코딩 실습",
+        "EnsembleI",
+        "합주실기I",
+        "전공실기I",
+        "실용음악화성학II",
+        "뮤직비지니스II",
+        "시창 〮 청음II",
+        "합주실기II",
+        "EnsembleII",
+        "전공실기II",
+        "전공실기III",
+        "컴퓨터음악I",
+        "합주실기III",
+        "EnsembleIII",
+        "졸업연주캡스톤디자인I",
+        "대중음악사",
+        "송라이팅",
+        "컴퓨터음악II",
+        "EnsembleIV",
+        "합주실기IV",
+        "졸업연주캡스톤디자인II",
+        "전공실기IV",
+        "AI 뮤직 콘텐츠 제작"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    }
+  ],
+  "certificates": {
+    "total": 0,
+    "evaluated": 0,
+    "supported": 0,
+    "unsupported": [],
+    "unevaluated": [],
+    "detail": []
+  },
+  "ncs_ratio": 84.6,
+  "field_based_courses": [
+    "졸업연주캡스톤디자인I",
+    "졸업연주캡스톤디자인II"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "dept_id": "skysvc",
+  "dept_name": "항공서비스과",
+  "years": 2,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "항공객실승무원",
+      "coverage_pct": 100.0,
+      "credits": 63,
+      "covered_courses": [
+        "이미지메이킹실습",
+        "항공객실업무이해",
+        "항공안전보안실습",
+        "항공운송실무실습",
+        "기초토익",
+        "항공객실서비스실습",
+        "기내식음료실습",
+        "서비스커뮤니케이션실습",
+        "항공면접기초연습",
+        "항공예약실습",
+        "중급토익",
+        "AI기반객실롤플레이실습",
+        "기내방송연습",
+        "항공면접실전연습",
+        "실전토익",
+        "토익스피킹",
+        "고급토익",
+        "항공서비스세미나",
+        "비서실무실습",
+        "호텔서비스실습",
+        "항공캡스톤디자인"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    }
+  ],
+  "certificates": {
+    "total": 9,
+    "evaluated": 1,
+    "supported": 0,
+    "unsupported": [
+      "컴퓨터 활용능력 자격증"
+    ],
+    "unevaluated": [
+      "• TOEIC",
+      "TOEIC SPEAKING",
+      "HSK",
+      "JPT 공인외국어 자격증 • 서비스경영자격(SMAT) Module A",
+      "C • CS리더스 관리사 자격증 • 항공예약자격증",
+      "항공발권자격증 • 심폐소생술(CPR)자격증",
+      "응급처치사 자격증 • 비서자격증",
+      "MOS"
+    ],
+    "detail": [
+      {
+        "certificate": "컴퓨터 활용능력 자격증",
+        "courses": [],
+        "matched": false
+      }
+    ]
+  },
+  "ncs_ratio": 66.7,
+  "field_based_courses": [
+    "항공캡스톤디자인"
+  ]
+}

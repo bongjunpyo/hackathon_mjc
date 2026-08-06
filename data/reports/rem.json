@@ -1,0 +1,99 @@
+{
+  "dept_id": "rem",
+  "dept_name": "부동산경영과",
+  "years": 2,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "부동산중개사",
+      "coverage_pct": 60.0,
+      "credits": 27,
+      "covered_courses": [
+        "부동산경제학",
+        "부동산사법I",
+        "부동산AI디지털정보처리",
+        "부동산학개론",
+        "부동산공법I",
+        "부동산사법II",
+        "부동산공법II",
+        "부동산감정평가론",
+        "부동산이용론"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "부동산공급기능인",
+      "coverage_pct": 13.3,
+      "credits": 6,
+      "covered_courses": [
+        "건축학개론",
+        "부동산개발론"
+      ],
+      "semesters": [
+        "1-2",
+        "2-1"
+      ],
+      "gaps": [
+        "전공 학점의 13%만 배정돼 선택지가 좁다"
+      ]
+    },
+    {
+      "job": "건물관리사",
+      "coverage_pct": 13.3,
+      "credits": 6,
+      "covered_courses": [
+        "부동산관리디자인씽킹",
+        "부동산금융론"
+      ],
+      "semesters": [
+        "1-2",
+        "2-2"
+      ],
+      "gaps": [
+        "전공 학점의 13%만 배정돼 선택지가 좁다"
+      ]
+    },
+    {
+      "job": "부동산중개사·건물관리사·부동산공급기능인",
+      "coverage_pct": 13.3,
+      "credits": 6,
+      "covered_courses": [
+        "부동산투자캡스톤디자인",
+        "정보기술과부동산"
+      ],
+      "semesters": [
+        "2-1",
+        "2-2"
+      ],
+      "gaps": [
+        "1학년에 이 직무 과목이 없어 조기 진로 결정이 어렵다",
+        "전공 학점의 13%만 배정돼 선택지가 좁다"
+      ]
+    }
+  ],
+  "certificates": {
+    "total": 5,
+    "evaluated": 0,
+    "supported": 0,
+    "unsupported": [],
+    "unevaluated": [
+      "공인중개사",
+      "주택관리사",
+      "감정평가사",
+      "상업용부동산투자분석사(CCIM)",
+      "부동산자산관리사(CPM)"
+    ],
+    "detail": []
+  },
+  "ncs_ratio": 100.0,
+  "field_based_courses": [
+    "부동산투자캡스톤디자인"
+  ]
+}

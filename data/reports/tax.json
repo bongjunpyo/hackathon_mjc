@@ -1,0 +1,79 @@
+{
+  "dept_id": "tax",
+  "dept_name": "세무회계과",
+  "years": 2,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "회계·세무사무원",
+      "coverage_pct": 89.5,
+      "credits": 51,
+      "covered_courses": [
+        "회계원리",
+        "세법개론",
+        "경제학",
+        "기업회계",
+        "법인세회계",
+        "소득세회계",
+        "원가회계",
+        "재정학",
+        "재무회계",
+        "세무회계",
+        "부가가치세법",
+        "관리회계",
+        "AI전산회계실무",
+        "중급회계",
+        "세무신고실무",
+        "재산세제실무",
+        "전산세무실무"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "공통",
+      "coverage_pct": 10.5,
+      "credits": 6,
+      "covered_courses": [
+        "창업과경영마인드",
+        "EnglishforAccountingⅡ"
+      ],
+      "semesters": [
+        "1-1",
+        "2-2"
+      ],
+      "gaps": [
+        "전공 학점의 11%만 배정돼 선택지가 좁다"
+      ]
+    }
+  ],
+  "certificates": {
+    "total": 12,
+    "evaluated": 0,
+    "supported": 0,
+    "unsupported": [],
+    "unevaluated": [
+      "ERP 정보관리사 회계",
+      "TAT",
+      "FAT",
+      "세무회계",
+      "전산회계",
+      "전산세무",
+      "전산회계운용사",
+      "기업회계",
+      "재경관리사",
+      "회계관리",
+      "세무사",
+      "공인회계사"
+    ],
+    "detail": []
+  },
+  "ncs_ratio": 78.9,
+  "field_based_courses": []
+}

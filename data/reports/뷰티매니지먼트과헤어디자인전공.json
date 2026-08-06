@@ -1,0 +1,50 @@
+{
+  "dept_id": "뷰티매니지먼트과헤어디자인전공",
+  "dept_name": "뷰티매니지먼트과헤어디자인전공",
+  "years": 2,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "헤어디자이너",
+      "coverage_pct": 100.0,
+      "credits": 51,
+      "covered_courses": [
+        "SNS마케팅실습",
+        "맨즈커트",
+        "아이롱실습",
+        "베이직헤어컬러링",
+        "AISNS마케팅실습II",
+        "어드밴스커트",
+        "베이직샴푸",
+        "블로우드라이",
+        "셀프리더십",
+        "모발화장품마케팅",
+        "테크니컬샴푸",
+        "업스타일테크닉",
+        "미용색채실기",
+        "미용포트폴리오",
+        "헤어스타일연출",
+        "실용업스타일",
+        "고급컬러링"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    }
+  ],
+  "certificates": {
+    "total": 0,
+    "evaluated": 0,
+    "supported": 0,
+    "unsupported": [],
+    "unevaluated": [],
+    "detail": []
+  },
+  "ncs_ratio": 100.0,
+  "field_based_courses": []
+}
