@@ -34,9 +34,11 @@
 3. **트랙 B (학교용)**: 교육과정 ↔ 직무역량 정합도 리포트 (화면 1~2개)
 4. **데이터**: 전 학과 2계층 수집 (아래 5절)
 
+5. **회원/로그인** (2차 결정, 8/6 저녁): JWT 인증(액세스+리프레시) + **PostgreSQL** — 계정·이수내역·저장 로드맵만 저장. **과목 데이터는 JSON 유지** (동결 스키마 불변). 메인(랜딩) 화면 포함. **착수는 코어 통합(05:00) 이후**
+
 ### 제외 (명시적으로 안 하는 것)
 
-- 로그인/회원가입, 수강신청 연동, 실제 채용공고 크롤링(시간 남으면 보너스), 모바일 네이티브 앱
+- 수강신청 연동, 실제 채용공고 크롤링(시간 남으면 보너스), 모바일 네이티브 앱, 소셜 로그인/이메일 인증
 - 전 학과 Tier 1 품질 검증 (20시간 불가 — 지표로 정직하게 공개)
 
 ## 4. 아키텍처
@@ -105,6 +107,7 @@
   "tier": 1,
   "courses": [
     {
+      "course_id": "itc-1-1-prog1",   // 동결 검토 반영: API는 id로만 주고받음 (과목명 문자열 매칭 금지 — Ⅰ/I/1 표기 혼재)
       "name": "프로그래밍언어실습Ⅰ",
       "year": 1,
       "semester": 1,
@@ -127,22 +130,61 @@
 
 ```
 POST /roadmap
-  in:  { dept_id, current_year, current_semester, completed_courses: [name], target_job }
+  in:  { dept_id, current_year, current_semester, completed_courses: [course_id], target_job }
   out: { semesters: [ { year, semester, courses: [...], certificates: [...], notes } ],
-         validation: { passed: true, total_credits, major_credits, liberal_credits, details } }
+         validation: { passed, total_credits, major_credits, liberal_credits,
+                       details: [ { rule, required, actual, shortfall } ] } }
+  # 동결 검토 반영: details는 구조화 배열 — 재생성 프롬프트에 그대로 투입 + 발표 화면 표시
+  # 재생성 루프 상한 max_retries=3. 초과 시 passed=false + 부분 로드맵을 "정상 응답"으로 반환 (에러 아님)
 
 GET /report/{dept_id}
   out: { jobs: [ { job, coverage_pct, covered_courses: [...], gaps: [...], label_mismatches: [...] } ] }
 
 GET /depts
   out: [ { dept_id, dept_name, years, tier } ]
+
+# 인증 (2차 결정 추가 — 코어 통합 후 구현)
+POST /auth/signup   in: { student_id, name, password, dept_id }
+POST /auth/login    in: { student_id, password } → { access_token, refresh_token }
+POST /auth/refresh  in: { refresh_token } → { access_token }
+GET  /me            → 내 정보 + 이수내역 + 저장된 로드맵
+PUT  /me/courses    → 이수내역 저장
 ```
 
-## 6. 화면 (3개로 끝)
+### DB (PostgreSQL — 유저 데이터 전용)
 
+| 테이블 | 컬럼 |
+|---|---|
+| users | id, student_id(unique), name, dept_id, password_hash, created_at |
+| completed_courses | user_id, course_name, year, semester |
+| saved_roadmaps | user_id, target_job, roadmap_json, created_at |
+
+- 실행: `docker compose up -d db` (postgres 컨테이너) — README에 명시
+- ORM: SQLAlchemy, 마이그레이션 없이 `create_all` (해커톤 범위)
+- **과목/자격증/진로 데이터는 DB에 넣지 않는다** — `data/*.json`이 소스, 동결 스키마 유지
+
+## 6. 화면 (코어 3 + 부가 2)
+
+**코어 (먼저):**
 1. **입력**: 학과 선택 → 학년/학기 → 이수 과목 체크 → 목표 직무 선택
 2. **로드맵 뷰**: 학기별 타임라인 (과목 + 자격증 타이밍 + 현장실습 배치) + "졸업요건 충족 ✓" 배지
 3. **리포트 뷰 (트랙 B)**: 직무별 커버리지 바 + 결손 과목 + 라벨 불일치 목록
+
+**부가 (통합 후):**
+4. **메인(랜딩)**: 서비스 소개 + 시작하기
+5. **로그인/회원가입**: 학번 기반. 로그인 시 이수내역·저장 로드맵 자동 로드
+
+### 화면 흐름
+
+```
+메인(소개) → 로그인/회원가입 → 입력 → 로드맵 뷰
+                └ 게스트로 둘러보기 ↗        └ [저장] (로그인 시)
+리포트 뷰(트랙 B): 상단 네비 "학교용 리포트" 탭으로 별도 진입
+```
+
+- **게스트 모드 필수**: 로그인 미완 컷 시에도 메인→게스트→입력→로드맵 데모 경로 성립
+- 로그인의 가치 = 입력 화면 자동 채움 + 로드맵 저장. 데모에서 게스트/로그인 대비로 보여줌
+- 트랙 B는 학생 여정과 분리 (발표 때 "학교를 위해서는—" 전환 포인트)
 
 ## 7. 3인 분담
 
@@ -170,6 +212,7 @@ GET /depts
 
 - **6h**: 파이프라인이 정보통신공학과 하나도 못 뽑으면 → Tier 2를 "서브도메인 구조 동일 학과만"으로 축소
 - **15h**: 트랙 B API가 안 붙었으면 → 정적 분석 1회 결과물(HTML 리포트 한 장)로 대체. 발표 훅은 유지
+- **로그인/DB (2차 결정 기능)**: 코어 통합(05:00) 이후 착수. **18h(10:00) 시점에 미완이면 그 상태로 컷** — 비로그인 게스트 모드로 데모, 코드는 브랜치에 보존. 코어 데모가 로그인 때문에 깨지는 일은 절대 없게 한다
 
 ## 9. 검증 계획 (정량 지표 — README에 그대로 실을 것)
 
@@ -186,6 +229,7 @@ GET /depts
 | 과목 상세 설명 부재 → 매핑 정밀도 | 과목명+인재양성유형+NCS 코드 묶음 임베딩. NCS 직무기술서로 보강 |
 | 학과별 세부 졸업요건(교육운영계획서) 비공개 | 공통 룰만으로 검증기 성립. 여기에 시간 쓰지 않기로 합의 |
 | "졸업사정 시뮬 이미 있다" 반박 | "확인 vs 설계" 구분 + 트랙 B 존재. README 첫 문단에 명시 |
+| "SMART CARE에 직무역량/경력/학년별 로드맵 메뉴 있다" 반박 | 팀이 실물 확인 완료(2026-08-06, 캡처 보유). 메뉴명은 겹치나 **SMART CARE는 학생이 직접 입력해 등록하는 이력관리 양식**이고, 계획을 생성해주지 않음. 우리는 그 빈칸을 채우는 생성 엔진 + 졸업요건 검증 보장. 방어 문장: "SMART CARE는 로드맵을 등록하는 곳, 우리는 로드맵을 만들어주는 엔진. 우리 출력물이 SMART CARE의 입력물이 된다." **발표에서 심사위원이 묻기 전에 선제 언급할 것** — 비교 슬라이드에 캡처 포함 |
 
 ## 11. 발표 훅 (3~4분)
 
