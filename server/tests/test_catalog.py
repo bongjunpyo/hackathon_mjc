@@ -100,6 +100,19 @@ def test_학과_목록은_GET_depts_형태로_낸다():
     assert {"dept_id", "dept_name", "years", "tier"} <= set(depts[0])
 
 
+def test_밑줄로_시작하는_파일은_학과가_아니다(tmp_path):
+    """파이프라인이 data/depts/_report.json(추출 리포트, 배열)을 같이 떨군다.
+    학과로 읽으면 GET /depts가 500이 난다 — 실제로 났다 (이슈 #22)."""
+    import shutil
+
+    shutil.copy(FIXTURES / "itc.json", tmp_path / "itc.json")
+    (tmp_path / "_report.json").write_text('[{"dept_name": "x"}]', encoding="utf-8")
+
+    depts = list_depts(root=tmp_path)
+
+    assert [d["dept_id"] for d in depts] == ["itc"]
+
+
 def test_학과_목록에_직무와_자격증이_들어간다():
     """프론트가 목표 직무 드롭다운을 채울 데이터. 없으면 하드코딩할 수밖에 없고,
     그러면 '전 학과 대응'이 성립하지 않는다."""

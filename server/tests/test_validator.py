@@ -54,24 +54,25 @@ def test_3년제_전공학점_미달을_잡는다():
     assert rules(result) == ["major_credits"]
 
 
-def test_3년제_총학점_미달을_잡는다():
-    result = validate_roadmap(roadmap(6, major=66, liberal=10, general=24), years=3)
+def test_총학점은_미달로_잡지_않고_남은_학점으로_알려준다():
+    """교육과정표에 교양선택·일반선택이 없다. 우리가 배치할 수 없는 몫을
+    미달로 잡으면 어떤 로드맵도 통과하지 못한다 — 실데이터 34개 학과 중 32개가 그랬다."""
+    result = validate_roadmap(roadmap(6, major=66, liberal=3, general=24), years=3)
 
-    assert result["total_credits"] == 100
-    detail = find(result["details"], "total_credits")
-    assert detail["required"] == 110
-    assert detail["shortfall"] == 10
-    assert rules(result) == ["total_credits"]
+    assert result["total_credits"] == 93
+    assert result["remaining_credits"] == 17
+    assert not any(d["rule"] == "total_credits" for d in result["details"])
+    assert result["passed"] is True
 
 
-def test_3년제_교양학점_미달을_잡는다():
-    result = validate_roadmap(roadmap(6, major=66, liberal=8, general=36), years=3)
+def test_교양필수가_빠지면_잡는다():
+    """인성채플·성경과삶은 학과 교육과정표에 실제로 있는 과목이라 판정할 수 있다."""
+    result = validate_roadmap(roadmap(6, major=66, liberal=1, general=36), years=3)
 
-    assert result["liberal_credits"] == 8
-    detail = find(result["details"], "liberal_credits")
-    assert detail["required"] == 10
+    detail = find(result["details"], "liberal_required")
+    assert detail["required"] == 3
     assert detail["shortfall"] == 2
-    assert rules(result) == ["liberal_credits"]
+    assert rules(result) == ["liberal_required"]
 
 
 def test_3년제_재학학기_부족을_잡는다():
@@ -206,7 +207,7 @@ def test_모르는_학제는_죽지_않고_3년제로_본다():
 
 
 def test_동결_스펙의_validation_필드를_그대로_낸다():
-    result = validate_roadmap(roadmap(6, major=66, liberal=10, general=34), years=3)
+    result = validate_roadmap(roadmap(6, major=66, liberal=3, general=34), years=3)
 
     assert set(result) == {
         "passed",
@@ -214,6 +215,7 @@ def test_동결_스펙의_validation_필드를_그대로_낸다():
         "major_credits",
         "liberal_credits",
         "semesters",
+        "remaining_credits",
         "details",
     }
 
@@ -229,9 +231,9 @@ def test_재학_학기_수를_요약에도_낸다():
 
 
 def test_미달_항목마다_고칠_방법이_들어있다():
-    result = validate_roadmap(roadmap(6, major=60, liberal=8, general=30), years=3)
+    result = validate_roadmap(roadmap(6, major=60, liberal=1, general=30), years=3)
 
-    assert rules(result) == ["total_credits", "liberal_credits", "major_credits"]
+    assert rules(result) == ["liberal_required", "major_credits"]
     for detail in result["details"]:
         assert detail["fix"]
         assert str(detail["shortfall"]) in detail["fix"]

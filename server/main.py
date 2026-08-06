@@ -20,6 +20,7 @@ from catalog import CatalogError
 from errors import ApiError, api_error_handler, validation_error_handler
 from loop import generate_roadmap
 from planner import generate as generate_roadmap_plan
+from report import build_report
 
 
 @asynccontextmanager
@@ -88,11 +89,10 @@ def post_roadmap(req: RoadmapRequest):
 @app.get("/report/{dept_id}")
 def get_report(dept_id: str):
     try:
-        catalog.load_dept(dept_id)
+        dept = catalog.load_dept(dept_id)
     except CatalogError as e:
         raise ApiError("DEPT_NOT_FOUND", str(e), status=404) from e
-    # 트랙 B는 6단계에서. 수치를 지어내지 않고 빈 목록을 낸다
-    return {"jobs": []}
+    return build_report(dept)
 
 
 # 정적 서빙은 반드시 맨 마지막. web/dist가 없어도 서버는 떠야 한다 (P3 빌드 전 API 테스트)

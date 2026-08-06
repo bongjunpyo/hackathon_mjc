@@ -104,16 +104,14 @@ def test_지나간_학기의_과목은_넣지_않는다():
 # --- 교양선택 버킷 ---
 
 
-def test_교양선택_블록은_1차부터_깔린다():
-    roadmap = generate(SPEC)
+def test_없는_과목을_지어내지_않는다():
+    """교육과정표에 없는 교양선택·일반선택을 가짜 블록으로 채우지 않는다.
+    남은 학점은 validation.remaining_credits로만 알린다."""
+    roadmap = generate(SPEC, attempt=3)
 
-    blocks = [
-        c
-        for s in roadmap["semesters"]
-        for c in s["courses"]
-        if c["category"] == "교양" and "교양선택" in c["name"]
-    ]
-    assert sum(b["credits"] for b in blocks) == ITC["liberal_elective_credits"]
+    real = {c["course_id"] for c in ITC["courses"]}
+    placed = {c["course_id"] for s in roadmap["semesters"] for c in s["courses"]}
+    assert placed <= real
 
 
 # --- 자격증·설명 ---
@@ -150,3 +148,19 @@ def test_1차만으로는_졸업요건에_모자란다():
     validation = validate_roadmap(first["semesters"], ITC["years"])
 
     assert validation["passed"] is False
+
+
+# --- 검증기 효과 (설계서 §9) ---
+
+
+def test_재생성_루프가_충족률을_올린다():
+    """1차는 직무 경로만 짜서 전공 학점이 모자란다. 검증기가 잡아 채운다.
+    이 차이가 기술 점수의 근거이므로 코드로 고정한다."""
+    from loop import generate_roadmap
+
+    off = generate_roadmap(SPEC, generate, max_attempts=1)
+    on = generate_roadmap(SPEC, generate, max_attempts=3)
+
+    assert off["validation"]["passed"] is False
+    assert any(d["rule"] == "major_credits" for d in off["validation"]["details"])
+    assert on["validation"]["passed"] is True

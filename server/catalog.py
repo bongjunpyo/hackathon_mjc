@@ -58,6 +58,10 @@ def list_depts(root=None):
     directory = Path(root) if root else DATA_DIR
     depts = []
     for path in sorted(directory.glob("*.json")):
+        # 파이프라인이 추출 리포트(_report.json, 배열)를 같은 디렉터리에 떨군다.
+        # 학과로 읽으면 GET /depts가 통째로 죽는다 (이슈 #22)
+        if path.name.startswith("_"):
+            continue
         dept = json.loads(path.read_text(encoding="utf-8"))
         depts.append(
             {

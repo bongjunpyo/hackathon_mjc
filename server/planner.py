@@ -43,7 +43,6 @@ def generate(spec, feedback=None, attempt=1):
         _fill_to_requirement(chosen, tiers[1 : min(attempt, TIERS)], dept, spec)
 
     semesters = _by_semester(chosen, job)
-    _place_liberal_bucket(dept, semesters)
     _place_certificates(dept, semesters)
     return {"semesters": semesters}
 
@@ -55,11 +54,10 @@ def _fill_to_requirement(chosen, tiers, dept, spec):
     """
     req = REQUIREMENTS.get(dept["years"], REQUIREMENTS[3])
     base = list(spec.get("completed") or [])
-    bucket = dept.get("liberal_elective_credits", 0)
 
     def short():
         pool = chosen + base
-        total = sum(c["credits"] for c in pool) + bucket
+        total = sum(c["credits"] for c in pool)
         major = sum(c["credits"] for c in pool if c["category"] == "전공")
         return req["total_credits"] - total, req["major_credits"] - major
 
@@ -100,36 +98,6 @@ def _by_semester(courses, job):
             }
         )
     return semesters
-
-
-def _place_liberal_bucket(dept, semesters):
-    """교양선택을 `category: "교양"` 블록으로 깐다.
-
-    교육과정표에 교양 과목이 열거되지 않아 학점 버킷(`liberal_elective_credits`)으로만
-    온다. 이 블록을 빠뜨리면 검증기의 교양 룰이 **항상** 미달로 나온다.
-    """
-    remaining = dept.get("liberal_elective_credits", 0)
-    if not remaining or not semesters:
-        return
-
-    per = max(1, remaining // len(semesters))
-    for sem in semesters:
-        if remaining <= 0:
-            break
-        credits = min(per, remaining)
-        sem["courses"].append(
-            {
-                "course_id": f"{dept['dept_id']}-교양선택-{sem['year']}-{sem['semester']}",
-                "name": f"교양선택 {credits}학점",
-                "credits": credits,
-                "category": "교양",
-                "job_related": False,
-            }
-        )
-        remaining -= credits
-
-    if remaining:
-        semesters[-1]["courses"][-1]["credits"] += remaining
 
 
 def _place_certificates(dept, semesters):
