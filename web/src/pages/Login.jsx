@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useApp } from "../store";
 import { auth } from "../lib/api";
 import { DEPTS } from "../lib/depts";
@@ -17,21 +17,13 @@ const ghost =
   "rounded-xl border border-edge bg-white px-5 py-2.5 font-bold text-navy transition-[background-color,scale] duration-200 hover:bg-sky-soft active:scale-[0.96] disabled:opacity-60";
 
 export default function Login() {
-  const { guest, login, logout } = useApp();
+  const { guest, login } = useApp();
   const [mode, setMode] = useState("login");
   const [sentTo, setSentTo] = useState(null); // 인증 메일을 보낸 주소 — 있으면 안내 화면
   const navigate = useNavigate();
 
-  if (!guest) {
-    return (
-      <section className="flex max-w-md flex-col gap-4">
-        <h2 className="text-2xl font-extrabold tracking-tight">내 정보</h2>
-        <button onClick={logout} className={`self-start ${ghost}`}>
-          로그아웃
-        </button>
-      </section>
-    );
-  }
+  // 로그아웃은 네비에 있다 — 로그인한 채로 이 경로에 오면 보낼 곳이 없다
+  if (!guest) return <Navigate to="/app/roadmap" replace />;
 
   if (sentTo) {
     return <VerifySent email={sentTo} onBack={() => { setSentTo(null); setMode("login"); }} />;

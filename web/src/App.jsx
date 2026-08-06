@@ -13,7 +13,7 @@ import Explore from "./pages/Explore";
 import DeptDetail from "./pages/DeptDetail";
 
 function Nav() {
-  const { guest } = useApp();
+  const { guest, logout } = useApp();
   const cls = ({ isActive }) =>
     `px-3 py-2 text-sm rounded-lg transition-colors ${
       isActive ? "bg-navy text-white" : "text-ink-2 hover:bg-sky-soft"
@@ -34,9 +34,19 @@ function Nav() {
         <NavLink to="/app/report" className={cls}>
           학교용 리포트
         </NavLink>
-        <NavLink to="/app/login" className={cls}>
-          {guest ? "로그인" : "내 정보"}
-        </NavLink>
+        {/* 로그인하면 '내 정보'에 로그아웃 하나뿐이라 한 단계를 없앤다 */}
+        {guest ? (
+          <NavLink to="/app/login" className={cls}>
+            로그인
+          </NavLink>
+        ) : (
+          <button
+            onClick={logout}
+            className="rounded-lg px-3 py-2 text-sm text-ink-2 transition-[background-color,scale] duration-150 hover:bg-sky-soft active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-gold"
+          >
+            로그아웃
+          </button>
+        )}
       </nav>
     </header>
   );
