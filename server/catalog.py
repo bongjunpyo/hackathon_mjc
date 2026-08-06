@@ -97,7 +97,7 @@ def _summary(dept):
     }
 
 
-def resolve(dept_id, course_ids, root=None, dept=None):
+def resolve(dept_id, course_ids, root=None):
     """course_id 목록 → (찾은 과목, 못 찾은 id).
 
     못 찾은 id를 버리지 않고 돌려준다. 프론트 체크박스와 데이터가 어긋난 신호이므로
@@ -106,8 +106,7 @@ def resolve(dept_id, course_ids, root=None, dept=None):
     **같은 id가 여러 번 와도 한 번만 센다.** 중복을 그대로 흘리면 검증기가 학점을
     두 번 세어 졸업요건이 뚫린다 — 같은 과목 5번이면 전공 54→66학점이 됐다.
     """
-    source = dept if dept is not None else load_dept(dept_id, root)
-    by_id = {c["course_id"]: c for c in source["courses"]}
+    by_id = {c["course_id"]: c for c in load_dept(dept_id, root)["courses"]}
     found, missing, seen = [], [], set()
     for course_id in course_ids:
         if course_id in seen:

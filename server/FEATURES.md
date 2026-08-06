@@ -35,7 +35,7 @@ server/
 | AI | Claude API (`claude-sonnet-5`) | 로드맵 생성. 키가 없으면 규칙 생성기로 대체 |
 | Validation | 순수 규칙 코드 | **검증기는 LLM을 쓰지 않는다** |
 | Mail | smtplib | SMTP 미설정 시 콘솔 출력으로 대체 |
-| Test | pytest | 148개 |
+| Test | pytest | 147개 |
 | Container | Docker Compose | PostgreSQL 로컬 실행 |
 
 ## 주요 기능
@@ -110,7 +110,7 @@ cd server && uv run fastapi dev main.py
 ### 4. 테스트
 
 ```bash
-cd server && uv run pytest                      # 148개
+cd server && uv run pytest                      # 147개
 PYTHONUTF8=1 uv run pytest                      # 윈도우에서 한글 테스트 이름이 깨질 때
 uv run python metrics.py                        # 검증기 효과 지표
 uv run python verify_db.py                      # 실DB 전 구간 검증 (13건)

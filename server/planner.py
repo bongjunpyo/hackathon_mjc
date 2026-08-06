@@ -49,34 +49,10 @@ def generate(spec, feedback=None, attempt=1):
         _fill_to_requirement(chosen, tiers[1 : min(attempt, TIERS)], dept, spec)
 
     semesters = _by_semester(chosen, targets, job)
-    _pad_empty_semesters(semesters, dept["years"], start)
     _place_certificates(dept, semesters)
     # 동결 계약(DESIGN.md §5)이 `reasoning`을 항상 요구하고 "규칙 폴백 시 빈 문자열"로
     # 정의한다. 키를 빼면 프론트가 undefined를 받는다 — agent.py와 모양을 맞춘다
     return {"semesters": semesters, "reasoning": ""}
-
-
-def _pad_empty_semesters(semesters, years, start):
-    """과목이 배치되지 않은 학기도 칸을 만든다.
-
-    agent.py는 이미 이렇게 한다. planner만 빠뜨리면 화면 타임라인에 학기가 통째로
-    비어 구멍이 생긴다. 검증기는 과목이 있는 학기만 세므로 이 칸이 요건을 속이지 않는다.
-    """
-    have = {(s["year"], s["semester"]) for s in semesters}
-    for year in range(1, years + 1):
-        for semester in (1, 2):
-            if (year, semester) >= start and (year, semester) not in have:
-                semesters.append(
-                    {
-                        "year": year,
-                        "semester": semester,
-                        "courses": [],
-                        "credits": 0,
-                        "certificates": [],
-                        "notes": "",
-                    }
-                )
-    semesters.sort(key=lambda s: (s["year"], s["semester"]))
 
 
 def _fill_to_requirement(chosen, tiers, dept, spec):

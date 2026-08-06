@@ -12,7 +12,6 @@ import catalog
 import jobmap
 import main
 import report
-from planner import generate as planner_generate
 from tests.test_api import FIXTURES
 from validator import validate_roadmap
 
@@ -158,50 +157,3 @@ def test_규칙_폴백도_reasoning과_학기학점을_낸다(client):
         assert semester["credits"] == sum(c["credits"] for c in semester["courses"])
 
 
-def test_규칙_생성기도_과목_없는_학기_칸을_낸다():
-    """빈 학기를 빠뜨리면 화면 타임라인에 구멍이 생긴다. agent.py는 이미 채운다.
-
-    실데이터는 모든 학기에 과목이 있어 이 구멍이 안 보인다 — 1학기와 4학기에만
-    과목이 있는 학과를 만들어 가운데 두 학기가 칸으로 나오는지 본다.
-    """
-    dept = {
-        "dept_id": "gap",
-        "dept_name": "구멍학과",
-        "years": 2,
-        "tier": 1,
-        "certificates": [],
-        "careers": ["엔지니어"],
-        "talent_types": ["엔지니어"],
-        "courses": [
-            {
-                "course_id": f"gap-{y}{s}",
-                "name": f"과목{y}{s}",
-                "year": y,
-                "semester": s,
-                "credits": 3,
-                "category": "전공",
-                "required": True,
-                "talent_type": "엔지니어",
-            }
-            for y, s in [(1, 1), (2, 2)]
-        ],
-    }
-    result = planner_generate(
-        {
-            "dept": dept,
-            "target_job": "엔지니어",
-            "current_year": 1,
-            "current_semester": 1,
-            "completed": [],
-            "completed_semesters": 0,
-        }
-    )
-
-    assert [(s["year"], s["semester"]) for s in result["semesters"]] == [
-        (1, 1),
-        (1, 2),
-        (2, 1),
-        (2, 2),
-    ]
-    empty = [s for s in result["semesters"] if not s["courses"]]
-    assert [s["credits"] for s in empty] == [0, 0]

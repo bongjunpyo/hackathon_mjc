@@ -6,7 +6,6 @@ SMTP 설정이 있으면 진짜 메일을 보내고, 없으면 콘솔에 링크�
 
 import os
 import smtplib
-from collections import deque
 from email.message import EmailMessage
 from html import escape
 
@@ -21,9 +20,8 @@ SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USER or "no-reply@mjc.ac.kr")
 
-# 테스트가 여기서 링크를 꺼낸다. 인증 링크가 메모리에 남으므로 최근 것만 들고 있는다 —
-# 무한히 쌓으면 오래 띄운 서버에서 링크가 계속 누적된다
-outbox = deque(maxlen=50)
+# 콘솔 모드에서 보낸 메일. 테스트가 여기서 링크를 꺼낸다
+outbox = []
 
 SUBJECT = "[MJC 취업 로드맵] 이메일 인증"
 

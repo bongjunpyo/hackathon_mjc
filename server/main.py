@@ -76,10 +76,7 @@ def get_depts():
 def post_roadmap(req: RoadmapRequest):
     try:
         dept = catalog.load_dept(req.dept_id)
-        # 이미 읽은 dept를 넘긴다 — 안 넘기면 같은 JSON을 두 번 읽고 두 번 검증한다
-        completed, missing = catalog.resolve(
-            req.dept_id, req.completed_courses, dept=dept
-        )
+        completed, missing = catalog.resolve(req.dept_id, req.completed_courses)
     except CatalogError as e:
         raise ApiError("DEPT_NOT_FOUND", str(e), status=404) from e
 
