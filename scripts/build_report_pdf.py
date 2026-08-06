@@ -35,6 +35,8 @@ html = f"""<!DOCTYPE html>
     font-size: 9.5pt; page-break-inside: avoid; }}
   th, td {{ border: 1px solid #c9d8ea; padding: 4pt 7pt; text-align: left; vertical-align: top; }}
   th {{ background: #002d65; color: #fff; font-weight: 700; }}
+  /* navy 헤더 위 인라인 코드 — 본문용 연하늘 배경을 그대로 쓰면 흰 글자가 안 읽힌다 */
+  th code {{ background: rgba(255,255,255,.18); color: #fff; }}
   tr:nth-child(even) td {{ background: #f3f7fc; }}
   code {{ font-family: "SF Mono", Menlo, monospace; font-size: 9pt;
     background: #e8f0fe; padding: 1pt 3pt; border-radius: 3px; }}
