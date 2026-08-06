@@ -1,0 +1,22 @@
+# 유저 데이터 전용 DB. 과목 데이터는 data/depts/*.json이 소스다.
+# 이 컨테이너가 안 떠도 코어(게스트 → 입력 → 로드맵)는 동작한다.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: mjc-db
+    environment:
+      POSTGRES_USER: mjc
+      POSTGRES_PASSWORD: mjc
+      POSTGRES_DB: mjc
+    ports:
+      - "5432:5432"
+    volumes:
+      - mjc-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mjc -d mjc"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mjc-pgdata:
