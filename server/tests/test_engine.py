@@ -68,6 +68,15 @@ def test_LLM이_실패하면_규칙으로_떨어지고_200을_낸다(client, mon
     assert body["validation"]["passed"] is True
 
 
+def test_규칙_폴백도_reasoning을_낸다(client):
+    """동결 계약(DESIGN.md §5)은 `reasoning`을 항상 요구하고 "규칙 폴백 시 빈 문자열"로
+    정의한다. planner가 키를 아예 빼서 프론트가 undefined를 받았다."""
+    body = client.post("/roadmap", json=REQ).json()
+
+    assert body["engine"] == "rule"
+    assert body["reasoning"] == ""
+
+
 def test_LLM이_생성해도_job_related가_붙는다(client, monkeypatch, tmp_path):
     """규칙 플래너만 job_related를 달았다. LLM 경로에선 빠져서 화면이 직무 과목을
     강조할 수 없고 job_match.related_courses가 0으로 나왔다."""

@@ -50,7 +50,9 @@ def generate(spec, feedback=None, attempt=1):
 
     semesters = _by_semester(chosen, targets, job)
     _place_certificates(dept, semesters)
-    return {"semesters": semesters}
+    # 동결 계약(DESIGN.md §5)이 `reasoning`을 항상 요구한다. 규칙 생성기는 근거 문장을
+    # 쓰지 않지만 키를 빼면 프론트가 undefined를 받는다 — 폴백은 빈 문자열이다
+    return {"semesters": semesters, "reasoning": ""}
 
 
 def _fill_to_requirement(chosen, tiers, dept, spec):
