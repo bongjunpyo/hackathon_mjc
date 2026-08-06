@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* 명지전문대 브랜드 토큰 — mjc.ac.kr 실측값.
+   컴포넌트에 헥사값을 하드코딩하지 말고 여기 등록된 이름만 쓴다. */
+@theme {
+  --color-navy: #002d65;
+  --color-navy-deep: #001a3d;
+  --color-sky: #6dcbf9;
+  --color-sky-soft: #e8f0fe;
+  --color-gold: #ffba00;
+  --color-steel: #6b84a0;
+  --color-hall: #f3f7fc;
+  --color-edge: #c9d8ea;
+  --color-ink: #0b2038;
+  --color-ink-2: #335070;
+
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, "D2Coding", monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+/* 형광펜 밑줄. 배경 그라디언트라 줄바꿈되는 인라인 텍스트에서도 각 줄에 따라붙는다
+   (absolute + z-index 방식은 첫 줄 조각에만 걸려서 안 된다) */
+.mark-gold {
+  background-image: linear-gradient(
+    transparent 62%,
+    color-mix(in srgb, var(--color-gold) 45%, transparent) 62%
+  );
+}
+
+body {
+  margin: 0;
+  background: var(--color-hall);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 정보 접근성이 이 프로젝트의 공익 앵글이다 — 모션을 강제하지 않는다 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

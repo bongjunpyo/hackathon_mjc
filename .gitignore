@@ -3,6 +3,7 @@ __pycache__/
 node_modules/
 .DS_Store
 *.pyc
+dist/
 
-# 파이프라인 원본 PDF (재수집 가능 — collect.py)
+# 파이프라인 원본 PDF (재수집 가능 — pipeline/collect.py)
 data/raw/curricula/*.pdf

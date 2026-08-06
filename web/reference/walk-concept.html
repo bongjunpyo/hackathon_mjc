@@ -1,0 +1,1072 @@
+<title>MJC 취업 로드맵 — 메인 페이지 컨셉</title>
+
+<style>
+:root {
+  color-scheme: light dark;
+
+  /* mjc.ac.kr에서 추출한 브랜드 팔레트 */
+  --navy:      #002D65;
+  --navy-deep: #001A3D;
+  --sky:       #6DCBF9;
+  --sky-soft:  #E8F0FE;
+  --gold:      #FFBA00;
+  --blue-mid:  #3A72AC;
+
+  --hall:      #F3F7FC;   /* 복도 벽 */
+  --hall-far:  #DCE7F3;   /* 복도 소실점 */
+  --floor:     #E7EEF7;
+  --figure:    #002D65;   /* 캐릭터·노선도 점 */
+  --ink:       #0B2038;
+  --ink-2:     #335070;
+  --steel:     #6B84A0;
+  --surface:   #FFFFFF;
+  --edge:      #C9D8EA;
+  --board:     var(--navy);
+  --board-ink: #FFFFFF;
+
+  --f-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+            "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --f-mono: ui-monospace, "SF Mono", Menlo, "D2Coding", monospace;
+
+  --t-xs: 0.75rem; --t-sm: 0.8125rem; --t-base: 0.9375rem;
+  --t-md: 1.0625rem; --t-lg: 1.5rem; --t-xl: 2.25rem; --t-2xl: clamp(2.5rem, 6vw, 4rem);
+  --gut: clamp(20px, 5vw, 64px);
+}
+
+/* 의도적 단일 테마 — 명지전문대 홈페이지처럼 밝은 낮 야외 톤으로 고정 */
+:root, :root[data-theme="dark"], :root[data-theme="light"] {
+  color-scheme: light;
+  --hall: #F3F7FC; --hall-far: #DCE7F3; --floor: #E7EEF7; --figure: #002D65;
+  --ink: #0B2038; --ink-2: #335070; --steel: #6B84A0;
+  --surface: #FFFFFF; --edge: #C9D8EA; --sky-soft: #E8F0FE; --board: #002D65;
+}
+
+body {
+  margin: 0;
+  font-family: var(--f-sans);
+  font-size: var(--t-base);
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--hall);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+h1,h2,h3 { margin: 0; line-height: 1.15; letter-spacing: -0.02em; text-wrap: balance; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* ================= 인트로 ================= */
+
+.intro {
+  min-height: 92vh;
+  display: grid;
+  align-content: center;
+  gap: 26px;
+  padding: 8vh var(--gut) 6vh;
+  max-width: 1080px;
+  margin-inline: auto;
+  position: relative;
+}
+.uni-tag {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--f-mono); font-size: var(--t-xs);
+  letter-spacing: 0.12em; color: var(--steel);
+}
+.uni-tag::before {
+  content: ""; width: 26px; height: 3px; background: var(--gold);
+}
+.intro h1 { font-size: var(--t-2xl); font-weight: 800; color: var(--ink); max-width: 16ch; }
+.intro h1 em { font-style: normal; color: var(--navy); position: relative; }
+:root[data-theme="dark"] .intro h1 em { color: var(--sky); }
+@media (prefers-color-scheme: dark) { .intro h1 em { color: var(--sky); } }
+.intro h1 em::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0.08em;
+  height: 0.28em; background: var(--gold); opacity: .35; z-index: -1;
+}
+.intro p { margin: 0; max-width: 56ch; color: var(--ink-2); font-size: var(--t-md); }
+
+.ticket {
+  display: flex; flex-wrap: wrap; align-items: stretch; gap: 0;
+  border: 1.5px solid var(--edge);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: hidden;
+  max-width: 700px;
+  box-shadow: 0 10px 34px rgba(0, 45, 101, 0.10);
+}
+.ticket .cell { padding: 14px 20px; flex: 1 1 160px; border-right: 1px dashed var(--edge); }
+.ticket .cell:last-of-type { border-right: 0; }
+.ticket label {
+  display: block; font-family: var(--f-mono); font-size: var(--t-xs);
+  letter-spacing: 0.1em; color: var(--steel); margin-bottom: 3px;
+}
+.ticket select {
+  width: 100%; border: 0; background: transparent;
+  font: inherit; font-size: var(--t-md); font-weight: 700; color: var(--ink);
+  padding: 0; cursor: pointer;
+}
+.ticket select:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+.ticket .go {
+  flex: 0 0 auto; display: grid; place-items: center;
+  padding-inline: 26px;
+  background: var(--navy); color: #fff;
+  font-weight: 700; font-size: var(--t-md);
+  cursor: pointer; user-select: none;
+  transition-property: background-color, scale;
+  transition-duration: .2s, .15s;
+}
+.ticket .go:hover { background: var(--blue-mid); }
+.ticket .go:active { scale: .96; }
+.ticket .go:focus-visible { outline: 2px solid var(--gold); outline-offset: -4px; }
+.scroll-cue {
+  position: absolute; bottom: 3vh; left: 50%; translate: -50% 0;
+  font-family: var(--f-mono); font-size: var(--t-xs); letter-spacing: 0.14em;
+  color: var(--steel); text-align: center;
+}
+.scroll-cue::after {
+  content: ""; display: block; width: 1.5px; height: 34px;
+  margin: 8px auto 0; background: linear-gradient(var(--steel), transparent);
+  animation: cue 1.6s ease-in-out infinite;
+}
+@keyframes cue { 50% { transform: translateY(6px); opacity: .4; } }
+
+/* ================= 복도 (핵심) ================= */
+
+.hallway { position: relative; height: 615vh; }
+.stage {
+  position: sticky; top: 0; height: 100vh;
+  overflow: hidden;
+  perspective: 950px;
+  perspective-origin: 50% 46%;
+  background:
+    /* 하늘 → 지평선 → 보도 */
+    linear-gradient(
+      #BFE0F8 0%, #D8ECFB 30%, #EDF6FE 54.6%,
+      #DCE3EA 55%, #E9EDF1 74%, #F2F4F6 100%);
+}
+/* 해 — 우상단 */
+.stage::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle 220px at 82% 12%,
+    color-mix(in srgb, var(--gold) 42%, #fff) 0%,
+    color-mix(in srgb, var(--gold) 18%, transparent) 34%,
+    transparent 62%);
+  pointer-events: none;
+}
+/* 소실점 대기 원근 — 지평선 부근만 얇게 */
+.stage::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 46% 16% at 50% 55%, rgba(255,255,255,.9), transparent 62%);
+  pointer-events: none;
+}
+/* 지평선 스카이라인 (원경 캠퍼스) */
+.skyline {
+  position: absolute; left: 0; right: 0; top: 55%;
+  height: 74px; translate: 0 -100%;
+  color: var(--navy);
+  opacity: .14;
+  pointer-events: none;
+}
+.skyline svg { width: 100%; height: 100%; display: block; }
+/* 구름 */
+.cloud {
+  position: absolute;
+  width: 150px; height: 34px; border-radius: 999px;
+  background: rgba(255,255,255,.92);
+  filter: blur(1px);
+  box-shadow: 0 6px 18px rgba(0,45,101,.05);
+  pointer-events: none;
+}
+.cloud::before, .cloud::after {
+  content: ""; position: absolute; border-radius: 50%;
+  background: inherit;
+}
+.cloud::before { width: 62px; height: 52px; left: 24px; top: -24px; }
+.cloud::after  { width: 46px; height: 38px; right: 26px; top: -16px; }
+.cloud.c1 { top: 10%; left: -160px; animation: drift 76s linear infinite; }
+.cloud.c2 { top: 22%; left: -160px; scale: .62; opacity: .8; animation: drift 104s linear infinite; animation-delay: -48s; }
+@keyframes drift { to { translate: calc(100vw + 340px) 0; } }
+.scene {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(calc(var(--p, 0) * var(--depth)));
+  will-change: transform;
+}
+
+/* 도로·안전선·펜스는 역 간격(GAP) 세그먼트로 분할 —
+   한 장짜리 거대 평면은 앵커가 카메라 뒤로 가는 순간 통째로 컬링된다 */
+.railseg {
+  position: absolute; left: 50%; top: 55%;
+  width: 8px; height: 302px;
+  translate: -50% 0;
+  transform-origin: top center;
+  background: repeating-linear-gradient(
+    to bottom, var(--gold) 0 44px, transparent 44px 87.5px);
+  opacity: .9;
+  pointer-events: none;
+}
+.tacseg {
+  position: absolute; left: 50%; top: 55%;
+  width: 26px; height: 302px;
+  translate: -50% 0;
+  transform-origin: top center;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--gold) 72%, transparent) 0 9px,
+    transparent 9px 26.25px);
+  opacity: .5;
+  pointer-events: none;
+}
+.fenceseg {
+  position: absolute; left: 50%; top: calc(55% - 30px);
+  width: 1054px; height: 30px;
+  transform-origin: left bottom;
+  background:
+    linear-gradient(to bottom, var(--steel) 0 3px, transparent 3px),
+    repeating-linear-gradient(90deg,
+      color-mix(in srgb, var(--steel) 85%, var(--navy)) 0 4px,
+      transparent 4px 105px);
+  opacity: .4;
+  pointer-events: none;
+}
+/* 가로등 — 역 사이마다 양옆 */
+.lamp {
+  position: absolute; left: 50%; top: calc(55% - 168px);
+  width: 8px; height: 168px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--steel) 55%, #fff) 0%,
+    var(--steel) 45%,
+    color-mix(in srgb, var(--steel) 60%, var(--navy)) 100%);
+  border-radius: 4px 4px 0 0;
+  pointer-events: none;
+}
+.lamp::before {          /* 도로 쪽으로 뻗는 암 */
+  content: ""; position: absolute; top: 2px;
+  width: 30px; height: 6px; border-radius: 3px;
+  background: inherit;
+}
+.lamp.ls::before { left: 4px; }
+.lamp.rs::before { right: 4px; }
+.lamp::after {           /* 등 헤드 */
+  content: ""; position: absolute; top: -2px;
+  width: 16px; height: 12px; border-radius: 8px 8px 3px 3px;
+  background: var(--gold);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.lamp.ls::after { left: 26px; }
+.lamp.rs::after { right: 26px; }
+
+/* 행선판 */
+.signpost {
+  position: absolute; left: 50%; top: 46%;
+  translate: -50% -50%;
+  width: min(420px, 72vw);
+  transform-style: preserve-3d;
+}
+.signboard {
+  position: relative;
+  background: linear-gradient(178deg,
+    color-mix(in srgb, var(--board) 88%, #fff) 0%,
+    var(--board) 22%,
+    color-mix(in srgb, var(--board) 90%, #000) 100%);
+  color: var(--board-ink);
+  border-radius: 14px;
+  padding: 15px 20px 12px;
+  /* 보더 대신 레이어드 섀도 + 인셋 헤어라인 */
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    0 3px 8px rgba(0, 26, 61, 0.28),
+    0 20px 52px rgba(0, 26, 61, 0.38);
+  border-bottom: 5px solid var(--gold);   /* 노선색 띠 */
+}
+/* 나사 2점 (상단 모서리) */
+.signboard::before, .signboard::after {
+  content: ""; position: absolute; top: 9px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.5), rgba(255,255,255,.12));
+}
+.signboard::before { left: 10px; }
+.signboard::after  { right: 10px; }
+.sign-route {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: var(--t-xs); color: var(--sky);
+  font-family: var(--f-mono); letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.sign-route .dir {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.sign-route .dir i {
+  font-style: normal;
+  width: 17px; height: 17px; border-radius: 50%;
+  display: inline-grid; place-items: center;
+  background: color-mix(in srgb, var(--sky) 22%, transparent);
+  color: var(--sky); font-size: 0.6rem;
+}
+.sign-route .dir.next i { background: var(--gold); color: var(--navy-deep); }
+.sign-name {
+  text-align: center;
+  font-size: var(--t-lg); font-weight: 800; letter-spacing: 0.01em;
+  margin-block: 7px 3px;
+  text-wrap: balance;
+}
+.sign-name small {
+  display: block; font-size: 0.6875rem; font-weight: 600;
+  color: color-mix(in srgb, var(--sky) 72%, #fff);
+  letter-spacing: 0.22em; margin-top: 3px;
+}
+/* 역번호 캡슐 — 지하철 문법 */
+.sign-line {
+  position: absolute; top: -14px; left: 50%; translate: -50% 0;
+  height: 26px; padding-inline: 11px;
+  border-radius: 999px;
+  background: var(--gold); color: var(--navy-deep);
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--f-mono); font-weight: 800; font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  box-shadow:
+    0 0 0 3px var(--hall),
+    0 3px 9px rgba(0,0,0,.25);
+}
+.plaque {
+  margin-top: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 12px 16px;
+  box-shadow:
+    inset 0 0 0 1px var(--edge),
+    0 2px 6px rgba(0, 26, 61, 0.08),
+    0 10px 26px rgba(0, 26, 61, 0.12);
+  display: flex; flex-direction: column; gap: 7px;
+}
+/* 행선판 인터랙션 — 클릭하면 학기 상세 */
+.signpost { cursor: pointer; }
+.signpost:hover .signboard,
+.signpost:focus-visible .signboard {
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    0 3px 8px rgba(0, 26, 61, 0.28),
+    0 20px 52px rgba(0, 26, 61, 0.38),
+    0 0 0 3px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.signpost:focus-visible { outline: none; }
+.sign-hint {
+  position: absolute; right: 12px; bottom: 8px;
+  font-family: var(--f-mono); font-size: 0.625rem;
+  letter-spacing: 0.08em; color: var(--sky);
+  opacity: 0; transition-property: opacity; transition-duration: .2s;
+}
+.signpost:hover .sign-hint, .signpost:focus-visible .sign-hint { opacity: .9; }
+
+/* 학기 상세 오버레이 */
+.detail {
+  position: fixed; inset: 0; z-index: 80;
+  display: grid; place-items: center; padding: 20px;
+  visibility: hidden;
+}
+.detail.open { visibility: visible; }
+.detail-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(6, 18, 38, 0.44);
+  backdrop-filter: blur(7px);
+  opacity: 0;
+  transition-property: opacity; transition-duration: .25s;
+}
+.detail.open .detail-backdrop { opacity: 1; }
+.detail-panel {
+  position: relative;
+  width: min(580px, 94vw); max-height: 86vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0,26,61,.18), 0 40px 120px rgba(0,26,61,.4);
+  translate: 0 16px; opacity: 0;
+  transition-property: translate, opacity;
+  transition-duration: .32s;
+  transition-timing-function: cubic-bezier(.2, 0, 0, 1);
+}
+.detail.open .detail-panel { translate: 0 0; opacity: 1; }
+.detail-head {
+  position: sticky; top: 0;
+  background: linear-gradient(178deg,
+    color-mix(in srgb, var(--board) 88%, #fff) 0%, var(--board) 30%);
+  color: #fff;
+  padding: 22px 24px 16px;
+  border-bottom: 5px solid var(--gold);
+  border-radius: 20px 20px 0 0;
+}
+.detail-head .sign-line { position: static; translate: none; box-shadow: 0 3px 9px rgba(0,0,0,.25); }
+.detail-title { display: flex; align-items: center; gap: 12px; margin-top: 2px; }
+.detail-title h3 { font-size: var(--t-lg); font-weight: 800; }
+.detail-title .credits { margin-left: auto; font-family: var(--f-mono); font-size: var(--t-sm); color: var(--sky); }
+.detail-goal { margin: 10px 0 0; color: var(--sky); font-size: var(--t-sm); }
+.detail-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 0; cursor: pointer;
+  background: rgba(255,255,255,.14); color: #fff;
+  font-size: 1.05rem; line-height: 1;
+  display: grid; place-items: center;
+  transition-property: background-color, scale; transition-duration: .2s, .15s;
+}
+.detail-close:hover { background: rgba(255,255,255,.26); }
+.detail-close:active { scale: .96; }
+.detail-close:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.detail-body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 14px; }
+.detail-body h4 {
+  font-family: var(--f-mono); font-size: var(--t-xs);
+  letter-spacing: 0.12em; color: var(--steel); text-transform: uppercase;
+  margin: 4px 0 0;
+}
+.course-card {
+  border-radius: 12px;
+  background: var(--sky-soft);
+  box-shadow: inset 0 0 0 1px var(--edge);
+  padding: 12px 16px;
+}
+.course-card b { display: block; color: var(--navy); margin-bottom: 3px; }
+.course-card p { margin: 0; font-size: var(--t-sm); color: var(--ink-2); }
+.cert-card {
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--gold) 16%, var(--surface));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--gold) 55%, transparent);
+  padding: 12px 16px;
+}
+.cert-card b { display: block; color: var(--navy); margin-bottom: 3px; }
+.cert-card p { margin: 0; font-size: var(--t-sm); color: var(--ink-2); }
+.detail-foot {
+  font-size: var(--t-xs); color: var(--steel);
+  border-top: 1px dashed var(--edge); padding-top: 12px;
+}
+
+/* 기둥 — 행선판을 바닥에 앉힌다 (.signpost 기준) */
+.pole {
+  position: absolute; top: 100%; width: 7px; height: 118px;
+  margin-top: -4px;
+  z-index: -1;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--steel) 60%, var(--hall)) 0%,
+    var(--steel) 45%,
+    color-mix(in srgb, var(--steel) 45%, #000) 100%);
+  border-radius: 0 0 3px 3px;
+}
+.pole.l { left: 13%; }
+.pole.r { right: 13%; }
+.pole::after {              /* 바닥 접지 그림자 */
+  content: ""; position: absolute; bottom: -5px; left: 50%;
+  translate: -50% 0;
+  width: 30px; height: 9px; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0,26,61,.32), transparent 70%);
+}
+.plaque ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.plaque li { font-size: var(--t-sm); color: var(--ink-2); padding-left: 12px; position: relative; }
+.plaque li::before {
+  content: ""; position: absolute; left: 0; top: .58em;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--sky);
+}
+.plaque .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.plaque .credits { font-family: var(--f-mono); font-size: var(--t-xs); color: var(--steel); }
+.cert {
+  align-self: flex-start;
+  font-size: var(--t-xs); font-weight: 700;
+  color: var(--navy-deep);
+  background: var(--gold);
+  border-radius: 4px; padding: 3px 9px;
+}
+
+/* 도착 게이트 */
+.gate {
+  position: absolute; left: 50%; top: 44%;
+  translate: -50% -50%;
+  width: min(520px, 82vw);
+  text-align: center;
+  transform-style: preserve-3d;
+}
+.gate-board {
+  background: linear-gradient(160deg, var(--navy), var(--navy-deep));
+  border-radius: 18px;
+  color: #fff;
+  padding: 34px 30px 30px;
+  box-shadow:
+    inset 0 0 0 2.5px var(--gold),
+    inset 0 0 0 4px rgba(255,255,255,.12),
+    0 6px 18px rgba(0, 26, 61, 0.3),
+    0 30px 80px rgba(0, 26, 61, 0.45),
+    0 0 64px color-mix(in srgb, var(--gold) 26%, transparent);
+  animation: gate-glow 2.6s ease-in-out infinite;
+}
+@keyframes gate-glow {
+  0%, 100% { box-shadow:
+    inset 0 0 0 2.5px var(--gold), inset 0 0 0 4px rgba(255,255,255,.12),
+    0 6px 18px rgba(0,26,61,.3), 0 30px 80px rgba(0,26,61,.45),
+    0 0 44px color-mix(in srgb, var(--gold) 20%, transparent); }
+  50% { box-shadow:
+    inset 0 0 0 2.5px var(--gold), inset 0 0 0 4px rgba(255,255,255,.12),
+    0 6px 18px rgba(0,26,61,.3), 0 30px 80px rgba(0,26,61,.45),
+    0 0 84px color-mix(in srgb, var(--gold) 38%, transparent); }
+}
+.gate-kicker { font-family: var(--f-mono); font-size: var(--t-xs); letter-spacing: 0.22em; color: var(--sky); }
+.gate-title { font-size: var(--t-xl); font-weight: 800; margin-block: 10px 6px; }
+.gate-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 14px;
+  background: var(--gold); color: var(--navy-deep);
+  font-weight: 800; font-size: var(--t-base);
+  border-radius: 999px; padding: 8px 20px;
+}
+.gate-sub { color: var(--sky); font-size: var(--t-sm); margin-top: 12px; }
+
+/* 걷는 캐릭터 — SVG 인물 (등에 가방, 걷기 사이클) */
+.walker {
+  position: absolute; left: 50%; bottom: 8vh;
+  translate: -50% 0;
+  width: 74px; height: 118px;
+  z-index: 5;
+}
+.walker svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.w-shadow { fill: rgba(0, 26, 61, 0.28); transition: transform .3s; transform-origin: 30px 94px; }
+.w-figure { fill: var(--figure); }
+.w-bag    { fill: var(--gold); }
+.w-cap    { fill: var(--sky); }
+.w-leg, .w-arm { transform-box: fill-box; transform-origin: 50% 8%; }
+.w-body   { transform-origin: 30px 60px; }
+
+.walker.walking .w-body  { animation: w-bob .62s ease-in-out infinite; }
+.walker.walking .w-shadow{ animation: w-shade .62s ease-in-out infinite; }
+.walker.walking .w-leg.a { animation: w-swing .62s ease-in-out infinite; }
+.walker.walking .w-leg.b { animation: w-swing .62s ease-in-out infinite; animation-delay: -.31s; }
+.walker.walking .w-arm.a { animation: w-swing-s .62s ease-in-out infinite; animation-delay: -.31s; }
+.walker.walking .w-arm.b { animation: w-swing-s .62s ease-in-out infinite; }
+
+@keyframes w-bob   { 0%,100% { transform: translateY(0) }  50% { transform: translateY(-3.5px) } }
+@keyframes w-shade { 0%,100% { transform: scaleX(1) }      50% { transform: scaleX(.86) } }
+@keyframes w-swing   { 0%,100% { transform: rotate(24deg) } 50% { transform: rotate(-24deg) } }
+@keyframes w-swing-s { 0%,100% { transform: rotate(15deg) } 50% { transform: rotate(-15deg) } }
+
+/* 진행 HUD — 지하철 노선도식 */
+.hud {
+  position: absolute; left: 50%; bottom: 3vh; translate: -50% 0;
+  z-index: 6;
+  display: flex; align-items: center; gap: 0;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  padding: 10px 18px;
+}
+.hud .stop {
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 2.5px solid var(--figure);
+  background: var(--surface);
+  transition: background .25s, border-color .25s;
+}
+.hud .stop.past { background: var(--figure); }
+.hud .stop.here { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 30%, transparent); }
+.hud .seg { width: 26px; height: 2.5px; background: var(--edge); }
+.hud .seg.past { background: var(--figure); }
+.hud .label {
+  margin-left: 14px;
+  font-family: var(--f-mono); font-size: var(--t-xs);
+  color: var(--ink-2); letter-spacing: 0.04em;
+  min-width: 9ch;
+}
+
+/* ================= 도착 후 섹션 ================= */
+
+.after {
+  background: var(--surface);
+  border-top: 4px solid var(--gold);
+  padding: clamp(48px, 9vh, 96px) var(--gut);
+}
+.after-inner { max-width: 1080px; margin-inline: auto; }
+.after h2 { font-size: var(--t-xl); font-weight: 800; }
+.after .lede { color: var(--ink-2); max-width: 60ch; font-size: var(--t-md); margin: 12px 0 30px; }
+.notes { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.note {
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  padding: 18px 20px;
+  background: var(--sky-soft);
+}
+.note b { display: block; margin-bottom: 6px; color: var(--navy); }
+:root[data-theme="dark"] .note b { color: var(--sky); }
+.note p { margin: 0; font-size: var(--t-sm); color: var(--ink-2); }
+
+footer {
+  padding: 26px var(--gut) 60px;
+  text-align: center;
+  font-family: var(--f-mono); font-size: var(--t-xs); color: var(--steel);
+  background: var(--surface);
+}
+
+/* ================= reduced motion ================= */
+/* 정적 전체 보기 — prefers-reduced-motion 자동 적용 + 버튼 수동 토글(.static-mode) */
+@media (prefers-reduced-motion: reduce) {
+  .hallway { height: auto; }
+  .stage { position: relative; height: auto; overflow: visible; perspective: none; background: var(--hall); }
+  .stage::before, .stage::after { display: none; }
+  .scene { position: static; transform: none !important; display: flex; flex-direction: column; gap: 26px; padding: 48px var(--gut); align-items: center; }
+  .signpost, .gate { position: static; translate: none; transform: none !important; opacity: 1 !important; visibility: visible !important; }
+  .railseg, .tacseg, .fenceseg, .lamp, .walker, .hud, .scroll-cue, .cloud, .skyline { display: none; }
+}
+/* 수동 전체 보기 토글은 제거 — 걷기 모드 단일 (2026-08-06 결정).
+   위 reduced-motion 블록이 접근성 폴백을 계속 담당한다. */
+</style>
+
+<!-- ================= 인트로 ================= -->
+<header class="intro">
+  <span class="uni-tag">MYONGJI COLLEGE · 취업 로드맵 에이전트</span>
+  <h1>목표 직무를 고르면,<br><em>졸업까지의 노선</em>이 그려집니다</h1>
+  <p>
+    전문대 3년은 되돌아올 시간이 없는 편도 노선입니다.
+    어느 학기에 무엇을 듣고 자격증을 언제 딸지 — 목표 직무에서 역산한 학기별 로드맵을
+    졸업요건 검증기가 보증합니다.
+  </p>
+  <div class="ticket" role="group" aria-label="로드맵 승차권">
+    <div class="cell"><label for="sel-dept">학과</label>
+      <select id="sel-dept">
+        <option>정보통신공학과</option>
+        <option disabled>컴퓨터공학과 (준비 중)</option>
+        <option disabled>그 외 전 학과 (파이프라인 연동 예정)</option>
+      </select>
+    </div>
+    <div class="cell"><label for="sel-now">현재</label>
+      <select id="sel-now">
+        <option>1학년 1학기</option>
+        <option disabled>재학생 학기 선택 (이수 과목 체크와 함께 연동 예정)</option>
+      </select>
+    </div>
+    <div class="cell"><label for="sel-job">행선지</label>
+      <select id="sel-job">
+        <option>네트워크 엔지니어</option>
+        <option>AI 개발자</option>
+      </select>
+    </div>
+    <div class="go" role="button" tabindex="0">출발 →</div>
+  </div>
+  <div class="scroll-cue">SCROLL — 노선을 따라 걸어보세요</div>
+</header>
+
+<!-- ================= 복도 ================= -->
+<div class="hallway" id="hallway">
+  <div class="stage">
+    <div class="skyline" aria-hidden="true">
+      <svg viewBox="0 0 1200 74" preserveAspectRatio="none" fill="currentColor">
+        <rect x="0" y="44" width="70" height="30"/><rect x="80" y="28" width="54" height="46"/>
+        <rect x="144" y="50" width="90" height="24"/><rect x="248" y="18" width="40" height="56"/>
+        <rect x="300" y="38" width="72" height="36"/><rect x="386" y="52" width="110" height="22"/>
+        <rect x="510" y="30" width="48" height="44"/><rect x="570" y="44" width="86" height="30"/>
+        <rect x="670" y="12" width="36" height="62"/><rect x="716" y="36" width="64" height="38"/>
+        <rect x="794" y="50" width="120" height="24"/><rect x="928" y="26" width="50" height="48"/>
+        <rect x="990" y="42" width="80" height="32"/><rect x="1084" y="54" width="116" height="20"/>
+      </svg>
+    </div>
+    <div class="cloud c1" aria-hidden="true"></div>
+    <div class="cloud c2" aria-hidden="true"></div>
+    <div class="scene" id="scene" style="--depth: 7200px">
+      <!-- 행선판들: JS가 채움 -->
+      <div class="gate" id="gate" style="transform: translate3d(-50%, -50%, -7000px)">
+        <div class="gate-board">
+          <div class="gate-kicker">FINAL DESTINATION</div>
+          <div class="gate-title" id="gate-job">네트워크 엔지니어</div>
+          <div id="gate-stats">3년 · 6학기 · 110학점 · 자격증 3종</div>
+          <div class="gate-badge">✓ 졸업요건 충족 — 검증기 통과</div>
+          <div class="gate-sub">이 노선의 모든 역은 졸업요건 검증기(규칙 코드)가 결정론적으로 검사했습니다</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="walker" id="walker" aria-hidden="true">
+      <svg viewBox="0 0 60 100" fill="none">
+        <ellipse class="w-shadow" cx="30" cy="94" rx="17" ry="4.2"/>
+        <g class="w-body">
+          <g class="w-leg a"><rect class="w-figure" x="22.5" y="60" width="7" height="27" rx="3.5"/></g>
+          <g class="w-leg b"><rect class="w-figure" x="30.5" y="60" width="7" height="27" rx="3.5"/></g>
+          <g class="w-arm a"><rect class="w-figure" x="14.5" y="38" width="6" height="22" rx="3" opacity=".82"/></g>
+          <g class="w-arm b"><rect class="w-figure" x="39.5" y="38" width="6" height="22" rx="3" opacity=".82"/></g>
+          <rect class="w-figure" x="17" y="32" width="26" height="33" rx="10"/>
+          <rect class="w-bag" x="8.5" y="36" width="11" height="23" rx="5.5"/>
+          <rect class="w-figure" x="20" y="37" width="4" height="19" rx="2" opacity=".55"/>
+          <circle class="w-figure" cx="30" cy="17" r="11.5"/>
+          <path class="w-cap" d="M18.5 15.5 a11.5 11.5 0 0 1 23 0 l-2.5 1.2 a9 9 0 0 0 -18 0 z"/>
+          <rect class="w-cap" x="27" y="4.2" width="11" height="3.6" rx="1.8" transform="rotate(-8 32 6)"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="hud" id="hud" aria-label="노선 진행 상태"></div>
+  </div>
+</div>
+
+<!-- ================= 학기 상세 오버레이 ================= -->
+<div class="detail" id="detail" role="dialog" aria-modal="true" aria-labelledby="detail-name">
+  <div class="detail-backdrop" data-close></div>
+  <div class="detail-panel">
+    <div class="detail-head">
+      <button class="detail-close" data-close aria-label="닫기">✕</button>
+      <span class="sign-line" id="detail-line"></span>
+      <div class="detail-title">
+        <h3 id="detail-name"></h3>
+        <span class="credits" id="detail-credits"></span>
+      </div>
+      <p class="detail-goal" id="detail-goal"></p>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+</div>
+
+<!-- ================= 도착 후 ================= -->
+<section class="after">
+  <div class="after-inner">
+    <h2>이 메인 페이지가 하는 일</h2>
+    <p class="lede">
+      레퍼런스(갤러리 워크스루)의 "관람객이 그림 사이를 걷는다"를
+      "학생이 행선판 사이를 걸어 목적지에 도착한다"로 치환한 컨셉입니다.
+      명지전문대 브랜드 컬러(네이비 #002D65 · 스카이 #6DCBF9 · 옐로 #FFBA00)를 그대로 썼습니다.
+    </p>
+    <div class="notes">
+      <div class="note"><b>행선판 = 학기</b><p>지하철 행선판 문법(이전역 ← 현재 → 다음역)이라 설명 없이 읽힙니다. 각 판 아래 백판에 과목·학점, 노란 배지에 자격증 타이밍.</p></div>
+      <div class="note"><b>복도 끝 = 목표 직무</b><p>스크롤을 끝까지 가면 금색 게이트(행선지)와 "졸업요건 충족 ✓" 검증 배지 — 발표 훅("저희 로드맵은 100% 졸업 가능합니다")이 화면으로 증명됩니다.</p></div>
+      <div class="note"><b>기술</b><p>CSS perspective + sticky + 스크롤 진행률 변수 하나. 외부 라이브러리 0. prefers-reduced-motion이면 세로 목록으로 풀립니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>MJC 취업 로드맵 에이전트 · 메인 페이지 컨셉 시안 · 목데이터</footer>
+
+<script>
+const ROADMAP_NET = [
+  { line: "1", name: "1학년 1학기", en: "YEAR 1 · SEM 1", credits: 18,
+    goal: "기초 체력 학기 — 코딩과 네트워크 개념을 동시에 시동",
+    courses: [
+      ["프로그래밍언어실습Ⅰ", "모든 후속 실습 과목이 이 언어 위에서 돈다 — 여기서 놓치면 2학년 내내 끌려다닌다"],
+      ["컴퓨터네트워크기초", "목표 직무의 핵심 선수과목. OSI 7계층은 면접 단골"],
+      ["디지털논리회로", "장비를 다루는 직무라면 하드웨어 동작 원리가 뿌리"],
+    ], cert: null, certTip: null },
+  { line: "2", name: "1학년 2학기", en: "YEAR 1 · SEM 2", credits: 19,
+    goal: "첫 자격증 학기 — 배운 범위가 식기 전에 시험으로 굳힌다",
+    courses: [
+      ["프로그래밍언어실습Ⅱ", "실습Ⅰ의 연장 — 방학 전까지 미니 프로젝트 1개를 만들어 둘 것"],
+      ["네트워크실무", "장비 CLI를 처음 만지는 과목. CCNA의 실습 기반"],
+      ["데이터베이스기초", "정보처리 계열 자격증 필기와 직결"],
+    ], cert: "정보처리기능사", certTip: "필기 범위가 1학기 과목과 크게 겹친다 — 기말 직후 4주 안에 응시하는 것이 가장 싸게 먹힌다" },
+  { line: "3", name: "2학년 1학기", en: "YEAR 2 · SEM 1", credits: 18,
+    goal: "직무 핵심 진입 — 수업이 곧 자격증 공부가 되는 학기",
+    courses: [
+      ["라우팅·스위칭", "네트워크 엔지니어 직무의 몸통. CCNA 출제 범위와 정면으로 겹친다"],
+      ["리눅스서버운용", "현장 장비 대부분이 리눅스 기반 — 채용공고 우대사항 단골"],
+      ["자료구조", "코딩테스트 대비는 이 학기에 뿌리를 둔다"],
+    ], cert: "CCNA 학습 시작", certTip: "라우팅·스위칭 수강과 병행하면 실습이 곧 시험공부다 — 따로 학원 갈 이유가 없어진다" },
+  { line: "4", name: "2학년 2학기", en: "YEAR 2 · SEM 2", credits: 18,
+    goal: "CCNA를 손에 쥐고 포트폴리오의 뼈대를 세우는 학기",
+    courses: [
+      ["무선네트워크", "유선+무선을 다 다루면 지원 가능한 공고 폭이 넓어진다"],
+      ["네트워크보안", "보안 지식은 네트워크 직무의 연봉 프리미엄"],
+      ["캡스톤디자인Ⅰ", "취업 포트폴리오 1번이 되는 프로젝트 — 주제를 직무와 맞출 것"],
+    ], cert: "CCNA 취득", certTip: "겨울방학 전 취득이 마지노선 — 3학년은 산업기사와 현장실습으로 자리가 없다" },
+  { line: "5", name: "3학년 1학기", en: "YEAR 3 · SEM 1", credits: 19,
+    goal: "응시 자격이 열리는 학기 — 산업기사와 클라우드로 마무리 스퍼트",
+    courses: [
+      ["클라우드인프라", "온프레미스+클라우드를 함께 아는 신입은 드물다 — 차별화 포인트"],
+      ["네트워크설계", "지금까지 배운 것을 설계 관점으로 묶는 종합 과목"],
+      ["캡스톤디자인Ⅱ", "포트폴리오 완성판 — 시연 영상까지 남겨둘 것"],
+    ], cert: "정보처리산업기사", certTip: "전문대 관련학과는 3학년부터 응시 자격이 생긴다 — 열리자마자 바로 치는 것이 이 로드맵의 설계" },
+  { line: "6", name: "3학년 2학기", en: "YEAR 3 · SEM 2", credits: 18,
+    goal: "현장으로 — 실습이 곧 채용 관문",
+    courses: [
+      ["현장실습(4주)", "취업 연계 확률이 가장 높은 관문 — 실습처 선택이 사실상 첫 직장 선택"],
+      ["취업역량강화", "이력서·면접을 학점으로 준비하는 마지막 정비 시간"],
+    ], cert: null, certTip: null },
+];
+
+const ROADMAP_AI = [
+  { line: "1", name: "1학년 1학기", en: "YEAR 1 · SEM 1", credits: 18,
+    goal: "기초 체력 학기 — 코딩 근육을 먼저 만든다",
+    courses: [
+      ["프로그래밍언어실습Ⅰ", "AI 트랙도 출발은 같다 — 언어 기초 없이는 모델도 없다"],
+      ["컴퓨터네트워크기초", "서비스로 배포되는 AI를 이해하려면 네트워크가 바탕"],
+      ["디지털논리회로", "하드웨어 이해는 어느 트랙이든 뿌리"],
+    ], cert: null, certTip: null },
+  { line: "2", name: "1학년 2학기", en: "YEAR 1 · SEM 2", credits: 19,
+    goal: "파이썬과 데이터베이스 — AI 트랙의 두 기둥을 세운다",
+    courses: [
+      ["파이썬프로그래밍", "AI 생태계의 공용어 — 방학 프로젝트 1개를 만들어 둘 것"],
+      ["데이터베이스기초", "모델보다 데이터가 먼저다 — SQL은 채용공고 필수 단골"],
+      ["프로그래밍언어실습Ⅱ", "자료구조 수강 전 마지막 언어 훈련"],
+    ], cert: "정보처리기능사", certTip: "필기 범위가 1학기 과목과 크게 겹친다 — 기말 직후 4주 안에 응시" },
+  { line: "3", name: "2학년 1학기", en: "YEAR 2 · SEM 1", credits: 18,
+    goal: "수학과 자료구조 — 모델을 '쓰는' 사람에서 '이해하는' 사람으로",
+    courses: [
+      ["자료구조", "코딩테스트와 모델 구현 양쪽의 뿌리"],
+      ["인공지능수학", "선형대수·확률 없이 면접 질문을 못 넘는다"],
+      ["리눅스서버운용", "학습 서버·GPU 환경은 전부 리눅스"],
+    ], cert: "ADsP 학습 시작", certTip: "데이터분석 준전문가는 응시 제한이 없다 — 인공지능수학과 병행하면 시험공부가 겹친다" },
+  { line: "4", name: "2학년 2학기", en: "YEAR 2 · SEM 2", credits: 18,
+    goal: "머신러닝 진입 + 포트폴리오 1호",
+    courses: [
+      ["머신러닝기초", "직무 핵심 과목 — 과제 산출물을 그대로 깃허브에"],
+      ["데이터분석실습", "실데이터 전처리 경험이 신입의 차별화"],
+      ["캡스톤디자인Ⅰ", "AI 주제로 잡아 포트폴리오 1호로 만들 것"],
+    ], cert: "ADsP 취득", certTip: "겨울방학 전 취득 — 3학년은 산업기사와 현장실습으로 자리가 없다" },
+  { line: "5", name: "3학년 1학기", en: "YEAR 3 · SEM 1", credits: 19,
+    goal: "응시 자격이 열리는 학기 — 딥러닝과 클라우드로 스퍼트",
+    courses: [
+      ["딥러닝응용", "모델 서빙까지 다뤄본 전문대 신입은 드물다"],
+      ["클라우드인프라", "학습·배포 인프라 경험 — AI 직무 우대사항 단골"],
+      ["캡스톤디자인Ⅱ", "포트폴리오 완성판 — 시연 영상까지"],
+    ], cert: "정보처리산업기사", certTip: "전문대 관련학과는 3학년부터 응시 자격 — 열리자마자 바로 친다" },
+  { line: "6", name: "3학년 2학기", en: "YEAR 3 · SEM 2", credits: 18,
+    goal: "현장으로 — 실습이 곧 채용 관문",
+    courses: [
+      ["현장실습(4주)", "AI 직무는 실습 연계 채용 비중이 특히 높다"],
+      ["취업역량강화", "이력서·면접을 학점으로 준비하는 마지막 정비 시간"],
+    ], cert: null, certTip: null },
+];
+
+const ROADMAPS = { "네트워크 엔지니어": ROADMAP_NET, "AI 개발자": ROADMAP_AI };
+let SEMESTERS = ROADMAPS["네트워크 엔지니어"];
+
+const GAP = 1050;                 // 행선판 간 깊이
+const scene = document.getElementById("scene");
+const gate = document.getElementById("gate");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* 장면은 로드맵이 바뀔 때마다 다시 짓는다 */
+let posts = [], lampEls = [], groundSegs = [];
+let stops = [], hudsegs = [], hudlabel = null;
+let DEPTH = 0;
+let currentJob = "네트워크 엔지니어";
+
+function buildScene() {
+  scene.querySelectorAll(".signpost, .lamp, .railseg, .tacseg, .fenceseg")
+    .forEach(n => n.remove());
+  posts = []; lampEls = []; groundSegs = [];
+
+  posts = SEMESTERS.map((s, i) => {
+  const prev = SEMESTERS[i-1], next = SEMESTERS[i+1];
+  const el = document.createElement("div");
+  el.className = "signpost";
+  const z = -(i + 1) * GAP;
+  el.style.transform = `translate3d(-50%, -50%, ${z}px)`;
+  el.dataset.z = z;
+  el.innerHTML = `
+    <div class="signboard">
+      <span class="sign-line">MJ<b>0${s.line}</b></span>
+      <div class="sign-route">
+        <span class="dir prev"><i>◀</i>${prev ? prev.name : "출발"}</span>
+        <span class="dir next">${next ? next.name : "행선지"}<i>▶</i></span>
+      </div>
+      <div class="sign-name">${s.name}<small>${s.en}</small></div>
+      <span class="sign-hint">CLICK — 학기 상세</span>
+    </div>
+    <div class="plaque">
+      <div class="row"><b>이수 과목</b><span class="credits">${s.credits}학점</span></div>
+      <ul>${s.courses.map(c => `<li>${c[0]}</li>`).join("")}</ul>
+      ${s.cert ? `<span class="cert">🎫 ${s.cert}</span>` : ""}
+    </div>
+    <span class="pole l"></span><span class="pole r"></span>`;
+  el.tabIndex = 0;
+  el.setAttribute("role", "button");
+  el.setAttribute("aria-label", s.name + " 상세 보기");
+  el.addEventListener("click", () => openDetail(i));
+  el.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDetail(i); }
+  });
+  scene.insertBefore(el, gate);
+  /* 역 사이마다 가로등 (양옆 — 행선판을 가리지 않게 바깥쪽 + 근접 페이드) */
+  for (const side of ["ls", "rs"]) {
+    const lamp = document.createElement("div");
+    lamp.className = "lamp " + side;
+    const lz = z + GAP / 2;
+    const x = side === "ls" ? -310 : 302;
+    lamp.style.transform = `translateX(${x}px) translateZ(${lz}px)`;
+    lamp.dataset.z = lz;
+    lampEls.push(lamp);
+    scene.insertBefore(lamp, gate);
+  }
+  return el;
+});
+  gate.dataset.z = -(SEMESTERS.length + 1.6) * GAP;
+  gate.style.transform = `translate3d(-50%, -50%, ${gate.dataset.z}px)`;
+  /* 카메라는 게이트 420px 앞에서 멈춘다 — 게이트를 지나치면 도착 장면이 사라진다 */
+  DEPTH = Math.abs(+gate.dataset.z) - 500;
+  scene.style.setProperty("--depth", DEPTH + "px");
+
+  /* 도로·안전선·펜스 — 세그먼트 배치 (거대 단일 평면은 카메라 교차 시 통째로 컬링됨) */
+  function seg(cls, transform, z0, len) {
+    const d = document.createElement("div");
+    d.className = cls;
+    d.style.transform = transform;
+    d.dataset.z0 = z0;
+    d.dataset.len = len;
+    scene.insertBefore(d, gate);
+    groundSegs.push(d);
+  }
+  const ROADLEN = Math.abs(+gate.dataset.z);
+  const SEGLEN = 300;
+  for (let z0 = 0; z0 > -ROADLEN - SEGLEN; z0 -= SEGLEN) {
+    seg("railseg", `translateZ(${z0}px) rotateX(90deg)`, z0, SEGLEN);
+    seg("tacseg", `translateX(-150px) translateZ(${z0}px) rotateX(90deg)`, z0, SEGLEN);
+    seg("tacseg", `translateX(150px) translateZ(${z0}px) rotateX(90deg)`, z0, SEGLEN);
+  }
+  for (let z0 = 0; z0 > -ROADLEN - GAP; z0 -= GAP) {
+    seg("fenceseg", `translateX(-250px) translateZ(${z0}px) rotateY(90deg)`, z0, GAP);
+    seg("fenceseg", `translateX(250px) translateZ(${z0}px) rotateY(90deg)`, z0, GAP);
+  }
+
+  /* 도착 게이트 내용 */
+  const certCount = SEMESTERS.filter(s => s.cert && !s.cert.includes("학습")).length;
+  const totalCredits = SEMESTERS.reduce((a, s) => a + s.credits, 0);
+  document.getElementById("gate-job").textContent = currentJob;
+  document.getElementById("gate-stats").textContent =
+    `3년 · ${SEMESTERS.length}학기 · ${totalCredits}학점 · 자격증 ${certCount}종`;
+
+  /* HUD */
+  hud.innerHTML =
+    SEMESTERS.map((s, i) =>
+      `${i ? '<span class="seg"></span>' : ""}<span class="stop" title="${s.name}"></span>`
+    ).join("") +
+    '<span class="seg"></span><span class="stop goal" title="행선지"></span>' +
+    '<span class="label" id="hudlabel">출발 전</span>';
+  stops = [...hud.querySelectorAll(".stop")];
+  hudsegs = [...hud.querySelectorAll(".seg")];
+  hudlabel = document.getElementById("hudlabel");
+}
+
+const hud = document.getElementById("hud");
+buildScene();
+
+/* 스크롤 → 장면 전진 */
+const hallway = document.getElementById("hallway");
+const walker = document.getElementById("walker");
+let idleTimer;
+
+function paint() {
+  const r = hallway.getBoundingClientRect();
+  const total = r.height - innerHeight;
+  const p = Math.min(1, Math.max(0, -r.top / total));
+  scene.style.transform = `translateZ(${p * DEPTH}px)`;
+
+  const camZ = -p * DEPTH;                       // 카메라가 향해 가는 z
+  posts.forEach(el => {                          // 게이트는 페이드 대상에서 제외 — 항상 도착 장면 유지
+    const dz = +el.dataset.z - camZ;             // 카메라 기준 상대 깊이 (음수 = 앞쪽)
+    el.style.opacity = dz > -80 ? 0 : dz > -260 ? (-dz - 80) / 180 : 1;
+  });
+  /* 완전히 지나간 바닥 세그먼트만 숨긴다 (발밑 조각은 유지) */
+  groundSegs.forEach(el => {
+    el.style.visibility =
+      +el.dataset.z0 - +el.dataset.len > camZ ? "hidden" : "visible";
+  });
+  /* 가로등도 카메라에 가까워지면 페이드 — 행선판을 가리는 순간을 없앤다 */
+  lampEls.forEach(el => {
+    const dz = +el.dataset.z - camZ;
+    el.style.opacity = dz > -70 ? 0 : dz > -320 ? (-dz - 70) / 250 : 1;
+  });
+
+  const seg = 1 / (SEMESTERS.length + 1.6);
+  const idx = Math.min(SEMESTERS.length, Math.floor(p / seg));
+  stops.forEach((el, i) => {
+    el.classList.toggle("past", i < idx);
+    el.classList.toggle("here", i === idx);
+  });
+  hudsegs.forEach((el, i) => el.classList.toggle("past", i < idx));
+  hudlabel.textContent =
+    p <= 0.005 ? "출발 전"
+    : idx >= SEMESTERS.length ? "행선지 도착"
+    : SEMESTERS[idx].name;
+
+  walker.classList.add("walking");
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => walker.classList.remove("walking"), 220);
+}
+
+if (!reduced) {
+  let ticking = false;
+  addEventListener("scroll", () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(() => { paint(); ticking = false; });
+    }
+  }, { passive: true });
+  addEventListener("resize", paint, { passive: true });
+  paint();
+}
+
+/* ---- 출발: 로드맵 요청 → 장면 재구축 → 복도로 ----
+   API 심(seam): 서버가 있으면 POST /roadmap, 없으면 목데이터 폴백.
+   동제 API가 붙으면 adaptRoadmap만 응답 스키마에 맞추면 된다. */
+async function fetchRoadmap(job) {
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 1200);
+    const r = await fetch("/roadmap", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dept_id: "itc", current_year: 1, current_semester: 1,
+        completed_courses: [],          // course_id 배열 (동결 스키마 — 과목명 금지)
+        target_job: job,
+      }),
+      signal: ctl.signal,
+    });
+    clearTimeout(t);
+    if (!r.ok) throw new Error(r.status);
+    return adaptRoadmap(await r.json());
+  } catch {
+    return ROADMAPS[job];              // 서버 없음/실패 → 목데이터
+  }
+}
+function adaptRoadmap(api) {
+  /* TODO(P2 합의 후): API semesters[] → 뷰모델 매핑.
+     goal·과목별 추천 이유·certTip 필드 추가 여부는 스키마 동결 변경 건 — 3인 합의 필요 */
+  if (Array.isArray(api?.semesters) && api.semesters[0]?.goal) return api.semesters;
+  throw new Error("unadapted");
+}
+
+document.querySelector(".go").addEventListener("click", async () => {
+  const job = document.getElementById("sel-job").value;
+  if (job !== currentJob || true) {
+    currentJob = job;
+    SEMESTERS = await fetchRoadmap(job);
+    buildScene();
+    paint();
+  }
+  hallway.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+});
+
+
+/* ---- 학기 상세 오버레이 ---- */
+const detail = document.getElementById("detail");
+let lastFocus = null;
+
+function openDetail(i) {
+  const s = SEMESTERS[i];
+  document.getElementById("detail-line").innerHTML = `MJ<b>0${s.line}</b>`;
+  document.getElementById("detail-name").textContent = s.name;
+  document.getElementById("detail-credits").textContent = s.credits + "학점 · " + s.en;
+  document.getElementById("detail-goal").textContent = "이 학기의 목표 — " + s.goal;
+  document.getElementById("detail-body").innerHTML = `
+    <h4>이수 과목 · 왜 이 학기인가</h4>
+    ${s.courses.map(([name, why]) => `
+      <div class="course-card"><b>${name}</b><p>${why}</p></div>`).join("")}
+    ${s.cert ? `
+      <h4>자격증 타이밍</h4>
+      <div class="cert-card"><b>🎫 ${s.cert}</b><p>${s.certTip || ""}</p></div>` : ""}
+    <p class="detail-foot">추천 근거: 교육과정표(이수구분·인재양성유형) × NCS 직무기술서 매핑 — 데모 목데이터. 실서비스에서는 검증기 통과 결과와 함께 제공됩니다.</p>`;
+  lastFocus = document.activeElement;
+  detail.classList.add("open");
+  document.body.style.overflow = "hidden";
+  detail.querySelector(".detail-close").focus();
+}
+function closeDetail() {
+  detail.classList.remove("open");
+  document.body.style.overflow = "";
+  if (lastFocus) lastFocus.focus();
+}
+detail.addEventListener("click", e => { if (e.target.dataset.close !== undefined) closeDetail(); });
+addEventListener("keydown", e => {
+  if (e.key === "Escape" && detail.classList.contains("open")) closeDetail();
+});
+</script>

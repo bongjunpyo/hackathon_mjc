@@ -100,7 +100,7 @@ web/
 
 | 엔드포인트 | 핵심 |
 |---|---|
-| `POST /roadmap` | in `completed_courses: [course_id]` / out `semesters[]` + `validation.details: [{rule, required, actual, shortfall}]` |
+| `POST /roadmap` | in `completed_courses: [course_id]` / out `semesters[]` + `validation{passed, total_credits, major_credits, liberal_credits, semesters, details: [{rule, label, required, actual, shortfall}]}` |
 | `GET /report/{dept_id}` | `jobs[]` — coverage_pct · gaps · label_mismatches |
 | `GET /depts` | `[{dept_id, dept_name, years, tier}]` |
 | `POST /auth/signup·login·refresh`, `GET /me`, `PUT /me/courses` | 인증 5종 — 코어 통합 후 착수 |
