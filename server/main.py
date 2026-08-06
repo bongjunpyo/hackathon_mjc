@@ -17,7 +17,14 @@ import auth
 import catalog
 import db
 from catalog import CatalogError
-from errors import ApiError, api_error_handler, validation_error_handler
+from sqlalchemy.exc import SQLAlchemyError
+
+from errors import (
+    ApiError,
+    api_error_handler,
+    db_error_handler,
+    validation_error_handler,
+)
 from loop import generate_roadmap
 from planner import generate as generate_roadmap_plan
 from report import build_report
@@ -32,6 +39,7 @@ async def lifespan(_):
 app = FastAPI(title="MJC 취업 로드맵 에이전트", lifespan=lifespan)
 app.add_exception_handler(ApiError, api_error_handler)
 app.add_exception_handler(RequestValidationError, validation_error_handler)
+app.add_exception_handler(SQLAlchemyError, db_error_handler)
 
 # 부가 기능. 10:00 컷 시 이 한 줄만 빼면 코어는 그대로 돈다
 app.include_router(auth.router)

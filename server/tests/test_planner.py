@@ -164,3 +164,21 @@ def test_재생성_루프가_충족률을_올린다():
     assert off["validation"]["passed"] is False
     assert any(d["rule"] == "major_credits" for d in off["validation"]["details"])
     assert on["validation"]["passed"] is True
+
+
+# --- LLM 에이전트가 검증기 계약과 어긋나지 않는지 ---
+
+
+def test_에이전트가_검증기_룰_이름을_그대로_쓴다():
+    """agent.py는 REQUIREMENTS 키를 프롬프트에 꽂는다. 룰 이름을 바꾸면 조용히
+    KeyError로 죽는데, API 호출 전이라 로그도 안 남는다 — 실제로 그랬다."""
+    import re
+    from pathlib import Path
+
+    from validator import REQUIREMENTS
+
+    source = (Path(__file__).parent.parent / "agent.py").read_text(encoding="utf-8")
+    used = set(re.findall(r'req\["(\w+)"\]', source))
+
+    assert used, "agent.py가 REQUIREMENTS를 안 쓴다면 이 테스트를 지운다"
+    assert used <= set(REQUIREMENTS[3]), f"검증기에 없는 키: {used - set(REQUIREMENTS[3])}"
