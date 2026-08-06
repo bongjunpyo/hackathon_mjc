@@ -29,10 +29,9 @@ export default function Corridor({ semesters, targetJob, stats, onSelect }) {
   const ground = useMemo(() => {
     const road = Math.abs(gateZ);
     const items = [];
+    // 보도는 한 장으로 — 점자블록은 배경 레이어라 별도 평면이 아니다 (z-파이팅·틈 방지)
     for (let z = 0; z > -road - SEGLEN; z -= SEGLEN) {
-      items.push({ cls: "railseg", z, len: SEGLEN, t: `translateZ(${z}px) rotateX(90deg)` });
-      items.push({ cls: "tacseg", z, len: SEGLEN, t: `translateX(-150px) translateZ(${z}px) rotateX(90deg)` });
-      items.push({ cls: "tacseg", z, len: SEGLEN, t: `translateX(150px) translateZ(${z}px) rotateX(90deg)` });
+      items.push({ cls: "walkseg", z, len: SEGLEN, t: `translateZ(${z}px) rotateX(90deg)` });
     }
     for (let z = 0; z > -road - GAP; z -= GAP) {
       items.push({ cls: "fenceseg", z, len: GAP, t: `translateX(-250px) translateZ(${z}px) rotateY(90deg)` });
@@ -58,14 +57,33 @@ export default function Corridor({ semesters, targetJob, stats, onSelect }) {
     const hallway = hallwayRef.current;
     const scene = sceneRef.current;
     const walker = walkerRef.current;
+    const stage = scene.parentElement;
     let ticking = false;
     let idleTimer;
+    let lastZ = null;
+    let lastT = 0;
 
     function paint() {
       const r = hallway.getBoundingClientRect();
       const total = r.height - window.innerHeight;
       const p = Math.min(1, Math.max(0, -r.top / total));
       scene.style.transform = `translateZ(${p * depth}px)`;
+
+      /* 걸음–노면 속도 동기화.
+         보폭을 고정 px로 보고 "몇 초에 한 걸음인가"를 실제 전진 속도에서 역산한다.
+         이게 어긋나면 발이 미끄러지는 것처럼 보여 "도로가 온다"로 읽힌다. */
+      const now = performance.now();
+      const z = p * depth;
+      if (lastZ !== null && now > lastT) {
+        const pxPerSec = Math.abs(z - lastZ) / ((now - lastT) / 1000);
+        const STRIDE = 620; // 한 걸음이 덮는 z 거리
+        const step = Math.min(1.1, Math.max(0.18, STRIDE / Math.max(pxPerSec, 1)));
+        walker.style.setProperty("--step", `${step.toFixed(3)}s`);
+        // 카메라 보행 바운스 — 걸음 주기의 2배 진동(한 걸음마다 상하 1회)
+        stage.style.setProperty("--bob", `${step.toFixed(3)}s`);
+      }
+      lastZ = z;
+      lastT = now;
 
       const camZ = -p * depth;
       // 카메라에 닿기 직전 요소는 페이드 — 화면을 가로막는 순간을 없앤다
@@ -89,8 +107,12 @@ export default function Corridor({ semesters, targetJob, stats, onSelect }) {
       setHudIndex(Math.min(semesters.length, Math.floor(p / seg)));
 
       walker.classList.add("walking");
+      stage.classList.add("walking");
       clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => walker.classList.remove("walking"), 220);
+      idleTimer = setTimeout(() => {
+        walker.classList.remove("walking");
+        stage.classList.remove("walking");
+      }, 220);
     }
 
     const onScroll = () => {
@@ -218,6 +240,11 @@ function SignPost({ ref, s, index, z, prev, next, onSelect }) {
         <span className="sign-line">
           MJ<b>0{index + 1}</b>
         </span>
+        <div className="sign-name">
+          {s.name}
+          <small>{s.en}</small>
+        </div>
+        {/* 이전역 ← 현재 → 다음역: 역명판 문법대로 판 아래쪽에 둔다 */}
         <div className="sign-route">
           <span className="dir prev">
             <i>◀</i>
@@ -227,10 +254,6 @@ function SignPost({ ref, s, index, z, prev, next, onSelect }) {
             {next ? next.name : "행선지"}
             <i>▶</i>
           </span>
-        </div>
-        <div className="sign-name">
-          {s.name}
-          <small>{s.en}</small>
         </div>
       </div>
       <div className="plaque">
