@@ -432,6 +432,18 @@ def test_남의_이메일_티켓으로는_가입할_수_없다(client):
     assert "access_token" not in res.json()
 
 
+def test_아이디_중복_확인(client):
+    assert client.post("/auth/check-id", json={"student_id": "202512345"}).json() == {
+        "available": True
+    }
+
+    client.post("/auth/signup", json=SIGNUP)
+
+    assert client.post("/auth/check-id", json={"student_id": "202512345"}).json() == {
+        "available": False
+    }
+
+
 def test_약관에_동의하지_않으면_가입이_막힌다(client):
     """화면에서도 막지만 서버가 최종이다 — 클라이언트를 신뢰하지 않는다."""
     res = client.post(

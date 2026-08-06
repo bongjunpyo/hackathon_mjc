@@ -171,6 +171,8 @@ export async function getReport(deptId) {
 
 export const auth = {
   signup: (b) => call("/auth/signup", { method: "POST", body: b }),
+  checkId: (student_id) =>
+    call("/auth/check-id", { method: "POST", body: { student_id } }),
   sendEmailCode: (email) => call("/auth/email/code", { method: "POST", body: { email } }),
   verifyEmailCode: (email, code) =>
     call("/auth/email/verify", { method: "POST", body: { email, code } }),
