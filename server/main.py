@@ -19,6 +19,7 @@ from pathlib import Path  # noqa: E402
 
 from fastapi import FastAPI  # noqa: E402
 from fastapi.exceptions import RequestValidationError  # noqa: E402
+from fastapi.responses import FileResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
@@ -196,4 +197,12 @@ def get_report(dept_id: str):
 # 정적 서빙은 반드시 맨 마지막. web/dist가 없어도 서버는 떠야 한다 (P3 빌드 전 API 테스트)
 _dist = Path(__file__).parent.parent / "web" / "dist"
 if _dist.is_dir():
+
+    # 화면 경로는 전부 /app/* 아래다 (PR #7). StaticFiles(html=True)는 루트만
+    # index.html로 떨어뜨려서, 시연 중 /app/*에서 새로고침 한 번이면 404가 났다
+    # (이슈 #50). API와 안 겹치는 /app/*만 SPA 폴백한다
+    @app.get("/app/{rest:path}")
+    def spa(rest: str):
+        return FileResponse(_dist / "index.html")
+
     app.mount("/", StaticFiles(directory=_dist, html=True), name="web")

@@ -307,3 +307,24 @@ def test_직무를_고르면_추천_필드가_없다(client):
 
     assert "job_recommended" not in body
     assert "recommended_jobs" not in body
+
+
+def test_화면_경로_새로고침이_404가_아니다(client):
+    """시연 중 /app/*에서 F5 한 번이면 404가 났다 (이슈 #50).
+
+    StaticFiles(html=True)는 루트만 index.html로 떨어뜨린다 — /app/*는
+    별도 SPA 폴백이 받아야 한다. dist가 없는 테스트 환경에선 라우트 자체가
+    없으므로, dist가 있을 때만 검사한다.
+    """
+    from pathlib import Path
+
+    import main as main_module
+
+    dist = Path(main_module.__file__).parent.parent / "web" / "dist"
+    if not dist.is_dir():
+        return
+
+    res = client.get("/app/roadmap")
+
+    assert res.status_code == 200
+    assert "text/html" in res.headers["content-type"]
