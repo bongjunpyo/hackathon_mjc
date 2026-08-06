@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { BrowserRouter, Link, NavLink, Route, Routes } from "react-router-dom";
 import { AppProvider, useApp } from "./store";
+import { auth } from "./lib/api";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Input from "./pages/Input";
@@ -39,12 +41,40 @@ function Nav() {
   );
 }
 
+/* 이메일 인증 링크를 누르면 서버가 ?code=를 붙여 프론트로 되돌려보낸다
+   (server/auth.py VERIFY_LANDING). 어느 경로로 떨어지든 잡히도록 라우트 바깥에 둔다. */
+function VerifyExchange() {
+  const { login } = useApp();
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get("code");
+    if (!code) return;
+    // 1회용 코드다. 주소에 남겨두면 새로고침 때 이미 쓴 코드로 다시 교환해 실패한다
+    url.searchParams.delete("code");
+    window.history.replaceState(null, "", url);
+    auth
+      .exchange(code)
+      .then(({ access_token }) => login(access_token))
+      .catch((err) => setError(err.message));
+  }, []);
+
+  if (!error) return null;
+  return (
+    <p className="mb-6 rounded-lg border border-gold/60 bg-gold/15 px-3 py-2 text-sm text-navy">
+      {error} <Link to="/app/login" className="font-bold underline">로그인 화면으로</Link>
+    </p>
+  );
+}
+
 export default function App() {
   return (
     <AppProvider>
       <BrowserRouter>
         <Nav />
         <main className="mx-auto max-w-6xl px-5 py-8">
+          <VerifyExchange />
           {/* 화면 경로는 /app/* 로 묶는다 — 동결된 API 경로(/roadmap, /report/*, /auth/*)와
               충돌하면 dev 프록시와 프로덕션 catch-all 양쪽에서 화면이 API로 새어나간다 */}
           <Routes>

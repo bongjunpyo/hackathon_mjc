@@ -27,7 +27,11 @@ async function call(path, { method = "GET", body, timeoutMs = TIMEOUT_MS } = {})
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new ApiError(err?.error?.message ?? `요청 실패 (${res.status})`, res.status);
+      throw new ApiError(
+        err?.error?.message ?? `요청 실패 (${res.status})`,
+        res.status,
+        err?.error?.code,
+      );
     }
     return res.json();
   } finally {
@@ -36,9 +40,10 @@ async function call(path, { method = "GET", body, timeoutMs = TIMEOUT_MS } = {})
 }
 
 export class ApiError extends Error {
-  constructor(message, status) {
+  constructor(message, status, code) {
     super(message);
     this.status = status;
+    this.code = code; // EMAIL_NOT_VERIFIED 처럼 화면이 분기하는 코드가 있다
   }
 }
 
@@ -166,7 +171,13 @@ export async function getReport(deptId) {
 
 export const auth = {
   signup: (b) => call("/auth/signup", { method: "POST", body: b }),
+  sendEmailCode: (email) => call("/auth/email/code", { method: "POST", body: { email } }),
+  verifyEmailCode: (email, code) =>
+    call("/auth/email/verify", { method: "POST", body: { email, code } }),
   login: (b) => call("/auth/login", { method: "POST", body: b }),
+  resend: (email) => call("/auth/resend", { method: "POST", body: { email } }),
+  // 인증 메일 링크 → 서버가 ?code=로 되돌려보낸다. 60초짜리 1회용 코드다
+  exchange: (code) => call("/auth/exchange", { method: "POST", body: { code } }),
   me: () => call("/me"),
   saveCourses: (courseIds) =>
     call("/me/courses", { method: "PUT", body: { completed_courses: courseIds } }),
