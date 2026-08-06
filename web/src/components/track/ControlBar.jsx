@@ -19,6 +19,7 @@ export default function ControlBar({ value, onChange, onGenerate, loading }) {
   const candidates = dept
     ? jobEvidence(dept.id, atomicJobs([...dept.careers, ...(dept.promoted ?? [])]))
     : [];
+  const picked = candidates.find((c) => c.job === value.jobChoice);
   const [drawer, setDrawer] = useState(false);
   const past = dept && value.year ? coursesBefore(dept.id, value.year, value.semester) : [];
   const checked = new Set(value.completedCourses);
@@ -115,10 +116,15 @@ export default function ControlBar({ value, onChange, onGenerate, loading }) {
           <option value="">직무 분야</option>
           {candidates.length > 0 && (
             <optgroup label="이 학과 교육과정에서 갈 수 있는 직무">
+              {/* 근거 0은 침묵하지 않는다 — 고르기 전에 "졸업요건 위주 로드맵이 나온다"를
+                 알 수 있어야 한다. 숨기지는 않는다: 학과가 홍보하는 진로를 학생 화면에서
+                 지우면 그게 더 이상하다 (이슈 #85) */}
               {candidates.map((c) => (
                 <option key={c.job} value={c.job}>
                   {c.job}
-                  {c.courses > 0 && ` — 관련 ${c.courses}과목 ${c.credits}학점`}
+                  {c.courses > 0
+                    ? ` — 관련 ${c.courses}과목 ${c.credits}학점`
+                    : " — 교육과정 대응 없음"}
                 </option>
               ))}
             </optgroup>
@@ -148,6 +154,14 @@ export default function ControlBar({ value, onChange, onGenerate, loading }) {
           {loading ? "생성 중…" : value.jobChoice === UNDECIDED ? "추천받아 생성" : "로드맵 생성"}
         </button>
       </div>
+
+      {/* 근거 없는 직무를 고른 상태 — 드롭다운을 닫으면 옵션 문구가 안 보인다 */}
+      {picked && picked.courses === 0 && (
+        <p className="rounded-lg border border-dashed border-edge bg-sky-soft/60 px-3 py-2 text-xs text-steel">
+          ⚠ <b className="text-navy">{picked.job}</b>에 대응하는 교육과정 라벨이 없습니다 —
+          생성하면 졸업요건을 채운 일반 로드맵이 나옵니다.
+        </p>
+      )}
 
       {/* 기타 — 후보에 없는 직무는 여기서만 받는다. 가장 가까운 라벨로 역산한다 */}
       {value.jobChoice === OTHER && (
