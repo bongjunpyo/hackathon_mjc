@@ -33,27 +33,9 @@
   --gut: clamp(20px, 5vw, 64px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --hall:      #0A1626;
-    --hall-far:  #050D18;
-    --floor:     #0E1C30;
-    --figure:    #6DCBF9;
-    --ink:       #E6EEF8;
-    --ink-2:     #B7C8DC;
-    --steel:     #7E96B0;
-    --surface:   #10203A;
-    --edge:      #24405E;
-    --sky-soft:  #12253E;
-    --board:     #0A2A57;
-  }
-}
-:root[data-theme="dark"] {
-  --hall: #0A1626; --hall-far: #050D18; --floor: #0E1C30; --figure: #6DCBF9;
-  --ink: #E6EEF8; --ink-2: #B7C8DC; --steel: #7E96B0;
-  --surface: #10203A; --edge: #24405E; --sky-soft: #12253E; --board: #0A2A57;
-}
-:root[data-theme="light"] {
+/* 의도적 단일 테마 — 명지전문대 홈페이지처럼 밝은 낮 야외 톤으로 고정 */
+:root, :root[data-theme="dark"], :root[data-theme="light"] {
+  color-scheme: light;
   --hall: #F3F7FC; --hall-far: #DCE7F3; --floor: #E7EEF7; --figure: #002D65;
   --ink: #0B2038; --ink-2: #335070; --steel: #6B84A0;
   --surface: #FFFFFF; --edge: #C9D8EA; --sky-soft: #E8F0FE; --board: #002D65;
@@ -151,14 +133,53 @@ h1,h2,h3 { margin: 0; line-height: 1.15; letter-spacing: -0.02em; text-wrap: bal
   perspective: 950px;
   perspective-origin: 50% 46%;
   background:
-    linear-gradient(var(--hall) 0%, var(--hall) 55%, var(--floor) 55.2%, var(--hall-far) 100%);
+    /* 하늘 → 지평선 → 보도 */
+    linear-gradient(
+      #BFE0F8 0%, #D8ECFB 30%, #EDF6FE 54.6%,
+      #DCE3EA 55%, #E9EDF1 74%, #F2F4F6 100%);
 }
-/* 소실점 안개 */
+/* 해 — 우상단 */
+.stage::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle 220px at 82% 12%,
+    color-mix(in srgb, var(--gold) 42%, #fff) 0%,
+    color-mix(in srgb, var(--gold) 18%, transparent) 34%,
+    transparent 62%);
+  pointer-events: none;
+}
+/* 소실점 대기 원근 — 지평선 부근만 얇게 */
 .stage::after {
   content: ""; position: absolute; inset: 0;
-  background: radial-gradient(ellipse 60% 46% at 50% 46%, var(--hall-far), transparent 70%);
-  pointer-events: none; opacity: .6;
+  background: radial-gradient(ellipse 46% 16% at 50% 55%, rgba(255,255,255,.9), transparent 62%);
+  pointer-events: none;
 }
+/* 지평선 스카이라인 (원경 캠퍼스) */
+.skyline {
+  position: absolute; left: 0; right: 0; top: 55%;
+  height: 74px; translate: 0 -100%;
+  color: var(--navy);
+  opacity: .14;
+  pointer-events: none;
+}
+.skyline svg { width: 100%; height: 100%; display: block; }
+/* 구름 */
+.cloud {
+  position: absolute;
+  width: 150px; height: 34px; border-radius: 999px;
+  background: rgba(255,255,255,.92);
+  filter: blur(1px);
+  box-shadow: 0 6px 18px rgba(0,45,101,.05);
+  pointer-events: none;
+}
+.cloud::before, .cloud::after {
+  content: ""; position: absolute; border-radius: 50%;
+  background: inherit;
+}
+.cloud::before { width: 62px; height: 52px; left: 24px; top: -24px; }
+.cloud::after  { width: 46px; height: 38px; right: 26px; top: -16px; }
+.cloud.c1 { top: 10%; left: -160px; animation: drift 76s linear infinite; }
+.cloud.c2 { top: 22%; left: -160px; scale: .62; opacity: .8; animation: drift 104s linear infinite; animation-delay: -48s; }
+@keyframes drift { to { translate: calc(100vw + 340px) 0; } }
 .scene {
   position: absolute; inset: 0;
   transform-style: preserve-3d;
@@ -166,46 +187,68 @@ h1,h2,h3 { margin: 0; line-height: 1.15; letter-spacing: -0.02em; text-wrap: bal
   will-change: transform;
 }
 
-/* 중앙 노선 (바닥) */
-.railline {
+/* 도로·안전선·펜스는 역 간격(GAP) 세그먼트로 분할 —
+   한 장짜리 거대 평면은 앵커가 카메라 뒤로 가는 순간 통째로 컬링된다 */
+.railseg {
   position: absolute; left: 50%; top: 55%;
-  width: 8px; height: var(--depth);
+  width: 8px; height: 302px;
   translate: -50% 0;
-  transform: rotateX(90deg);
   transform-origin: top center;
   background: repeating-linear-gradient(
-    to bottom,
-    var(--gold) 0 46px,
-    transparent 46px 92px
-  );
-  opacity: .8;
+    to bottom, var(--gold) 0 44px, transparent 44px 87.5px);
+  opacity: .9;
+  pointer-events: none;
 }
-/* 승강장 안전선 — 점자블록 (노선 양옆) */
-.tactile {
+.tacseg {
   position: absolute; left: 50%; top: 55%;
-  width: 26px; height: var(--depth);
-  transform: rotateX(90deg);
+  width: 26px; height: 302px;
+  translate: -50% 0;
   transform-origin: top center;
   background: repeating-linear-gradient(
     to bottom,
     color-mix(in srgb, var(--gold) 72%, transparent) 0 9px,
-    transparent 9px 26px
-  );
-  opacity: .38;
-}
-.tactile.l { translate: calc(-50% - 150px) 0; }
-.tactile.r { translate: calc(-50% + 150px) 0; }
-/* 바닥 조명 풀 — 역마다 하나 */
-.lightpool {
-  position: absolute; left: 50%; top: 55%;
-  width: 340px; height: 220px;
-  translate: -50% 0;
-  transform: rotateX(90deg);
-  transform-origin: top center;
-  background: radial-gradient(ellipse at center,
-    color-mix(in srgb, var(--sky) 22%, transparent), transparent 68%);
+    transparent 9px 26.25px);
+  opacity: .5;
   pointer-events: none;
 }
+.fenceseg {
+  position: absolute; left: 50%; top: calc(55% - 30px);
+  width: 1054px; height: 30px;
+  transform-origin: left bottom;
+  background:
+    linear-gradient(to bottom, var(--steel) 0 3px, transparent 3px),
+    repeating-linear-gradient(90deg,
+      color-mix(in srgb, var(--steel) 85%, var(--navy)) 0 4px,
+      transparent 4px 105px);
+  opacity: .4;
+  pointer-events: none;
+}
+/* 가로등 — 역 사이마다 양옆 */
+.lamp {
+  position: absolute; left: 50%; top: calc(55% - 168px);
+  width: 8px; height: 168px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--steel) 55%, #fff) 0%,
+    var(--steel) 45%,
+    color-mix(in srgb, var(--steel) 60%, var(--navy)) 100%);
+  border-radius: 4px 4px 0 0;
+  pointer-events: none;
+}
+.lamp::before {          /* 도로 쪽으로 뻗는 암 */
+  content: ""; position: absolute; top: 2px;
+  width: 30px; height: 6px; border-radius: 3px;
+  background: inherit;
+}
+.lamp.ls::before { left: 4px; }
+.lamp.rs::before { right: 4px; }
+.lamp::after {           /* 등 헤드 */
+  content: ""; position: absolute; top: -2px;
+  width: 16px; height: 12px; border-radius: 8px 8px 3px 3px;
+  background: var(--gold);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.lamp.ls::after { left: 26px; }
+.lamp.rs::after { right: 26px; }
 
 /* 행선판 */
 .signpost {
@@ -484,8 +527,20 @@ footer {
 <!-- ================= 복도 ================= -->
 <div class="hallway" id="hallway">
   <div class="stage">
+    <div class="skyline" aria-hidden="true">
+      <svg viewBox="0 0 1200 74" preserveAspectRatio="none" fill="currentColor">
+        <rect x="0" y="44" width="70" height="30"/><rect x="80" y="28" width="54" height="46"/>
+        <rect x="144" y="50" width="90" height="24"/><rect x="248" y="18" width="40" height="56"/>
+        <rect x="300" y="38" width="72" height="36"/><rect x="386" y="52" width="110" height="22"/>
+        <rect x="510" y="30" width="48" height="44"/><rect x="570" y="44" width="86" height="30"/>
+        <rect x="670" y="12" width="36" height="62"/><rect x="716" y="36" width="64" height="38"/>
+        <rect x="794" y="50" width="120" height="24"/><rect x="928" y="26" width="50" height="48"/>
+        <rect x="990" y="42" width="80" height="32"/><rect x="1084" y="54" width="116" height="20"/>
+      </svg>
+    </div>
+    <div class="cloud c1" aria-hidden="true"></div>
+    <div class="cloud c2" aria-hidden="true"></div>
     <div class="scene" id="scene" style="--depth: 7200px">
-      <div class="railline" aria-hidden="true"></div>
       <!-- 행선판들: JS가 채움 -->
       <div class="gate" id="gate" style="transform: translate3d(-50%, -50%, -7000px)">
         <div class="gate-board">
@@ -584,24 +639,44 @@ const posts = SEMESTERS.map((s, i) => {
     </div>
     <span class="pole l"></span><span class="pole r"></span>`;
   scene.insertBefore(el, gate);
-  /* 역마다 바닥 조명 풀 */
-  const pool = document.createElement("div");
-  pool.className = "lightpool";
-  pool.style.transform = `translateZ(${z}px) rotateX(90deg)`;
-  scene.insertBefore(pool, gate);
+  /* 역 사이마다 가로등 (양옆) */
+  for (const side of ["ls", "rs"]) {
+    const lamp = document.createElement("div");
+    lamp.className = "lamp " + side;
+    const x = side === "ls" ? -238 : 230;
+    lamp.style.transform = `translateX(${x}px) translateZ(${z + GAP / 2}px)`;
+    scene.insertBefore(lamp, gate);
+  }
   return el;
 });
-/* 안전선(점자블록) 2줄 */
-for (const side of ["l", "r"]) {
-  const t = document.createElement("div");
-  t.className = "tactile " + side;
-  scene.insertBefore(t, gate);
-}
 gate.dataset.z = -(SEMESTERS.length + 0.9) * GAP;
 gate.style.transform = `translate3d(-50%, -50%, ${gate.dataset.z}px)`;
 /* 카메라는 게이트 420px 앞에서 멈춘다 — 게이트를 지나치면 도착 장면이 사라진다 */
 const DEPTH = Math.abs(+gate.dataset.z) - 420;
 scene.style.setProperty("--depth", DEPTH + "px");
+
+/* 도로·안전선·펜스 — 세그먼트 배치 (거대 단일 평면은 카메라 교차 시 통째로 컬링됨) */
+const groundSegs = [];
+function seg(cls, transform, z0, len) {
+  const d = document.createElement("div");
+  d.className = cls;
+  d.style.transform = transform;
+  d.dataset.z0 = z0;
+  d.dataset.len = len;
+  scene.insertBefore(d, gate);
+  groundSegs.push(d);
+}
+const ROADLEN = Math.abs(+gate.dataset.z);
+const SEGLEN = 300;
+for (let z0 = 0; z0 > -ROADLEN - SEGLEN; z0 -= SEGLEN) {
+  seg("railseg", `translateZ(${z0}px) rotateX(90deg)`, z0, SEGLEN);
+  seg("tacseg", `translateX(-150px) translateZ(${z0}px) rotateX(90deg)`, z0, SEGLEN);
+  seg("tacseg", `translateX(150px) translateZ(${z0}px) rotateX(90deg)`, z0, SEGLEN);
+}
+for (let z0 = 0; z0 > -ROADLEN - GAP; z0 -= GAP) {
+  seg("fenceseg", `translateX(-250px) translateZ(${z0}px) rotateY(90deg)`, z0, GAP);
+  seg("fenceseg", `translateX(250px) translateZ(${z0}px) rotateY(90deg)`, z0, GAP);
+}
 
 /* HUD */
 const hud = document.getElementById("hud");
@@ -630,6 +705,11 @@ function paint() {
   posts.forEach(el => {                          // 게이트는 페이드 대상에서 제외 — 항상 도착 장면 유지
     const dz = +el.dataset.z - camZ;             // 카메라 기준 상대 깊이 (음수 = 앞쪽)
     el.style.opacity = dz > -80 ? 0 : dz > -260 ? (-dz - 80) / 180 : 1;
+  });
+  /* 완전히 지나간 바닥 세그먼트만 숨긴다 (발밑 조각은 유지) */
+  groundSegs.forEach(el => {
+    el.style.visibility =
+      +el.dataset.z0 - +el.dataset.len > camZ ? "hidden" : "visible";
   });
 
   const seg = 1 / (SEMESTERS.length + 0.9);
