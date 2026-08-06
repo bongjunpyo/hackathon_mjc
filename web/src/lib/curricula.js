@@ -69,3 +69,36 @@ export function lookupCourses(deptId, courseIds) {
   );
   return courseIds.map((id) => byId.get(id)).filter(Boolean);
 }
+
+/** 직무 후보에 커리큘럼 근거(과목 수·학점)를 붙인다.
+
+    후보 자체는 서버가 받는 값(talent_types + careers)에서 온다 — 원본 라벨을
+    그대로 쓰면 묶임("A, B")·오타 라벨이 선택지로 올라오고, 서버는 그걸 400으로
+    돌려보낸다. 근거만 커리큘럼에서 세어 붙인다: 그 직무로 라벨링된 과목이 몇 개인가.
+    서버 추천(_recommend_jobs)과 같은 계산이라 화면과 추천 순서가 어긋나지 않는다. */
+const flat = (t) => t.replace(/[\s·,/]/g, "");
+
+export function jobEvidence(deptId, jobs) {
+  const d = CURRICULA[deptId];
+  if (!d) return jobs.map((job) => ({ job, courses: 0, credits: 0 }));
+
+  return jobs
+    .map((job) => {
+      const target = flat(job);
+      let courses = 0;
+      let credits = 0;
+      for (const sem of d.sem) {
+        for (const c of sem.c) {
+          if (!c.job) continue;
+          const label = flat(c.job);
+          // 묶인 라벨("A, B")도 각 직무의 근거로 센다 — 실제로 그 과목이 그 직무 것이다
+          if (label === target || label.includes(target) || target.includes(label)) {
+            courses += 1;
+            credits += c.cr;
+          }
+        }
+      }
+      return { job, courses, credits };
+    })
+    .sort((a, b) => b.credits - a.credits);
+}

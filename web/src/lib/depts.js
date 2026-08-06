@@ -163,3 +163,25 @@ export function creditGap(dept) {
    데이터는 그대로 두고 표시단에서만 거른다 — 리포트가 이 라벨을 문제로 잡는 게 일이다. */
 const NOT_A_JOB = new Set(["공통", "전체", "-", "기타"]);
 export const realJobs = (list) => (list ?? []).filter((j) => !NOT_A_JOB.has(j.trim()));
+
+/* 한 칸에 묶인 라벨("A, B")은 선택지에서 뺀다.
+
+   교육과정표 비고 열에 직무 둘이 한 칸에 들어간 경우다. 그대로 두면 드롭다운에
+   "컴퓨터응용시스템전문가, 통신및정보보호시스템전문가" 같은 항목이 뜨고, 쪼갠 각각도
+   따로 있으니 중복이다. 묶임 자체는 트랙 B 리포트가 학교에 보고할 사안이고,
+   학생 화면에서는 고를 수 있는 단위만 남긴다. */
+export function atomicJobs(list) {
+  const jobs = [...new Set(realJobs(list))];
+  const flat = (t) => t.replace(/[\s·,/]/g, "");
+  const others = (self) => jobs.filter((j) => j !== self).map(flat);
+
+  const kept = jobs.filter((job) => {
+    const parts = job.split(/[,/]/).map((p) => p.trim()).filter(Boolean);
+    if (parts.length < 2) return true;
+    // 쪼갠 조각 중 하나라도 다른 후보로 존재하면 이 묶음은 중복이다
+    return !parts.some((p) => flat(p).length >= 4 && others(job).some((o) => o.includes(flat(p))));
+  });
+  // 커뮤니케이션디자인과는 라벨이 전부 묶임이라 다 걸러진다 — 그러면 원본을 쓴다.
+  // 쪼갠 조각은 서버 목록에 없어서 400이 난다 (jobmap은 원본 라벨만 받는다)
+  return kept.length ? kept : jobs;
+}
