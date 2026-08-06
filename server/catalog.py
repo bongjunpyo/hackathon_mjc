@@ -70,8 +70,13 @@ def list_depts(root=None):
                 "years": dept["years"],
                 "tier": dept["tier"],
                 # 입력 화면의 목표 직무 드롭다운 재료. 없으면 프론트가 하드코딩해야 하고,
-                # 그러면 "전 학과 대응"이 성립하지 않는다
-                "careers": dept.get("careers", []),
+                # 그러면 "전 학과 대응"이 성립하지 않는다.
+                #
+                # 드롭다운에 들어가는 건 `talent_types`다 — POST /roadmap이 검증하는 값이고,
+                # 과목에 붙어 있어서 로드맵을 역산할 수 있는 유일한 값이다. `careers`(학과가
+                # 홍보하는 진로)는 과목과 안 이어져 있어 고르면 400이 난다 (이슈 #25).
+                "careers": dept.get("talent_types", []),
+                "promoted_careers": dept.get("careers", []),
                 "certificates": dept.get("certificates", []),
             }
         )

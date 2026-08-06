@@ -5,6 +5,7 @@
 API 라우터를 먼저 걸고 StaticFiles는 맨 마지막에 마운트한다.
 """
 
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -28,6 +29,21 @@ from errors import (
 from loop import generate_roadmap
 from planner import generate as generate_roadmap_plan
 from report import build_report
+
+
+def _generator():
+    """키가 있으면 LLM, 없으면 결정론적 planner.
+
+    LLM은 기본 경로가 아니라 켜는 경로다 — 키가 빠지거나 시연 중 API가 죽어도
+    로드맵은 나와야 한다. import를 함수 안에 두는 건 anthropic 패키지가 없는
+    환경에서도 코어가 뜨게 하기 위해서다.
+    """
+    import agent
+
+    agent._load_env()
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        return generate_roadmap_plan
+    return agent.generate
 
 
 @asynccontextmanager
@@ -67,13 +83,20 @@ def post_roadmap(req: RoadmapRequest):
         raise ApiError("DEPT_NOT_FOUND", str(e), status=404) from e
 
     # 오타 하나로 조용히 일반 로드맵이 나가면 "직무 역산"이라는 주장이 무너진다.
-    # careers가 비어 있으면(Tier 2 추출 누락) 비교 대상이 없으므로 막지 않는다
-    careers = dept.get("careers") or []
-    if careers and req.target_job not in careers:
+    #
+    # 검증 대상은 `careers`(학과 소개 페이지의 진로)가 아니라 `talent_types`다.
+    # planner·agent가 과목을 고를 때 보는 건 `talent_type`이고, 진로 이름은 과목에
+    # 붙어 있지 않다. 두 값이 분리된 뒤(이슈 #25) careers로 검증하면 통과한 직무가
+    # 과목과 하나도 안 이어지고, talent_type을 보내면 400이 난다 — 어느 쪽으로도
+    # 직무 로드맵이 안 나온다. 진로↔라벨 대조는 트랙 B 리포트가 맡는다.
+    #
+    # 비어 있으면(Tier 2 추출 누락) 비교 대상이 없으므로 막지 않는다
+    talent_types = dept.get("talent_types") or []
+    if talent_types and req.target_job not in talent_types:
         raise ApiError(
             "UNKNOWN_JOB",
             f"'{req.target_job}'는 {dept['dept_name']}의 직무가 아닙니다. "
-            f"고를 수 있는 직무: {', '.join(careers)}",
+            f"고를 수 있는 직무: {', '.join(talent_types)}",
             status=400,
         )
 
@@ -87,7 +110,7 @@ def post_roadmap(req: RoadmapRequest):
         "completed_semesters": (req.current_year - 1) * 2 + (req.current_semester - 1),
     }
 
-    result = generate_roadmap(spec, generate_roadmap_plan)
+    result = generate_roadmap(spec, _generator())
     if missing:
         # 프론트 체크박스와 데이터가 어긋난 신호. 코어를 죽이지는 않되 숨기지도 않는다
         result["unknown_courses"] = missing

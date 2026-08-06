@@ -134,12 +134,12 @@ def test_학과에_없는_직무는_400(client):
 
 
 def test_직무_목록이_비어_있으면_막지_않는다(client, tmp_path, monkeypatch):
-    """Tier 2는 파이프라인 자동 통과라 careers 추출이 비어 있을 수 있다.
+    """Tier 2는 파이프라인 자동 통과라 talent_types 추출이 비어 있을 수 있다.
     비교 대상이 없는데 막으면 그 학과는 아무것도 못 한다."""
     import json
 
     data = json.loads((FIXTURES / "itc.json").read_text(encoding="utf-8"))
-    data["careers"] = []
+    data["talent_types"] = []
     (tmp_path / "itc.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     monkeypatch.setattr(catalog, "DATA_DIR", tmp_path)
 
@@ -195,3 +195,52 @@ def test_report는_jobs_키를_낸다(client):
     body = client.get("/report/itc").json()
 
     assert "jobs" in body
+
+
+def test_키가_없으면_planner로_떨어진다(monkeypatch):
+    """LLM은 켜는 경로다. 키가 빠져도 로드맵이 나와야 시연이 산다."""
+    import main
+    from planner import generate as planner_generate
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setattr("agent._load_env", lambda: None)
+
+    assert main._generator() is planner_generate
+
+
+def test_키가_있으면_LLM_에이전트를_쓴다(monkeypatch):
+    """agent.py가 main에 있는데 아무도 부르지 않던 적이 있다 (이슈 #36)."""
+    import agent
+    import main
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setattr("agent._load_env", lambda: None)
+
+    assert main._generator() is agent.generate
+
+
+def test_roadmap_엔드포인트가_generator를_거친다(client, monkeypatch):
+    """`_generator()`가 있어도 호출부가 planner를 직접 부르면 LLM은 영영 안 돈다.
+
+    이슈 #36이 정확히 그 모양이었다 — 파일은 있는데 아무도 부르지 않았다.
+    선택 함수만 검사하는 테스트는 이 변이를 못 잡는다.
+    """
+    called = []
+
+    def spy(spec, feedback=None, attempt=1):
+        called.append(attempt)
+        return {"semesters": []}
+
+    monkeypatch.setattr("main._generator", lambda: spy)
+    client.post(
+        "/roadmap",
+        json={
+            "dept_id": "itc",
+            "current_year": 1,
+            "current_semester": 1,
+            "completed_courses": [],
+            "target_job": "네트워크 엔지니어",
+        },
+    )
+
+    assert called, "_generator()가 고른 생성기가 쓰이지 않았다"
