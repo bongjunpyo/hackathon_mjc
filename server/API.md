@@ -112,7 +112,7 @@
     "details": []
   },
   "attempts": 1,
-  "generator": "agent (LLM)",
+  "engine": "llm",
   "job_match": {
     "matched_labels": ["시스템관리·운용엔지니어"],
     "related_courses": 12,
@@ -158,7 +158,7 @@
 | 필드 | 설명 |
 |---|---|
 | `attempts` | 재생성 횟수 (1~3). 검증기가 잡아 다시 짠 횟수 |
-| `generator` | ⚠️ `"agent (LLM)"` · `"planner"` · `"planner (LLM 실패)"` |
+| `engine` | ⚠️ `"llm"` · `"rule"` · `"rule (llm-failed)"` — 무엇이 로드맵을 짰는가 |
 | `job_match` | ⚠️ 목표 직무가 교육과정 라벨과 이어졌는가 |
 | `unknown_courses` | ⚠️ 보낸 `course_id` 중 카탈로그에 없던 것 (있을 때만) |
 
@@ -326,4 +326,4 @@
 | 8 | 에러 형식 `{error:{code,message}}` (422 포함) | 프론트 `lib/api.js`가 읽는 형식 |
 | 9 | `POST /roadmap` 400 `UNKNOWN_JOB` | 오타를 조용히 통과시키면 "직무 역산"이 거짓이 된다 |
 | 10 | `signup`에 `email` | 이메일 인증에 필수 |
-| 11 | `generator` · `job_match` · `unknown_courses` 추가 | 무엇이 돌았고 무엇이 어긋났는지 숨기지 않는다 |
+| 11 | `engine` · `job_match` · `unknown_courses` 추가 | 무엇이 돌았고 무엇이 어긋났는지 숨기지 않는다 |

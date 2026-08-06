@@ -35,7 +35,7 @@ server/
 | AI | Claude API (`claude-sonnet-5`) | 로드맵 생성. 키가 없으면 규칙 생성기로 대체 |
 | Validation | 순수 규칙 코드 | **검증기는 LLM을 쓰지 않는다** |
 | Mail | smtplib | SMTP 미설정 시 콘솔 출력으로 대체 |
-| Test | pytest | 135개 |
+| Test | pytest | 137개 |
 | Container | Docker Compose | PostgreSQL 로컬 실행 |
 
 ## 주요 기능
@@ -95,7 +95,7 @@ JWT_SECRET=replace-with-secure-random-string
 ANTHROPIC_API_KEY=
 ```
 
-- `ANTHROPIC_API_KEY`가 **있으면 LLM 생성기**, 없으면 규칙 생성기가 돕니다. 응답의 `generator` 필드로 확인합니다.
+- `ANTHROPIC_API_KEY`가 **있으면 LLM 생성기**, 없으면 규칙 생성기가 돕니다. 응답의 `engine` 필드가 `"llm"` / `"rule"` / `"rule (llm-failed)"`로 알려줍니다.
 - SMTP를 비워두면 **인증 링크를 서버 콘솔에 찍습니다.** 데모 당일 메일이 막혀도 시연이 죽지 않습니다.
 
 ### 3. 서버 실행
@@ -110,7 +110,7 @@ cd server && uv run fastapi dev main.py
 ### 4. 테스트
 
 ```bash
-cd server && uv run pytest                      # 135개
+cd server && uv run pytest                      # 137개
 PYTHONUTF8=1 uv run pytest                      # 윈도우에서 한글 테스트 이름이 깨질 때
 uv run python metrics.py                        # 검증기 효과 지표
 uv run python verify_db.py                      # 실DB 전 구간 검증 (13건)
@@ -157,7 +157,7 @@ uv run python verify_db.py                      # 실DB 전 구간 검증 (13건
 현재 코드 기준으로 데모·제출 전에 검토해야 할 항목입니다.
 
 - **프론트 타임아웃이 4초입니다.** LLM 생성은 18~68초 걸립니다. 그대로 두면 서버가 정상 동작해도 목데이터로 떨어집니다. `web/src/lib/api.js`의 `postRoadmap`만 90초로 올려야 합니다.
-- **`ANTHROPIC_API_KEY`가 실제로 들어갔는지 확인해야 합니다.** 없으면 규칙 생성기로 돌고, 동작은 하지만 "제품이 AI를 호출한다"는 서술이 성립하지 않습니다. 응답의 `generator` 필드로 즉시 확인됩니다.
+- **`ANTHROPIC_API_KEY`가 실제로 들어갔는지 확인해야 합니다.** 없으면 규칙 생성기로 돌고, 동작은 하지만 "제품이 AI를 호출한다"는 서술이 성립하지 않습니다. 응답의 `engine` 필드로 즉시 확인됩니다.
 - **DB 마이그레이션 도구가 없습니다.** 앱 시작 시 `create_all()`을 씁니다. 스키마를 바꾸면 기존 볼륨을 지워야 합니다 (`docker compose down -v`).
 - **동결 스펙과 구현이 11군데 다릅니다.** 설계서 반영은 이슈 #24에서 진행 중입니다. 목록은 [API 명세](API.md) 마지막 절에 있습니다.
 - **드론정보공학과는 어떤 로드맵으로도 졸업요건을 통과할 수 없습니다.** 데모에서 이 학과를 고르지 않아야 합니다.
