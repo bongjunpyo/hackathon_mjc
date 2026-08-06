@@ -41,7 +41,7 @@ export default function Walk() {
         <Corridor
           semesters={semesters}
           targetJob={job}
-          stats={`${semesters.length}학기 · ${totalCredits}학점 · ${roadmap.engine === "llm" ? "AI 생성" : "규칙 생성"}`}
+          stats={`${semesters.length}학기 · ${totalCredits}학점 · ${roadmap.engine === "llm" ? "AI 생성" : "실데이터 추천 엔진"}`}
           passed={passed}
           onSelect={setDetailIndex}
         />

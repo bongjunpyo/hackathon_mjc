@@ -13,9 +13,12 @@ const REQ = {
   semesters: (v) => v.details?.find((d) => d.rule === "semesters")?.required,
 };
 
+/* 엔진 이름 — #53에서 규칙 엔진이 메인이 됐다. "(폴백)"이라 부르면 뭔가
+   실패한 걸로 읽힌다. 폴백은 LLM 모드가 실제로 실패했을 때만이다 */
 const ENGINE = {
-  llm: "AI 생성",
-  rule: "규칙 생성(폴백)",
+  rule: "실데이터 추천 엔진",
+  llm: "AI 생성(비교 모드)",
+  "rule (llm-failed)": "규칙 폴백 — LLM 실패",
 };
 
 export default function ValidationBar({ validation, engine, attempts }) {
