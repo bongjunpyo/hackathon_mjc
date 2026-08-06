@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "../styles/corridor.css";
 import Walker from "./track/Walker";
+import { certName } from "../lib/external";
 
 /* 행선판 복도 3D 씬.
    구조는 선언적으로 그리고, 스크롤 애니메이션은 ref로 직접 DOM을 만진다 —
@@ -272,7 +273,13 @@ function SignPost({ ref, s, index, z, prev, next, onSelect }) {
             <li key={c.course_id ?? c.name}>{c.name}</li>
           ))}
         </ul>
-        {s.certificates?.[0] && <span className="cert">🎫 {s.certificates[0].name}</span>}
+        {s.certificates?.[0] && (
+          <span className="cert">
+            {/* API는 문자열 배열, 랜딩 목데이터는 객체 — certName이 둘 다 받는다 */}
+            🎫 {certName(s.certificates[0])}
+            {s.certificates.length > 1 && ` 외 ${s.certificates.length - 1}종`}
+          </span>
+        )}
       </div>
       <span className="pole l" />
       <span className="pole r" />
