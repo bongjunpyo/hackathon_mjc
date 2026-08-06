@@ -60,10 +60,18 @@ export default function ControlBar({ value, onChange, onGenerate, loading }) {
             )),
           )}
         </select>
-        <select aria-label="목표 직무" className={`${field} min-w-48 flex-1`} value={value.targetJob}
-                onChange={(e) => onChange((cur) => ({ ...cur, targetJob: e.target.value }))}>
-          {jobs.map((j) => <option key={j} value={j}>{j}</option>)}
-        </select>
+        {/* 고르거나 직접 타이핑한다. 비우면 서버가 배정 학점 기준으로 추천한다 (직무 미정 모드) */}
+        <input
+          aria-label="목표 직무"
+          list="job-options"
+          className={`${field} min-w-52 flex-1`}
+          value={value.targetJob}
+          placeholder="직무를 고르거나 입력 — 비우면 추천받기"
+          onChange={(e) => onChange((cur) => ({ ...cur, targetJob: e.target.value }))}
+        />
+        <datalist id="job-options">
+          {jobs.map((j) => <option key={j} value={j} />)}
+        </datalist>
         {past.length > 0 && (
           <button type="button" onClick={() => setDrawer((v) => !v)} aria-expanded={drawer}
                   className={`${field} font-mono text-xs text-steel transition-[background-color,scale] duration-150 hover:bg-sky-soft active:scale-[0.96]`}>
@@ -72,10 +80,10 @@ export default function ControlBar({ value, onChange, onGenerate, loading }) {
         )}
         <button
           onClick={onGenerate}
-          disabled={loading || !value.targetJob}
+          disabled={loading}
           className="rounded-xl bg-navy px-5 py-2 font-bold text-white transition-[background-color,scale] duration-200 hover:bg-navy-deep active:scale-[0.96] disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-gold"
         >
-          {loading ? "생성 중…" : "로드맵 생성"}
+          {loading ? "생성 중…" : value.targetJob.trim() ? "로드맵 생성" : "추천받아 생성"}
         </button>
       </div>
 
