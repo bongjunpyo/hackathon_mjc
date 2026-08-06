@@ -1,0 +1,135 @@
+{
+  "dept_id": "electrical",
+  "dept_name": "전기공학과",
+  "years": 2,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "전기설비시스템실무전문가",
+      "coverage_pct": 48.2,
+      "credits": 27,
+      "covered_courses": [
+        "회로이론I",
+        "회로이론실습",
+        "전기자기학I",
+        "회로이론II",
+        "전기자기학II",
+        "전력공학I",
+        "전기기기",
+        "전력공학II",
+        "전기기기실습"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "전기제어설계설비원",
+      "coverage_pct": 26.8,
+      "credits": 15,
+      "covered_courses": [
+        "디지털공학",
+        "마이크로프로세서",
+        "시퀀스제어",
+        "PLC제어기술",
+        "캡스톤디자인I"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "ICT-AI 응용제어운용사",
+      "coverage_pct": 19.6,
+      "credits": 11,
+      "covered_courses": [
+        "C언어",
+        "AI전기디자인씽킹",
+        "데이터통신",
+        "인공지능프로그래밍"
+      ],
+      "semesters": [
+        "1-1",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": [
+        "전공 학점의 20%만 배정돼 선택지가 좁다"
+      ]
+    },
+    {
+      "job": "전력계통해석및설계사",
+      "coverage_pct": 5.4,
+      "credits": 3,
+      "covered_courses": [
+        "전기설비설계실습"
+      ],
+      "semesters": [
+        "2-1"
+      ],
+      "gaps": [
+        "1학년에 이 직무 과목이 없어 조기 진로 결정이 어렵다",
+        "전공 학점의 5%만 배정돼 선택지가 좁다"
+      ]
+    }
+  ],
+  "certificates": {
+    "total": 7,
+    "evaluated": 3,
+    "supported": 3,
+    "unsupported": [],
+    "unevaluated": [
+      "소방설비(산업)기사",
+      "신재생에너지발전설비(산업)기사",
+      "산업안전(산업)기사",
+      "철도신호(산업)기사"
+    ],
+    "detail": [
+      {
+        "certificate": "전기(산업)기사",
+        "courses": [
+          "회로이론I",
+          "회로이론실습",
+          "전기자기학I",
+          "AI전기디자인씽킹",
+          "회로이론II"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "전기공사(산업)기사",
+        "courses": [
+          "회로이론I",
+          "회로이론실습",
+          "전기자기학I",
+          "AI전기디자인씽킹",
+          "회로이론II"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "전기철도(산업)기사",
+        "courses": [
+          "회로이론I",
+          "회로이론실습",
+          "전기자기학I",
+          "AI전기디자인씽킹",
+          "회로이론II"
+        ],
+        "matched": true
+      }
+    ]
+  },
+  "ncs_ratio": 36.8,
+  "field_based_courses": [
+    "캡스톤디자인I"
+  ]
+}

@@ -38,7 +38,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "생산・품질관리자",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -74,7 +74,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "생산・품질관리자",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -86,7 +86,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "생산・품질관리자",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -110,7 +110,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "물류・유통관리자",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -146,7 +146,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "물류・유통관리자",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -158,7 +158,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "물류・유통관리자",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -170,7 +170,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "생산・품질관리자",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -182,7 +182,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "물류・유통관리자",
-      "ncs": false,
+      "ncs": true,
       "field_based": true
     },
     {
@@ -194,7 +194,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "생산・품질관리자",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -218,7 +218,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "물류・유통관리자",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {
@@ -230,7 +230,7 @@
       "category": "전공",
       "required": false,
       "talent_type": "물류・유통관리자",
-      "ncs": false,
+      "ncs": true,
       "field_based": false
     },
     {

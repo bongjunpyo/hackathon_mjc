@@ -1,0 +1,135 @@
+{
+  "dept_id": "mjcs",
+  "dept_name": "컴퓨터공학과",
+  "years": 3,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "응용소프트웨어개발자",
+      "coverage_pct": 76.0,
+      "credits": 57,
+      "covered_courses": [
+        "컴퓨터과학개론",
+        "프로그래밍언어실습I",
+        "인터넷콘텐츠",
+        "프로그래밍언어실습II",
+        "인터넷프로그래밍",
+        "데이터베이스",
+        "자료구조",
+        "인공지능시스템",
+        "객체지향언어",
+        "UX/UI 프로그래밍",
+        "운영체제",
+        "컴퓨터아키텍쳐",
+        "객체지향언어실습",
+        "웹프로그래밍",
+        "서버시스템관리",
+        "웹프로그래밍실습",
+        "데이터통신",
+        "AI기반클라우드컴퓨팅",
+        "컴퓨터보안"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2",
+        "3-1",
+        "3-2"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "모바일콘텐츠개발자",
+      "coverage_pct": 24.0,
+      "credits": 18,
+      "covered_courses": [
+        "모바일프로그래밍",
+        "모바일프로그래밍응용",
+        "융합게임제작실습I",
+        "AI응용캡스톤디자인I",
+        "융합게임제작실습II",
+        "AI응용캡스톤디자인II"
+      ],
+      "semesters": [
+        "2-2",
+        "3-1",
+        "3-2"
+      ],
+      "gaps": [
+        "1학년에 이 직무 과목이 없어 조기 진로 결정이 어렵다"
+      ]
+    }
+  ],
+  "certificates": {
+    "total": 7,
+    "evaluated": 7,
+    "supported": 7,
+    "unsupported": [],
+    "unevaluated": [],
+    "detail": [
+      {
+        "certificate": "OCJP(Oracle Certified Java Programmer)",
+        "courses": [
+          "객체지향언어",
+          "객체지향언어실습"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "OCP(Oracle Certified Professional)",
+        "courses": [
+          "데이터베이스"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "Unity Certification",
+        "courses": [
+          "융합게임제작실습I",
+          "융합게임제작실습II"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "정보처리산업기사",
+        "courses": [
+          "프로그래밍언어실습I",
+          "프로그래밍언어실습II",
+          "인터넷프로그래밍",
+          "데이터베이스",
+          "자료구조"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "모바일앱개발전문가",
+        "courses": [
+          "모바일프로그래밍",
+          "모바일프로그래밍응용"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "정보보안산업기사",
+        "courses": [
+          "컴퓨터보안"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "네트워크관리사",
+        "courses": [
+          "데이터통신"
+        ],
+        "matched": true
+      }
+    ]
+  },
+  "ncs_ratio": 96.0,
+  "field_based_courses": [
+    "AI응용캡스톤디자인I",
+    "AI응용캡스톤디자인II"
+  ]
+}

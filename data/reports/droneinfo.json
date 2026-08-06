@@ -1,0 +1,50 @@
+{
+  "dept_id": "droneinfo",
+  "dept_name": "드론정보공학과",
+  "years": 2,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "드론운용전문가",
+      "coverage_pct": 100.0,
+      "credits": 43,
+      "covered_courses": [
+        "드론과항공기상",
+        "측량학및실습",
+        "항공법규",
+        "드론조종및시뮬레이션실습",
+        "드론실무영어",
+        "드론비행이론및운용",
+        "GNSS및지상기준점측량",
+        "드론실무운용실습",
+        "드론설계실습",
+        "응용측량",
+        "사진측량및원격탐사",
+        "임베디드응용AI드론",
+        "드론공기역학",
+        "드론제작캡스톤디자인",
+        "GIS"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    }
+  ],
+  "certificates": {
+    "total": 0,
+    "evaluated": 0,
+    "supported": 0,
+    "unsupported": [],
+    "unevaluated": [],
+    "detail": []
+  },
+  "ncs_ratio": 73.3,
+  "field_based_courses": [
+    "드론제작캡스톤디자인"
+  ]
+}

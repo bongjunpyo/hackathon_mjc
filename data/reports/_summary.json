@@ -1,0 +1,342 @@
+[
+  {
+    "dept_id": "acting",
+    "dept_name": "연극영상학과",
+    "jobs": 3,
+    "top_coverage": 93.8,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 0,
+    "ncs_ratio": 0.0
+  },
+  {
+    "dept_id": "AI미디어디자인학과",
+    "dept_name": "AI미디어디자인학과",
+    "jobs": 2,
+    "top_coverage": 75.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 6,
+    "ncs_ratio": 87.5
+  },
+  {
+    "dept_id": "cee",
+    "dept_name": "전자공학과",
+    "jobs": 3,
+    "top_coverage": 56.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 3,
+    "certs_total": 8,
+    "ncs_ratio": 80.0
+  },
+  {
+    "dept_id": "ceo",
+    "dept_name": "경영학과",
+    "jobs": 1,
+    "top_coverage": 100.0,
+    "certs_unsupported": 1,
+    "certs_evaluated": 1,
+    "certs_total": 14,
+    "ncs_ratio": 90.5
+  },
+  {
+    "dept_id": "china",
+    "dept_name": "중국어비즈니스과",
+    "jobs": 2,
+    "top_coverage": 55.6,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 7,
+    "ncs_ratio": 72.2
+  },
+  {
+    "dept_id": "civil",
+    "dept_name": "토목공학과",
+    "jobs": 1,
+    "top_coverage": 100.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 2,
+    "certs_total": 5,
+    "ncs_ratio": 100.0
+  },
+  {
+    "dept_id": "cse",
+    "dept_name": "컴퓨터보안공학과",
+    "jobs": 5,
+    "top_coverage": 37.8,
+    "certs_unsupported": 0,
+    "certs_evaluated": 5,
+    "certs_total": 8,
+    "ncs_ratio": 85.7
+  },
+  {
+    "dept_id": "droneinfo",
+    "dept_name": "드론정보공학과",
+    "jobs": 1,
+    "top_coverage": 100.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 0,
+    "ncs_ratio": 73.3
+  },
+  {
+    "dept_id": "ece",
+    "dept_name": "유아교육학과",
+    "jobs": 2,
+    "top_coverage": 95.8,
+    "certs_unsupported": 0,
+    "certs_evaluated": 1,
+    "certs_total": 1,
+    "ncs_ratio": 0.0
+  },
+  {
+    "dept_id": "electrical",
+    "dept_name": "전기공학과",
+    "jobs": 4,
+    "top_coverage": 48.2,
+    "certs_unsupported": 0,
+    "certs_evaluated": 3,
+    "certs_total": 7,
+    "ncs_ratio": 36.8
+  },
+  {
+    "dept_id": "idm",
+    "dept_name": "산업경영공학과",
+    "jobs": 2,
+    "top_coverage": 52.6,
+    "certs_unsupported": 3,
+    "certs_evaluated": 3,
+    "certs_total": 12,
+    "ncs_ratio": 57.9
+  },
+  {
+    "dept_id": "iid",
+    "dept_name": "산업디자인학과",
+    "jobs": 3,
+    "top_coverage": 35.6,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 5,
+    "ncs_ratio": 40.0
+  },
+  {
+    "dept_id": "itc",
+    "dept_name": "정보통신공학과",
+    "jobs": 2,
+    "top_coverage": 53.8,
+    "certs_unsupported": 0,
+    "certs_evaluated": 16,
+    "certs_total": 16,
+    "ncs_ratio": 100.0
+  },
+  {
+    "dept_id": "jijuk",
+    "dept_name": "지적공간정보학과",
+    "jobs": 1,
+    "top_coverage": 100.0,
+    "certs_unsupported": 1,
+    "certs_evaluated": 2,
+    "certs_total": 7,
+    "ncs_ratio": 80.0
+  },
+  {
+    "dept_id": "medinfo",
+    "dept_name": "보건의료정보과",
+    "jobs": 3,
+    "top_coverage": 64.7,
+    "certs_unsupported": 0,
+    "certs_evaluated": 1,
+    "certs_total": 11,
+    "ncs_ratio": 58.8
+  },
+  {
+    "dept_id": "mee",
+    "dept_name": "기계공학과",
+    "jobs": 4,
+    "top_coverage": 50.9,
+    "certs_unsupported": 0,
+    "certs_evaluated": 13,
+    "certs_total": 54,
+    "ncs_ratio": 90.5
+  },
+  {
+    "dept_id": "mjccrw",
+    "dept_name": "문예창작과",
+    "jobs": 3,
+    "top_coverage": 85.7,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 1,
+    "ncs_ratio": 0.0
+  },
+  {
+    "dept_id": "mjcd",
+    "dept_name": "커뮤니케이션디자인과",
+    "jobs": 3,
+    "top_coverage": 83.3,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 25,
+    "ncs_ratio": 100.0
+  },
+  {
+    "dept_id": "mjcjp",
+    "dept_name": "일본어과",
+    "jobs": 2,
+    "top_coverage": 60.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 7,
+    "ncs_ratio": 0.0
+  },
+  {
+    "dept_id": "mjcs",
+    "dept_name": "컴퓨터공학과",
+    "jobs": 2,
+    "top_coverage": 76.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 7,
+    "certs_total": 7,
+    "ncs_ratio": 96.0
+  },
+  {
+    "dept_id": "publiccs",
+    "dept_name": "공공행정서비스과",
+    "jobs": 1,
+    "top_coverage": 100.0,
+    "certs_unsupported": 1,
+    "certs_evaluated": 1,
+    "certs_total": 6,
+    "ncs_ratio": 83.3
+  },
+  {
+    "dept_id": "rem",
+    "dept_name": "부동산경영과",
+    "jobs": 4,
+    "top_coverage": 60.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 5,
+    "ncs_ratio": 100.0
+  },
+  {
+    "dept_id": "sileum",
+    "dept_name": "실용음악과",
+    "jobs": 1,
+    "top_coverage": 100.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 0,
+    "ncs_ratio": 84.6
+  },
+  {
+    "dept_id": "skysvc",
+    "dept_name": "항공서비스과",
+    "jobs": 1,
+    "top_coverage": 100.0,
+    "certs_unsupported": 1,
+    "certs_evaluated": 1,
+    "certs_total": 9,
+    "ncs_ratio": 66.7
+  },
+  {
+    "dept_id": "sls",
+    "dept_name": "사회체육과",
+    "jobs": 1,
+    "top_coverage": 100.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 23,
+    "ncs_ratio": 79.2
+  },
+  {
+    "dept_id": "swcontent",
+    "dept_name": "AI게임소프트웨어학과",
+    "jobs": 1,
+    "top_coverage": 100.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 2,
+    "certs_total": 6,
+    "ncs_ratio": 80.0
+  },
+  {
+    "dept_id": "swd",
+    "dept_name": "사회복지과",
+    "jobs": 4,
+    "top_coverage": 76.6,
+    "certs_unsupported": 0,
+    "certs_evaluated": 1,
+    "certs_total": 2,
+    "ncs_ratio": 72.7
+  },
+  {
+    "dept_id": "tax",
+    "dept_name": "세무회계과",
+    "jobs": 2,
+    "top_coverage": 89.5,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 12,
+    "ncs_ratio": 78.9
+  },
+  {
+    "dept_id": "yde",
+    "dept_name": "청소년교육상담과",
+    "jobs": 3,
+    "top_coverage": 43.5,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 0,
+    "ncs_ratio": 91.3
+  },
+  {
+    "dept_id": "뷰티매니지먼트과메이크업네일전공",
+    "dept_name": "뷰티매니지먼트과메이크업·네일전공",
+    "jobs": 2,
+    "top_coverage": 76.2,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 0,
+    "ncs_ratio": 95.7
+  },
+  {
+    "dept_id": "뷰티매니지먼트과방송스타일디렉터전공",
+    "dept_name": "뷰티매니지먼트과방송스타일디렉터전공",
+    "jobs": 2,
+    "top_coverage": 71.4,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 0,
+    "ncs_ratio": 85.7
+  },
+  {
+    "dept_id": "뷰티매니지먼트과스킨케어메디컬코스메",
+    "dept_name": "뷰티매니지먼트과스킨케어·메디컬코스메",
+    "jobs": 1,
+    "top_coverage": 100.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 0,
+    "ncs_ratio": 91.3
+  },
+  {
+    "dept_id": "뷰티매니지먼트과헤어디자인전공",
+    "dept_name": "뷰티매니지먼트과헤어디자인전공",
+    "jobs": 1,
+    "top_coverage": 100.0,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 0,
+    "ncs_ratio": 100.0
+  },
+  {
+    "dept_id": "패션리빙디자인과",
+    "dept_name": "패션·리빙디자인과",
+    "jobs": 3,
+    "top_coverage": 47.6,
+    "certs_unsupported": 0,
+    "certs_evaluated": 0,
+    "certs_total": 5,
+    "ncs_ratio": 69.6
+  }
+]
