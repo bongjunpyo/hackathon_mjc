@@ -35,7 +35,7 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 # 인증 직후 프론트가 교환 코드를 들고 도착하는 곳. 새 페이지를 만들지 않아도 되게
 # 기존 라우트로 보낸다
-LANDING_PATH = os.getenv("VERIFY_LANDING", "/app/input")
+LANDING_PATH = os.getenv("VERIFY_LANDING", "/app/roadmap")
 EXCHANGE_TTL = timedelta(seconds=60)
 
 # 가입 전 이메일 인증번호. 유저 행이 아직 없어서 DB에 둘 자리가 없다 —
@@ -62,6 +62,9 @@ class SignupIn(BaseModel):
     dept_id: str
     # 인증번호 방식으로 가입하면 발급되는 티켓. 있으면 가입과 동시에 인증·로그인된다
     email_ticket: str = ""
+    # 필수 약관 동의. 화면에서 막지만 서버도 받는다 — 클라이언트를 신뢰하지 않는다
+    agreed_terms: bool = False
+    agreed_privacy: bool = False
 
 
 class LoginIn(BaseModel):
@@ -136,6 +139,13 @@ def current_user(session, authorization):
 
 @router.post("/auth/signup", status_code=201)
 def signup(body: SignupIn):
+    if not (body.agreed_terms and body.agreed_privacy):
+        raise ApiError(
+            "TERMS_REQUIRED",
+            "이용약관과 개인정보 수집·이용에 동의해야 가입할 수 있습니다",
+            status=400,
+        )
+
     with _session() as session:
         taken = session.scalar(
             select(models.User).where(

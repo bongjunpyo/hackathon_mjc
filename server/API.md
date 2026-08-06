@@ -8,7 +8,7 @@
 | 구분 | 엔드포인트 |
 |---|---|
 | 코어 (토큰 불필요) | [`GET /depts`](#get-depts) · [`POST /roadmap`](#post-roadmap) · [`GET /report/{dept_id}`](#get-reportdept_id) |
-| 인증 | [`POST /auth/signup`](#post-authsignup) · [`GET /auth/verify`](#get-authverify) · [`POST /auth/exchange`](#post-authexchange) · [`POST /auth/login`](#post-authlogin) · [`POST /auth/resend`](#post-authresend) · [`POST /auth/refresh`](#post-authrefresh) |
+| 인증 | [`POST /auth/email/code`](#post-authemailcode) · [`POST /auth/email/verify`](#post-authemailverify) · [`POST /auth/signup`](#post-authsignup) · [`GET /auth/verify`](#get-authverify) · [`POST /auth/exchange`](#post-authexchange) · [`POST /auth/login`](#post-authlogin) · [`POST /auth/resend`](#post-authresend) · [`POST /auth/refresh`](#post-authrefresh) |
 | 내 정보 (토큰 필요) | [`GET /me`](#get-me) · [`PUT /me/courses`](#put-mecourses) · [`POST /me/roadmaps`](#post-meroadmaps) |
 
 **코어 3종은 토큰이 없어도 200을 냅니다.** 게스트 모드가 필수 경로이므로 인증이 코어를 막지 않습니다.
@@ -29,7 +29,9 @@
 | 400 | `INVALID_TOKEN` | 인증 링크가 유효하지 않음 (이미 썼거나 없음) |
 | 400 | `TOKEN_EXPIRED` | 인증 링크 30분 만료 |
 | 400 | `INVALID_CODE` | 교환 코드가 유효하지 않음 (이미 썼거나 없음) |
-| 400 | `CODE_EXPIRED` | 교환 코드 60초 만료 |
+| 400 | `CODE_EXPIRED` | 교환 코드 60초 만료 · 이메일 인증번호 10분 만료 |
+| 400 | `TERMS_REQUIRED` | 가입 요청에 `agreed_terms`·`agreed_privacy`가 참이 아님 |
+| 429 | `TOO_MANY_TRIES` | 이메일 인증번호 5회 초과 시도 — 번호를 다시 받아야 함 |
 | 401 | `UNAUTHORIZED` | 토큰 없음·형식 오류·위조·액세스 토큰 아님 |
 | 401 | `BAD_CREDENTIALS` | 학번 또는 비밀번호 불일치 |
 | 403 | `EMAIL_NOT_VERIFIED` | 이메일 인증 전 로그인 시도 |
@@ -214,20 +216,55 @@
 > 흐름: **가입 → 인증 메일 → 링크 클릭 → 1회용 교환 코드 → 토큰 발급**
 > 인증을 마쳐야 로그인할 수 있고, **인증하는 순간 자동으로 로그인**됩니다.
 
+## `POST /auth/email/code`
+
+가입 화면을 떠나지 않고 이메일을 인증합니다. 6자리 번호를 메일로 보냅니다.
+
+```json
+{ "email": "dj@mjc.ac.kr" }
+```
+
+→ `200 { "message": "인증번호를 보냈습니다. 메일함을 확인해 주세요.", "expires_in": 600 }`
+
+**이미 가입된 이메일인지 알려주지 않습니다** (계정 열거 방지). 번호는 메일함 주인만 봅니다.
+번호는 유저 행이 생기기 전이라 DB가 아니라 프로세스 메모리에 TTL과 함께 둡니다 — 서버를 재시작하면 사라지고, 재발송하면 됩니다.
+
+## `POST /auth/email/verify`
+
+```json
+{ "email": "dj@mjc.ac.kr", "code": "482915" }
+```
+
+→ `200 { "verified": true, "email_ticket": "…" }` — 티켓 유효 30분
+
+5회를 넘겨 틀리면 `429 TOO_MANY_TRIES`로 막고 번호를 폐기합니다.
+
 ## `POST /auth/signup`
 
 ```json
 { "student_id": "202512345", "name": "이동제",
-  "email": "dj@mjc.ac.kr", "password": "hunter22!", "dept_id": "itc" }
+  "email": "dj@mjc.ac.kr", "password": "hunter22!", "dept_id": "itc",
+  "agreed_terms": true, "agreed_privacy": true,
+  "email_ticket": "…" }
 ```
 
 ⚠️ `email`은 동결 스펙에 없는 추가 필드입니다 — 이메일 인증에 필수입니다. `password`는 **최소 8자**.
 
-→ `201 { "message": "인증 메일을 보냈습니다. 메일함을 확인해 주세요." }`
+| 필드 | 필수 | 설명 |
+|---|---|---|
+| `agreed_terms` · `agreed_privacy` | ✅ | 둘 다 `true`가 아니면 `400 TERMS_REQUIRED`. 화면에서도 막지만 서버가 최종입니다 |
+| `email_ticket` | — | `/auth/email/verify`가 준 티켓. 티켓의 이메일과 `email`이 같아야 인정됩니다 |
 
-**토큰을 주지 않습니다.** 인증을 마쳐야 로그인됩니다.
+**응답이 두 가지입니다.**
 
-> SMTP가 설정되지 않으면 메일을 보내지 않고 **인증 링크를 서버 콘솔에 찍습니다.** 데모 당일 메일이 막혀도 시연이 죽지 않게 하기 위한 이중화입니다.
+```
+티켓 있음(이메일 인증 완료) → 201 { "access_token": "…", "refresh_token": "…" }   즉시 로그인
+티켓 없음                    → 201 { "message": "인증 메일을 보냈습니다. 메일함을 확인해 주세요." }
+```
+
+티켓 없이 가입하면 토큰을 주지 않습니다 — 메일 링크로 인증을 마쳐야 로그인됩니다.
+
+> SMTP가 설정되지 않으면 메일을 보내지 않고 **인증 링크·인증번호를 서버 콘솔에 찍습니다.** 데모 당일 메일이 막혀도 시연이 죽지 않게 하기 위한 이중화입니다.
 
 ## `GET /auth/verify`
 

@@ -18,6 +18,9 @@ SIGNUP = {
     "email": "dj@example.com",
     "password": "hunter22!",
     "dept_id": "itc",
+    # 필수 약관 동의 — 없으면 서버가 400으로 막는다
+    "agreed_terms": True,
+    "agreed_privacy": True,
 }
 
 
@@ -382,6 +385,8 @@ def test_인증번호로_가입하면_메일_링크_없이_바로_로그인된�
             "password": "password123",
             "dept_id": "itc",
             "email_ticket": ticket,
+            "agreed_terms": True,
+            "agreed_privacy": True,
         },
     )
 
@@ -417,9 +422,21 @@ def test_남의_이메일_티켓으로는_가입할_수_없다(client):
             "password": "password123",
             "dept_id": "itc",
             "email_ticket": ticket,
+            "agreed_terms": True,
+            "agreed_privacy": True,
         },
     )
 
     # 가입은 되되 인증은 안 된 상태 — 토큰 없이 메일 안내만
     assert res.status_code == 201
     assert "access_token" not in res.json()
+
+
+def test_약관에_동의하지_않으면_가입이_막힌다(client):
+    """화면에서도 막지만 서버가 최종이다 — 클라이언트를 신뢰하지 않는다."""
+    res = client.post(
+        "/auth/signup", json={**SIGNUP, "agreed_terms": True, "agreed_privacy": False}
+    )
+
+    assert res.status_code == 400
+    assert res.json()["error"]["code"] == "TERMS_REQUIRED"
