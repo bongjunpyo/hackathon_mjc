@@ -1,0 +1,35 @@
+{
+  "_comment": "웹 서칭으로 확보한 외부 근거 (2026-08-07 02시). 추천 엔진의 매칭 근거와 발표 질의응답 대비용. 수집: WebFetch/WebSearch, 출처 URL 포함 — 할루시네이션 방지를 위해 전부 원문 확인.",
+  "graduation_verified": {
+    "source": "https://www.mjc.ac.kr/ibuilder.do?menu_idx=1942",
+    "verified_at": "2026-08-07",
+    "rules": {
+      "2년제": {"total": 75, "major": 45, "liberal": 6, "semesters": 4},
+      "3년제": {"total": 110, "major": 66, "liberal": 10, "semesters": 6},
+      "교양필수": [{"name": "인성채플", "credits": 1}, {"name": "성경과삶", "credits": 2}],
+      "전공심화_2년제": {"total": 55, "major": 42, "liberal": 9}
+    },
+    "note": "data/depts 및 server/validator.py 값과 완전 일치 확인. 검증기는 교양 6/10을 판정하지 않는데(교육과정표에 교양선택 부재), 이는 원문 확인 후 내린 의도적 결정."
+  },
+  "ncs": {
+    "job": "시스템관리·운용엔지니어",
+    "classification": "20.정보통신 > 01.정보기술 > IT시스템관리",
+    "source": "https://www.ncs.go.kr/unity/th03/ncsSearchMain.do",
+    "competency_units": {
+      "IT시스템관리": ["IT시스템 운용 계획", "IT시스템 통합관리", "DB 운용관리", "보안"],
+      "네트워크 운용·관리": ["네트워크 운용", "네트워크 유지보수 관리", "네트워크 재해복구", "네트워크 트래픽 분석", "네트워크 용량 분석"]
+    },
+    "course_match_examples": {
+      "운영체제": "IT시스템 운용 계획",
+      "네트워크I/II": "네트워크 운용",
+      "무선네트워크": "네트워크 유지보수 관리",
+      "데이터베이스": "DB 운용관리"
+    }
+  },
+  "certificates": [
+    {"name": "네트워크관리사 2급", "issuer": "한국정보통신자격협회(ICQA)", "type": "국가공인민간자격", "eligibility": "응시 제한 없음 — 1학년부터 준비 가능", "source": "https://www.icqa.or.kr/cn/page/network"},
+    {"name": "리눅스마스터", "issuer": "KAIT(한국정보통신진흥협회)", "type": "국가공인민간자격 (1급/2급)", "eligibility": "2급 응시 제한 없음", "source": "https://www.ihd.or.kr/introducesubject1.do"},
+    {"name": "정보처리산업기사", "issuer": "한국산업인력공단(Q-net)", "type": "국가기술자격", "eligibility": "전문대 관련학과 재학·졸업(예정)자 등", "source": "https://www.q-net.or.kr/crf005.do?id=crf00503&jmCd=2290"},
+    {"name": "CCNA/CCNP", "issuer": "Cisco", "type": "국제 벤더 자격", "eligibility": "응시 제한 없음"}
+  ]
+}
