@@ -12,7 +12,7 @@
     #e8edf2 52.4%, #e4e9ef 100%);
   box-shadow: inset 0 0 0 1px rgba(0, 45, 101, .10);
 }
-.track-canvas { position: relative; }
+.track-canvas { position: relative; container-type: inline-size; }
 .track-scene svg { display: block; width: 100%; height: auto; }
 
 /* 본선 — 바탕은 보도블록 경계 톤, 지나온 구간은 점자블록 유도선 gold */
@@ -64,7 +64,9 @@
 /* 캐릭터 — 씬 위 HTML 오버레이. 좌표는 viewBox 대비 %라 반응형에도 정확하다 */
 .track-canvas > .walker {
   position: absolute;
-  width: 66px; height: 105px;
+  /* viewBox 1200 기준 66×105 — cqw라 트랙과 같은 비율로 줄어든다.
+     고정 px면 좁은 화면에서 캐릭터가 트랙보다 커져 첫 행에서 머리가 잘린다 */
+  width: 5.5cqw; height: 8.75cqw;
   translate: -50% -88%; /* 발(y=88%)이 유도선에 닿게 */
   pointer-events: none;
   /* 역 하나 홉 = 0.35s. 홉 체인(360ms)과 맞물려 연속 걷기로 보인다 */
