@@ -19,6 +19,7 @@ from pathlib import Path
 import anthropic
 import pdfplumber
 
+from course_id import assign_course_ids
 from schema import DeptCurriculum
 
 MODEL = "claude-sonnet-5"
@@ -43,8 +44,7 @@ PROMPT = """다음은 명지전문대학 {dept_name} 교과과정표 PDF에서 �
 - `교과목명` 열이 과목 이름이다. 원본에는 공백 깨짐이 있다 (`네트워크I I` → `네트워크II`,
   `i OS프로그래밍` → `iOS프로그래밍`, `AI oT` → `AIoT`, `I CT최신기술` → `ICT최신기술`).
   로마숫자 I/II는 원본 표기를 살리되 공백만 제거한다.
-- `course_id`는 `{dept_id}-학년-학기-영문슬러그` 형식. 슬러그는 과목명의 의미를 담은
-  소문자 영문 kebab-case로 짓는다. 같은 과목이 두 번 나오지 않게 유일해야 한다.
+- `course_id`는 빈 문자열로 둔다. 코드가 과목명에서 조립한다 (이슈 #9).
 - `편성학년`/`편성학기`의 "1학년"·"1학기"에서 숫자만 뽑아 year/semester로.
 - `이수구분`이 "전공과정"이면 category는 "전공", "교양과정"이면 "교양".
 - `talent_type`은 맨 오른쪽 비고 열의 직무 라벨 (예: "시스템응용SW개발엔지니어").
@@ -117,6 +117,7 @@ def structure(table: str, dept_id: str, dept_name: str, years: int, tier: int) -
             messages.append({"role": "user", "content": "스키마에 맞는 JSON을 반환하지 못했다. 다시 시도하라."})
             continue
 
+        assign_course_ids(dept_id, dept.courses)
         problems = validate(dept, dept_id, years)
         if not problems:
             dept.dept_id, dept.dept_name, dept.years, dept.tier = dept_id, dept_name, years, tier
@@ -135,14 +136,13 @@ def validate(dept: DeptCurriculum, dept_id: str, years: int) -> list[str]:
     if not dept.courses:
         problems.append("과목이 하나도 추출되지 않았다")
 
+    # course_id는 코드가 조립하므로 여기서는 조립 결과만 확인한다.
     ids = [c.course_id for c in dept.courses]
     if len(ids) != len(set(ids)):
         dupes = {i for i in ids if ids.count(i) > 1}
         problems.append(f"course_id 중복: {sorted(dupes)}")
 
     for c in dept.courses:
-        if not c.course_id.startswith(f"{dept_id}-"):
-            problems.append(f"course_id가 '{dept_id}-'로 시작하지 않음: {c.course_id}")
         if not 1 <= c.year <= years:
             problems.append(f"{c.name}: 학년 {c.year}이 1~{years} 범위 밖")
         if c.semester not in (1, 2):
