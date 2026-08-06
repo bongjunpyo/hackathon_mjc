@@ -73,7 +73,10 @@ export default function RoadmapStudio() {
         loading={phase === "GENERATING"}
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+      {/* 좌: 트랙+검증바 묶음 · 우: 패널. 바를 그리드 밖에 두면 패널 높이만큼
+         트랙과 바 사이가 벌어진다 — 바는 트랙 바로 아래 붙어야 한 눈에 읽힌다 */}
+      <div className="grid items-start gap-4 lg:grid-cols-[1fr_340px]">
+        <div className="flex flex-col gap-3">
         <div className="relative">
           <div className={dimmed ? "opacity-35 blur-[2px] transition-[opacity,filter] duration-500" : "transition-[opacity,filter] duration-500"}>
             <TrackCanvas
@@ -108,6 +111,43 @@ export default function RoadmapStudio() {
           )}
         </div>
 
+        {/* 미달 사유 — 검증기가 잡아냈다는 증거 화면 (DESIGN §2.5 PARTIAL) */}
+        {phase === "PARTIAL" && shown.validation?.details?.length > 0 && (
+          <div className="flex flex-col gap-1.5 rounded-xl border-2 border-gold bg-gold/15 px-4 py-3">
+            <b className="text-navy">검증기가 미달을 잡았습니다 — 재생성 {shown.attempts ?? 3}회 후에도 남은 항목</b>
+            {shown.validation.details.map((d) => (
+              <p key={d.rule} className="text-sm text-ink-2">
+                ✗ {d.label} {d.actual}/{d.required} → {d.fix}
+              </p>
+            ))}
+          </div>
+        )}
+
+        {!dimmed && (
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex-1">
+              <ValidationBar validation={shown.validation} engine={shown.engine} />
+            </div>
+            {/* 2D=편집 모드, 3D=감상 모드. 같은 데이터·같은 캐릭터·같은 색이다 */}
+            <button
+              onClick={() => {
+                shareRoadmap({ ...shown, target_job: jobRef.current });
+                navigate("/app/walk");
+              }}
+              className="rounded-xl border-2 border-navy px-4 py-2.5 font-bold text-navy transition-[background-color,scale] duration-200 hover:bg-sky-soft active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-gold"
+            >
+              3D로 걸어보기 →
+            </button>
+          </div>
+        )}
+
+        {phase === "READY" && shown.job_match?.note && (
+          <p className="rounded-lg border border-dashed border-edge p-3 text-xs text-steel">
+            ⚠ {shown.job_match.note}
+          </p>
+        )}
+        </div>
+
         {semIndex != null && (
           <SemesterPanel
             semester={semesters[semIndex]}
@@ -120,41 +160,6 @@ export default function RoadmapStudio() {
         )}
       </div>
 
-      {/* 미달 사유 — 검증기가 잡아냈다는 증거 화면 (DESIGN §2.5 PARTIAL) */}
-      {phase === "PARTIAL" && shown.validation?.details?.length > 0 && (
-        <div className="flex flex-col gap-1.5 rounded-xl border-2 border-gold bg-gold/15 px-4 py-3">
-          <b className="text-navy">검증기가 미달을 잡았습니다 — 재생성 {shown.attempts ?? 3}회 후에도 남은 항목</b>
-          {shown.validation.details.map((d) => (
-            <p key={d.rule} className="text-sm text-ink-2">
-              ✗ {d.label} {d.actual}/{d.required} → {d.fix}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {!dimmed && (
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex-1">
-            <ValidationBar validation={shown.validation} engine={shown.engine} />
-          </div>
-          {/* 2D=편집 모드, 3D=감상 모드. 같은 데이터·같은 캐릭터·같은 색이다 */}
-          <button
-            onClick={() => {
-              shareRoadmap({ ...shown, target_job: jobRef.current });
-              navigate("/app/walk");
-            }}
-            className="rounded-xl border-2 border-navy px-4 py-2.5 font-bold text-navy transition-[background-color,scale] duration-200 hover:bg-sky-soft active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-gold"
-          >
-            3D로 걸어보기 →
-          </button>
-        </div>
-      )}
-
-      {phase === "READY" && shown.job_match?.note && (
-        <p className="rounded-lg border border-dashed border-edge p-3 text-xs text-steel">
-          ⚠ {shown.job_match.note}
-        </p>
-      )}
     </section>
   );
 }

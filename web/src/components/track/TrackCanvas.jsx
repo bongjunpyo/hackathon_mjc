@@ -51,16 +51,20 @@ export default function TrackCanvas({ semesters, targetJob, cursor, passed, shor
         />
         <path className="track-dots" d={path} />
 
-        {/* 분기 가지 — 자격증이 있는 학기 노드에서 45°로 (행 방향 따라 위/아래) */}
+        {/* 분기 가지 — 자격증은 그 학기 **구간 중앙**에서 갈라진다. 자격증은 학기를
+           보내는 중에 따는 것이라 역(노드)이 아니라 구간에 붙는 게 맞다 */}
         {meta.map((m, i) => {
           if (m.kind !== "semester" || !m.branches) return null;
-          const { x, y } = nodes[i];
+          const a = nodes[i - 1];
+          const b = nodes[i];
+          const mx = (a.x + b.x) / 2;
+          const my = (a.y + b.y) / 2;
           const up = Math.floor(i / 3) % 2 === 1;
-          const dy = up ? -64 : 64;
+          const dy = up ? -56 : 56;
           return (
             <g key={`br-${i}`} aria-hidden="true">
-              <path className="tbranch" d={`M ${x} ${y} l 64 ${dy}`} />
-              <text x={x + 74} y={y + dy + 5} fontSize="24" textAnchor="start">🎫</text>
+              <path className="tbranch" d={`M ${mx} ${my} l 56 ${dy}`} />
+              <text x={mx + 64} y={my + dy + (up ? 0 : 12)} fontSize="26" textAnchor="start">🎫</text>
             </g>
           );
         })}
