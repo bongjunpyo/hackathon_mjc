@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "../styles/corridor.css";
+import Walker from "./track/Walker";
 
 /* 행선판 복도 3D 씬.
    구조는 선언적으로 그리고, 스크롤 애니메이션은 ref로 직접 DOM을 만진다 —
@@ -13,7 +14,7 @@ const SEGLEN = 300;    // 바닥 세그먼트 (거대 단일 평면은 카메라
 const prefersReduced = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export default function Corridor({ semesters, targetJob, stats, onSelect }) {
+export default function Corridor({ semesters, targetJob, stats, onSelect, passed = true }) {
   const hallwayRef = useRef(null);
   const sceneRef = useRef(null);
   const walkerRef = useRef(null);
@@ -190,7 +191,10 @@ export default function Corridor({ semesters, targetJob, stats, onSelect }) {
                 <div className="gate-kicker">FINAL DESTINATION</div>
                 <div className="gate-title">{targetJob}</div>
                 <div>{stats}</div>
-                <div className="gate-badge">✓ 졸업요건 충족 — 검증기 통과</div>
+                {/* passed=false에 ✓를 띄우면 거짓 데모다 — 미달이면 미달이라고 쓴다 */}
+                <div className={passed ? "gate-badge" : "gate-badge warn"}>
+                  {passed ? "✓ 졸업요건 충족 — 검증기 통과" : "⚠ 졸업요건 미달 — 검증기가 잡았습니다"}
+                </div>
                 <div className="gate-sub">
                   이 노선의 모든 역은 졸업요건 검증기(규칙 코드)가 결정론적으로 검사했습니다
                 </div>
@@ -272,29 +276,6 @@ function SignPost({ ref, s, index, z, prev, next, onSelect }) {
       </div>
       <span className="pole l" />
       <span className="pole r" />
-    </div>
-  );
-}
-
-function Walker({ ref }) {
-  return (
-    <div className="walker" ref={ref} aria-hidden="true">
-      <svg viewBox="0 0 60 100" fill="none">
-        {/* 다리 끝이 y=87 — 그림자를 그보다 아래에 두면 확대했을 때 발과 분리돼 뜬다 */}
-        <ellipse className="w-shadow" cx="30" cy="88" rx="17" ry="4.2" />
-        <g className="w-body">
-          <g className="w-leg a"><rect className="w-figure" x="22.5" y="60" width="7" height="27" rx="3.5" /></g>
-          <g className="w-leg b"><rect className="w-figure" x="30.5" y="60" width="7" height="27" rx="3.5" /></g>
-          <g className="w-arm a"><rect className="w-figure" x="14.5" y="38" width="6" height="22" rx="3" opacity=".82" /></g>
-          <g className="w-arm b"><rect className="w-figure" x="39.5" y="38" width="6" height="22" rx="3" opacity=".82" /></g>
-          <rect className="w-figure" x="17" y="32" width="26" height="33" rx="10" />
-          <rect className="w-bag" x="8.5" y="36" width="11" height="23" rx="5.5" />
-          <rect className="w-figure" x="20" y="37" width="4" height="19" rx="2" opacity=".55" />
-          <circle className="w-figure" cx="30" cy="17" r="11.5" />
-          <path className="w-cap" d="M18.5 15.5 a11.5 11.5 0 0 1 23 0 l-2.5 1.2 a9 9 0 0 0 -18 0 z" />
-          <rect className="w-cap" x="27" y="4.2" width="11" height="3.6" rx="1.8" transform="rotate(-8 32 6)" />
-        </g>
-      </svg>
     </div>
   );
 }

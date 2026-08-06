@@ -43,7 +43,7 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider
-      value={{ input, setInput, roadmap, loading, generate, guest, login, logout }}
+      value={{ input, setInput, roadmap, setRoadmap, loading, generate, guest, login, logout }}
     >
       {children}
     </AppContext.Provider>

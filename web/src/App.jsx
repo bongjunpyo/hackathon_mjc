@@ -5,6 +5,10 @@ import Login from "./pages/Login";
 import Input from "./pages/Input";
 import Roadmap from "./pages/Roadmap";
 import Report from "./pages/Report";
+import RoadmapStudio from "./pages/RoadmapStudio";
+import Walk from "./pages/Walk";
+import Explore from "./pages/Explore";
+import DeptDetail from "./pages/DeptDetail";
 
 function Nav() {
   const { guest } = useApp();
@@ -18,8 +22,11 @@ function Nav() {
         <Link to="/" className="mr-auto font-extrabold tracking-tight text-navy">
           MJC 취업 로드맵
         </Link>
-        <NavLink to="/app/input" className={cls}>
+        <NavLink to="/app/roadmap" className={cls}>
           로드맵 만들기
+        </NavLink>
+        <NavLink to="/app/explore" className={cls}>
+          학과 탐색
         </NavLink>
         <NavLink to="/app/report" className={cls}>
           학교용 리포트
@@ -45,6 +52,12 @@ export default function App() {
             <Route path="/app/login" element={<Login />} />
             <Route path="/app/input" element={<Input />} />
             <Route path="/app/plan" element={<Roadmap />} />
+            {/* v2 (PLAN.md P0) — 문서의 /roadmap·/explore를 /app/* 아래로 옮겼다.
+                /roadmap은 동결 API 경로라 vite 프록시·정적 서빙 양쪽과 충돌한다 (PR #7) */}
+            <Route path="/app/roadmap" element={<RoadmapStudio />} />
+            <Route path="/app/walk" element={<Walk />} />
+            <Route path="/app/explore" element={<Explore />} />
+            <Route path="/app/explore/:deptId" element={<DeptDetail />} />
             <Route path="/app/report" element={<Report />} />
           </Routes>
         </main>

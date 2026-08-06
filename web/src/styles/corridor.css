@@ -347,46 +347,21 @@
   font-weight: 800; font-size: var(--t-base);
   border-radius: 999px; padding: 8px 20px;
 }
+.gate-badge.warn { background: var(--gold); color: var(--navy-deep, #001a3d); }
 .gate-sub { color: var(--sky); font-size: var(--t-sm); margin-top: 12px; }
 
 /* 걷는 캐릭터 — SVG 인물 (등에 가방, 걷기 사이클) */
 /* 접지점 = 그림자 중심(viewBox cy=88 → 박스의 88%)을 노면 y=80%에 앉힌다.
    지평선이 46%라 원근상 정확한 키는 이보다 크지만(머리가 지평선에 닿는다)
    그러면 머리가 행선판을 가린다 — 의도적으로 덜 키운다. */
-.walker {
+/* 배치는 복도 전용 — 트랙(.track-scene)의 walker에 새지 않게 스코프한다 */
+.corridor .walker {
   position: absolute; left: 50%; top: 80%;
   translate: -50% -88%;
   scale: 1.28;
-  width: 104px; height: 166px;
   z-index: 5;
   transform-origin: 50% 88%;
 }
-.walker svg { width: 100%; height: 100%; display: block; overflow: visible; }
-.w-shadow { fill: rgba(0, 26, 61, 0.28); transition: transform .3s; transform-origin: 30px 88px; }
-.w-figure { fill: var(--figure); }
-.w-bag    { fill: var(--gold); }
-.w-cap    { fill: var(--sky); }
-.w-leg, .w-arm { transform-box: fill-box; transform-origin: 50% 8%; }
-.w-body   { transform-origin: 30px 60px; }
-
-.walker.walking .w-body  { animation: w-bob var(--step, .62s) ease-in-out infinite; }
-.walker.walking .w-shadow{ animation: w-shade var(--step, .62s) ease-in-out infinite; }
-.walker.walking .w-leg.a { animation: w-swing var(--step, .62s) ease-in-out infinite; }
-.walker.walking .w-leg.b { animation: w-swing var(--step, .62s) ease-in-out infinite; animation-delay: calc(var(--step, .62s) / -2); }
-.walker.walking .w-arm.a { animation: w-swing-s var(--step, .62s) ease-in-out infinite; animation-delay: calc(var(--step, .62s) / -2); }
-.walker.walking .w-arm.b { animation: w-swing-s var(--step, .62s) ease-in-out infinite; }
-
-@keyframes w-bob {
-  0%   { transform: translate(-2.2px, 0) rotate(-1.1deg) }
-  25%  { transform: translate(0, -3.5px) rotate(0deg) }
-  50%  { transform: translate(2.2px, 0) rotate(1.1deg) }
-  75%  { transform: translate(0, -3.5px) rotate(0deg) }
-  100% { transform: translate(-2.2px, 0) rotate(-1.1deg) }
-}
-@keyframes w-shade { 0%,100% { transform: scaleX(1) }      50% { transform: scaleX(.86) } }
-@keyframes w-swing   { 0%,100% { transform: rotate(24deg) } 50% { transform: rotate(-24deg) } }
-@keyframes w-swing-s { 0%,100% { transform: rotate(15deg) } 50% { transform: rotate(-15deg) } }
-
 /* 진행 HUD — 지하철 노선도식 */
 .hud {
   position: absolute; left: 50%; bottom: 3vh; translate: -50% 0;

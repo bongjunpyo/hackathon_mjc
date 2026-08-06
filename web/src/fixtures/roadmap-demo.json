@@ -1,0 +1,427 @@
+{
+  "semesters": [
+    {
+      "year": 1,
+      "semester": 1,
+      "courses": [
+        {
+          "course_id": "itc-디지털공학개론",
+          "name": "디지털공학개론",
+          "year": 1,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-정보통신개론",
+          "name": "정보통신개론",
+          "year": 1,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-1-1-chapel",
+          "name": "인성채플",
+          "year": 1,
+          "semester": 1,
+          "credits": 1,
+          "category": "교양",
+          "required": true,
+          "talent_type": null,
+          "ncs": false,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-1-1-bible-life",
+          "name": "성경과삶",
+          "year": 1,
+          "semester": 1,
+          "credits": 2,
+          "category": "교양",
+          "required": true,
+          "talent_type": null,
+          "ncs": false,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-인터넷프로그래밍",
+          "name": "인터넷프로그래밍",
+          "year": 1,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-프로그래밍언어실습",
+          "name": "프로그래밍언어실습",
+          "year": 1,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        }
+      ],
+      "credits": 15,
+      "certificates": [],
+      "notes": "전공기초와 교양필수(채플·성경과삶)를 먼저 이수, 정보처리 기능사 학습 시작"
+    },
+    {
+      "year": 1,
+      "semester": 2,
+      "courses": [
+        {
+          "course_id": "itc-ai전자계산기구조",
+          "name": "AI전자계산기구조",
+          "year": 1,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-임베디드시스템개론",
+          "name": "임베디드시스템개론",
+          "year": 1,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-데이터통신",
+          "name": "데이터통신",
+          "year": 1,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-c언어1",
+          "name": "C언어I",
+          "year": 1,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-객체지향언어",
+          "name": "객체지향언어",
+          "year": 1,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        }
+      ],
+      "credits": 15,
+      "certificates": [
+        "정보처리 산업기사",
+        "CCIE",
+        "웹서버관리사(WSMC)",
+        "PC 정비사"
+      ],
+      "notes": "데이터통신 기초를 다지며 PC정비사·정보처리 산업기사 대비 시작"
+    },
+    {
+      "year": 2,
+      "semester": 1,
+      "courses": [
+        {
+          "course_id": "itc-운영체제",
+          "name": "운영체제",
+          "year": 2,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-네트워크1",
+          "name": "네트워크I",
+          "year": 2,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-ios프로그래밍",
+          "name": "iOS프로그래밍",
+          "year": 2,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-객체지향언어실습",
+          "name": "객체지향언어실습",
+          "year": 2,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-데이터베이스",
+          "name": "데이터베이스",
+          "year": 2,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        }
+      ],
+      "credits": 15,
+      "certificates": [
+        "정보통신 산업기사",
+        "ESDP",
+        "네트워크 관리사"
+      ],
+      "notes": "운영체제·네트워크 핵심이론 학습, CCNA·리눅스마스터 자격증 취득 준비"
+    },
+    {
+      "year": 2,
+      "semester": 2,
+      "courses": [
+        {
+          "course_id": "itc-네트워크2",
+          "name": "네트워크II",
+          "year": 2,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-aiot",
+          "name": "AIoT",
+          "year": 2,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-무선네트워크",
+          "name": "무선네트워크",
+          "year": 2,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-웹프로그래밍실습",
+          "name": "웹프로그래밍실습",
+          "year": 2,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-인공지능기초",
+          "name": "인공지능기초",
+          "year": 2,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        }
+      ],
+      "credits": 15,
+      "certificates": [
+        "MCSE",
+        "전자상거래 관리사",
+        "리눅스 마스터"
+      ],
+      "notes": "무선네트워크 실무 감각 습득, CCNP·네트워크관리사 시험 준비"
+    },
+    {
+      "year": 3,
+      "semester": 1,
+      "courses": [
+        {
+          "course_id": "itc-캡스톤디자인1",
+          "name": "캡스톤디자인I",
+          "year": 3,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": true
+        },
+        {
+          "course_id": "itc-모바일프로그래밍",
+          "name": "모바일프로그래밍",
+          "year": 3,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-컴퓨터구조실습",
+          "name": "컴퓨터구조실습",
+          "year": 3,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-인공지능실습",
+          "name": "인공지능실습",
+          "year": 3,
+          "semester": 1,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        }
+      ],
+      "credits": 12,
+      "certificates": [
+        "CCNA",
+        "웹마스터전문가",
+        "OJCP"
+      ],
+      "notes": "캡스톤디자인으로 현장 프로젝트 시작, CCIE·정보통신산업기사 심화 학습"
+    },
+    {
+      "year": 3,
+      "semester": 2,
+      "courses": [
+        {
+          "course_id": "itc-캡스톤디자인2",
+          "name": "캡스톤디자인II",
+          "year": 3,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템관리·운용엔지니어",
+          "ncs": true,
+          "field_based": true
+        },
+        {
+          "course_id": "itc-ict최신기술",
+          "name": "ICT최신기술",
+          "year": 3,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        },
+        {
+          "course_id": "itc-ios프로그래밍응용",
+          "name": "iOS프로그래밍응용",
+          "year": 3,
+          "semester": 2,
+          "credits": 3,
+          "category": "전공",
+          "required": false,
+          "talent_type": "시스템응용SW개발엔지니어",
+          "ncs": true,
+          "field_based": false
+        }
+      ],
+      "credits": 9,
+      "certificates": [
+        "CCNP",
+        "웹 프로그래머",
+        "정보처리 기능사"
+      ],
+      "notes": "캡스톤 마무리 및 포트폴리오 완성, 자격증 최종 점검 후 취업 준비"
+    }
+  ],
+  "reasoning": "시스템관리·운용엔지니어 목표에 맞춰 디지털공학, 정보통신, 전자계산기구조, 임베디드, 데이터통신, 운영체제, 네트워크I·II, AIoT, 무선네트워크, 캡스톤디자인 등 ★표시 전공과목을 학기 순서대로 배치해 이론과 실무 역량을 단계적으로 쌓았다. 동시에 시스템응용SW개발엔지니어 관련 과목들도 학기별 상한(21학점) 내에서 최대한 함께 수강하도록 배치해 전공학점 이수량을 늘리고, C언어→객체지향언어, iOS프로그래밍→응용 등 선수관계를 지켰다. 각 학기 note에는 CCNA, CCNP, 리눅스마스터, 정보처리산업기사 등 학과 안내 자격증 준비 시점을 명시했다.",
+  "validation": {
+    "passed": true,
+    "total_credits": 81,
+    "liberal_credits": 3,
+    "major_credits": 78,
+    "semesters": 6,
+    "remaining_credits": 29,
+    "details": []
+  },
+  "attempts": 1,
+  "engine": "llm"
+}
