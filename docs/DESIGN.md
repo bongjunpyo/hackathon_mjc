@@ -132,8 +132,10 @@
 POST /roadmap
   in:  { dept_id, current_year, current_semester, completed_courses: [course_id], target_job }
   out: { semesters: [ { year, semester, courses: [...], certificates: [...], notes } ],
-         validation: { passed, total_credits, major_credits, liberal_credits,
-                       details: [ { rule, required, actual, shortfall } ] } }
+         validation: { passed, total_credits, major_credits, liberal_credits, semesters,
+                       details: [ { rule, label, required, actual, shortfall } ] } }
+  # 졸업요건 4종(총학점·교양·전공·재학학기)을 모두 최상위에 — 배지 UI 항목별 충족 표시용
+  # label: 화면 표시용 한글명 ("전공 학점" 등). rule은 기계용 키
   # 동결 검토 반영: details는 구조화 배열 — 재생성 프롬프트에 그대로 투입 + 발표 화면 표시
   # 재생성 루프 상한 max_retries=3. 초과 시 passed=false + 부분 로드맵을 "정상 응답"으로 반환 (에러 아님)
 
@@ -156,7 +158,7 @@ PUT  /me/courses    → 이수내역 저장
 | 테이블 | 컬럼 |
 |---|---|
 | users | id, student_id(unique), name, dept_id, password_hash, created_at |
-| completed_courses | user_id, course_name, year, semester |
+| completed_courses | user_id, **course_id**, year, semester |
 | saved_roadmaps | user_id, target_job, roadmap_json, created_at |
 
 - 실행: `docker compose up -d db` (postgres 컨테이너) — README에 명시
