@@ -36,3 +36,45 @@ def test_에이전트가_planner에서_없는_함수를_가져오지_않는다()
 
     missing = {n for n in imported if not hasattr(planner, n)}
     assert not missing, f"planner에 없는 이름: {sorted(missing)}"
+
+
+def test_LLM이_생성해도_job_related가_붙는다(monkeypatch, tmp_path):
+    """planner만 job_related를 달았다. LLM 경로에선 빠져서 화면이 직무 과목을
+    강조할 수 없고 job_match.related_courses가 0으로 나왔다."""
+    from fastapi.testclient import TestClient
+
+    import catalog
+    import main
+    from tests.test_api import FIXTURES
+
+    monkeypatch.setattr(catalog, "DATA_DIR", FIXTURES)
+
+    def fake_llm(spec, feedback=None, attempt=1):
+        # 에이전트는 job_related를 달지 않는다
+        return {
+            "semesters": [
+                {
+                    "year": 1,
+                    "semester": 1,
+                    "courses": [dict(c) for c in spec["dept"]["courses"]],
+                    "certificates": [],
+                    "notes": "",
+                }
+            ]
+        }
+
+    monkeypatch.setattr(main, "pick_generator", lambda: fake_llm)
+
+    body = TestClient(main.app).post(
+        "/roadmap",
+        json={
+            "dept_id": "itc",
+            "current_year": 1,
+            "current_semester": 1,
+            "completed_courses": [],
+            "target_job": "네트워크 엔지니어",
+        },
+    ).json()
+
+    assert body["job_match"]["related_courses"] > 0
+    assert any(c.get("job_related") for s in body["semesters"] for c in s["courses"])

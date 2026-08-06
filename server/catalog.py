@@ -71,6 +71,8 @@ def list_depts(root=None):
                 "tier": dept["tier"],
                 # 입력 화면의 목표 직무 드롭다운 재료. 없으면 프론트가 하드코딩해야 하고,
                 # 그러면 "전 학과 대응"이 성립하지 않는다
+                # 역산의 축이라 프론트 드롭다운에 함께 있어야 한다 (이슈 #40)
+                "talent_types": dept.get("talent_types", []),
                 "careers": dept.get("careers", []),
                 "certificates": dept.get("certificates", []),
             }

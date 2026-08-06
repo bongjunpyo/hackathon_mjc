@@ -195,3 +195,36 @@ def test_report는_jobs_키를_낸다(client):
     body = client.get("/report/itc").json()
 
     assert "jobs" in body
+
+
+def test_대응_라벨이_없는_진로는_안내를_함께_낸다(client):
+    """학과가 홍보하는 진로에 교육과정 대응이 없을 수 있다. 로드맵은 내되
+    "직무 맞춤이 안 됐다"를 숨기지 않는다 — 조용히 일반 로드맵을 주면 거짓이다."""
+    body = client.post(
+        "/roadmap",
+        json={
+            "dept_id": "itc",
+            "current_year": 1,
+            "current_semester": 1,
+            "completed_courses": [],
+            "target_job": "IoT 개발자",  # 픽스처에 매칭 과목 1개뿐
+        },
+    ).json()
+
+    assert "job_match" in body
+
+
+def test_대응_라벨이_있으면_무엇과_맞췄는지_알려준다(client):
+    body = client.post(
+        "/roadmap",
+        json={
+            "dept_id": "itc",
+            "current_year": 1,
+            "current_semester": 1,
+            "completed_courses": [],
+            "target_job": "네트워크 엔지니어",
+        },
+    ).json()
+
+    assert body["job_match"]["matched_labels"]
+    assert body["job_match"]["related_courses"] > 0

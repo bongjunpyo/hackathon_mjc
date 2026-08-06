@@ -182,3 +182,32 @@ def test_에이전트가_검증기_룰_이름을_그대로_쓴다():
 
     assert used, "agent.py가 REQUIREMENTS를 안 쓴다면 이 테스트를 지운다"
     assert used <= set(REQUIREMENTS[3]), f"검증기에 없는 키: {used - set(REQUIREMENTS[3])}"
+
+
+# --- 진로(careers) ↔ 인재양성유형(talent_type) 매핑 (이슈 #40) ---
+
+
+def test_진로를_골라도_직무_역산이_된다():
+    """careers는 학과 소개 페이지의 진로, courses[].talent_type은 교육과정표의
+    인재양성유형이다. 이름이 달라 완전 일치로는 0과목이 나온다 — 실제로 그랬다."""
+    dept = {
+        **ITC,
+        "talent_types": ["시스템관리·운용엔지니어"],
+        "careers": ["시스템 엔지니어"],
+        "courses": [
+            {**c, "talent_type": "시스템관리·운용엔지니어"}
+            if c.get("talent_type") == JOB
+            else c
+            for c in ITC["courses"]
+        ],
+    }
+    spec = {**SPEC, "dept": dept, "target_job": "시스템 엔지니어"}
+
+    related = [
+        c
+        for s in generate(spec, attempt=1)["semesters"]
+        for c in s["courses"]
+        if c["job_related"]
+    ]
+
+    assert related
