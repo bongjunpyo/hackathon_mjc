@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ControlBar from "../components/track/ControlBar";
 import TrackCanvas from "../components/track/TrackCanvas";
 import SemesterPanel from "../components/track/SemesterPanel";
 import ValidationBar from "../components/track/ValidationBar";
 import Walker from "../components/track/Walker";
 import { postRoadmap } from "../lib/api";
+import { DEPT_BY_ID } from "../lib/depts";
 import { useApp } from "../store";
 import demo from "../fixtures/roadmap-demo.json";
 
@@ -21,12 +22,18 @@ const GEN_STEPS = [
 ];
 
 export default function RoadmapStudio() {
-  const [input, setInput] = useState({
-    deptId: "itc",
-    year: 1,
-    semester: 1,
-    completedCourses: [],
-    targetJob: "시스템관리·운용엔지니어",
+  // 랜딩(행선지)·학과 상세(학과)가 선택을 실어 보낸다 (DESIGN §4)
+  const handoff = useLocation().state ?? {};
+  const [input, setInput] = useState(() => {
+    const deptId = handoff.deptId ?? "itc";
+    const dept = DEPT_BY_ID[deptId];
+    return {
+      deptId,
+      year: 1,
+      semester: 1,
+      completedCourses: [],
+      targetJob: handoff.targetJob ?? dept?.careers[0] ?? dept?.promoted?.[0] ?? "",
+    };
   });
   const [phase, setPhase] = useState("INIT");
   const [roadmap, setRoadmap] = useState(null);

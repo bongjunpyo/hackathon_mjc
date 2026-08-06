@@ -25,7 +25,7 @@ export default function Landing() {
 
   function start() {
     setInput({ ...input, targetJob: job });
-    navigate("/app/input");
+    navigate("/app/roadmap", { state: { deptId: dept.id, targetJob: job } });
   }
 
   return (
