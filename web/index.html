@@ -335,6 +335,107 @@ h1,h2,h3 { margin: 0; line-height: 1.15; letter-spacing: -0.02em; text-wrap: bal
     0 10px 26px rgba(0, 26, 61, 0.12);
   display: flex; flex-direction: column; gap: 7px;
 }
+/* 행선판 인터랙션 — 클릭하면 학기 상세 */
+.signpost { cursor: pointer; }
+.signpost:hover .signboard,
+.signpost:focus-visible .signboard {
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    0 3px 8px rgba(0, 26, 61, 0.28),
+    0 20px 52px rgba(0, 26, 61, 0.38),
+    0 0 0 3px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.signpost:focus-visible { outline: none; }
+.sign-hint {
+  position: absolute; right: 12px; bottom: 8px;
+  font-family: var(--f-mono); font-size: 0.625rem;
+  letter-spacing: 0.08em; color: var(--sky);
+  opacity: 0; transition-property: opacity; transition-duration: .2s;
+}
+.signpost:hover .sign-hint, .signpost:focus-visible .sign-hint { opacity: .9; }
+
+/* 학기 상세 오버레이 */
+.detail {
+  position: fixed; inset: 0; z-index: 80;
+  display: grid; place-items: center; padding: 20px;
+  visibility: hidden;
+}
+.detail.open { visibility: visible; }
+.detail-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(6, 18, 38, 0.44);
+  backdrop-filter: blur(7px);
+  opacity: 0;
+  transition-property: opacity; transition-duration: .25s;
+}
+.detail.open .detail-backdrop { opacity: 1; }
+.detail-panel {
+  position: relative;
+  width: min(580px, 94vw); max-height: 86vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0,26,61,.18), 0 40px 120px rgba(0,26,61,.4);
+  translate: 0 16px; opacity: 0;
+  transition-property: translate, opacity;
+  transition-duration: .32s;
+  transition-timing-function: cubic-bezier(.2, 0, 0, 1);
+}
+.detail.open .detail-panel { translate: 0 0; opacity: 1; }
+.detail-head {
+  position: sticky; top: 0;
+  background: linear-gradient(178deg,
+    color-mix(in srgb, var(--board) 88%, #fff) 0%, var(--board) 30%);
+  color: #fff;
+  padding: 22px 24px 16px;
+  border-bottom: 5px solid var(--gold);
+  border-radius: 20px 20px 0 0;
+}
+.detail-head .sign-line { position: static; translate: none; box-shadow: 0 3px 9px rgba(0,0,0,.25); }
+.detail-title { display: flex; align-items: center; gap: 12px; margin-top: 2px; }
+.detail-title h3 { font-size: var(--t-lg); font-weight: 800; }
+.detail-title .credits { margin-left: auto; font-family: var(--f-mono); font-size: var(--t-sm); color: var(--sky); }
+.detail-goal { margin: 10px 0 0; color: var(--sky); font-size: var(--t-sm); }
+.detail-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 0; cursor: pointer;
+  background: rgba(255,255,255,.14); color: #fff;
+  font-size: 1.05rem; line-height: 1;
+  display: grid; place-items: center;
+  transition-property: background-color, scale; transition-duration: .2s, .15s;
+}
+.detail-close:hover { background: rgba(255,255,255,.26); }
+.detail-close:active { scale: .96; }
+.detail-close:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.detail-body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 14px; }
+.detail-body h4 {
+  font-family: var(--f-mono); font-size: var(--t-xs);
+  letter-spacing: 0.12em; color: var(--steel); text-transform: uppercase;
+  margin: 4px 0 0;
+}
+.course-card {
+  border-radius: 12px;
+  background: var(--sky-soft);
+  box-shadow: inset 0 0 0 1px var(--edge);
+  padding: 12px 16px;
+}
+.course-card b { display: block; color: var(--navy); margin-bottom: 3px; }
+.course-card p { margin: 0; font-size: var(--t-sm); color: var(--ink-2); }
+.cert-card {
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--gold) 16%, var(--surface));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--gold) 55%, transparent);
+  padding: 12px 16px;
+}
+.cert-card b { display: block; color: var(--navy); margin-bottom: 3px; }
+.cert-card p { margin: 0; font-size: var(--t-sm); color: var(--ink-2); }
+.detail-foot {
+  font-size: var(--t-xs); color: var(--steel);
+  border-top: 1px dashed var(--edge); padding-top: 12px;
+}
+
 /* 기둥 — 행선판을 바닥에 앉힌다 (.signpost 기준) */
 .pole {
   position: absolute; top: 100%; width: 7px; height: 118px;
@@ -575,6 +676,23 @@ footer {
   </div>
 </div>
 
+<!-- ================= 학기 상세 오버레이 ================= -->
+<div class="detail" id="detail" role="dialog" aria-modal="true" aria-labelledby="detail-name">
+  <div class="detail-backdrop" data-close></div>
+  <div class="detail-panel">
+    <div class="detail-head">
+      <button class="detail-close" data-close aria-label="닫기">✕</button>
+      <span class="sign-line" id="detail-line"></span>
+      <div class="detail-title">
+        <h3 id="detail-name"></h3>
+        <span class="credits" id="detail-credits"></span>
+      </div>
+      <p class="detail-goal" id="detail-goal"></p>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+</div>
+
 <!-- ================= 도착 후 ================= -->
 <section class="after">
   <div class="after-inner">
@@ -597,17 +715,46 @@ footer {
 <script>
 const SEMESTERS = [
   { line: "1", name: "1학년 1학기", en: "YEAR 1 · SEM 1", credits: 18,
-    courses: ["프로그래밍언어실습Ⅰ", "컴퓨터네트워크기초", "디지털논리회로"], cert: null },
+    goal: "기초 체력 학기 — 코딩과 네트워크 개념을 동시에 시동",
+    courses: [
+      ["프로그래밍언어실습Ⅰ", "모든 후속 실습 과목이 이 언어 위에서 돈다 — 여기서 놓치면 2학년 내내 끌려다닌다"],
+      ["컴퓨터네트워크기초", "목표 직무의 핵심 선수과목. OSI 7계층은 면접 단골"],
+      ["디지털논리회로", "장비를 다루는 직무라면 하드웨어 동작 원리가 뿌리"],
+    ], cert: null, certTip: null },
   { line: "2", name: "1학년 2학기", en: "YEAR 1 · SEM 2", credits: 19,
-    courses: ["프로그래밍언어실습Ⅱ", "네트워크실무", "데이터베이스기초"], cert: "정보처리기능사" },
+    goal: "첫 자격증 학기 — 배운 범위가 식기 전에 시험으로 굳힌다",
+    courses: [
+      ["프로그래밍언어실습Ⅱ", "실습Ⅰ의 연장 — 방학 전까지 미니 프로젝트 1개를 만들어 둘 것"],
+      ["네트워크실무", "장비 CLI를 처음 만지는 과목. CCNA의 실습 기반"],
+      ["데이터베이스기초", "정보처리 계열 자격증 필기와 직결"],
+    ], cert: "정보처리기능사", certTip: "필기 범위가 1학기 과목과 크게 겹친다 — 기말 직후 4주 안에 응시하는 것이 가장 싸게 먹힌다" },
   { line: "3", name: "2학년 1학기", en: "YEAR 2 · SEM 1", credits: 18,
-    courses: ["라우팅·스위칭", "리눅스서버운용", "자료구조"], cert: "CCNA 학습 시작" },
+    goal: "직무 핵심 진입 — 수업이 곧 자격증 공부가 되는 학기",
+    courses: [
+      ["라우팅·스위칭", "네트워크 엔지니어 직무의 몸통. CCNA 출제 범위와 정면으로 겹친다"],
+      ["리눅스서버운용", "현장 장비 대부분이 리눅스 기반 — 채용공고 우대사항 단골"],
+      ["자료구조", "코딩테스트 대비는 이 학기에 뿌리를 둔다"],
+    ], cert: "CCNA 학습 시작", certTip: "라우팅·스위칭 수강과 병행하면 실습이 곧 시험공부다 — 따로 학원 갈 이유가 없어진다" },
   { line: "4", name: "2학년 2학기", en: "YEAR 2 · SEM 2", credits: 18,
-    courses: ["무선네트워크", "네트워크보안", "캡스톤디자인Ⅰ"], cert: "CCNA 취득" },
+    goal: "CCNA를 손에 쥐고 포트폴리오의 뼈대를 세우는 학기",
+    courses: [
+      ["무선네트워크", "유선+무선을 다 다루면 지원 가능한 공고 폭이 넓어진다"],
+      ["네트워크보안", "보안 지식은 네트워크 직무의 연봉 프리미엄"],
+      ["캡스톤디자인Ⅰ", "취업 포트폴리오 1번이 되는 프로젝트 — 주제를 직무와 맞출 것"],
+    ], cert: "CCNA 취득", certTip: "겨울방학 전 취득이 마지노선 — 3학년은 산업기사와 현장실습으로 자리가 없다" },
   { line: "5", name: "3학년 1학기", en: "YEAR 3 · SEM 1", credits: 19,
-    courses: ["클라우드인프라", "네트워크설계", "캡스톤디자인Ⅱ"], cert: "정보처리산업기사" },
+    goal: "응시 자격이 열리는 학기 — 산업기사와 클라우드로 마무리 스퍼트",
+    courses: [
+      ["클라우드인프라", "온프레미스+클라우드를 함께 아는 신입은 드물다 — 차별화 포인트"],
+      ["네트워크설계", "지금까지 배운 것을 설계 관점으로 묶는 종합 과목"],
+      ["캡스톤디자인Ⅱ", "포트폴리오 완성판 — 시연 영상까지 남겨둘 것"],
+    ], cert: "정보처리산업기사", certTip: "전문대 관련학과는 3학년부터 응시 자격이 생긴다 — 열리자마자 바로 치는 것이 이 로드맵의 설계" },
   { line: "6", name: "3학년 2학기", en: "YEAR 3 · SEM 2", credits: 18,
-    courses: ["현장실습(4주)", "취업역량강화"], cert: null },
+    goal: "현장으로 — 실습이 곧 채용 관문",
+    courses: [
+      ["현장실습(4주)", "취업 연계 확률이 가장 높은 관문 — 실습처 선택이 사실상 첫 직장 선택"],
+      ["취업역량강화", "이력서·면접을 학점으로 준비하는 마지막 정비 시간"],
+    ], cert: null, certTip: null },
 ];
 
 const GAP = 1050;                 // 행선판 간 깊이
@@ -616,6 +763,7 @@ const gate = document.getElementById("gate");
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* 행선판 생성 */
+const lampEls = [];
 const posts = SEMESTERS.map((s, i) => {
   const prev = SEMESTERS[i-1], next = SEMESTERS[i+1];
   const el = document.createElement("div");
@@ -631,20 +779,31 @@ const posts = SEMESTERS.map((s, i) => {
         <span class="dir next">${next ? next.name : "행선지"}<i>▶</i></span>
       </div>
       <div class="sign-name">${s.name}<small>${s.en}</small></div>
+      <span class="sign-hint">CLICK — 학기 상세</span>
     </div>
     <div class="plaque">
       <div class="row"><b>이수 과목</b><span class="credits">${s.credits}학점</span></div>
-      <ul>${s.courses.map(c => `<li>${c}</li>`).join("")}</ul>
+      <ul>${s.courses.map(c => `<li>${c[0]}</li>`).join("")}</ul>
       ${s.cert ? `<span class="cert">🎫 ${s.cert}</span>` : ""}
     </div>
     <span class="pole l"></span><span class="pole r"></span>`;
+  el.tabIndex = 0;
+  el.setAttribute("role", "button");
+  el.setAttribute("aria-label", s.name + " 상세 보기");
+  el.addEventListener("click", () => openDetail(i));
+  el.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDetail(i); }
+  });
   scene.insertBefore(el, gate);
-  /* 역 사이마다 가로등 (양옆) */
+  /* 역 사이마다 가로등 (양옆 — 행선판을 가리지 않게 바깥쪽 + 근접 페이드) */
   for (const side of ["ls", "rs"]) {
     const lamp = document.createElement("div");
     lamp.className = "lamp " + side;
-    const x = side === "ls" ? -238 : 230;
-    lamp.style.transform = `translateX(${x}px) translateZ(${z + GAP / 2}px)`;
+    const lz = z + GAP / 2;
+    const x = side === "ls" ? -310 : 302;
+    lamp.style.transform = `translateX(${x}px) translateZ(${lz}px)`;
+    lamp.dataset.z = lz;
+    lampEls.push(lamp);
     scene.insertBefore(lamp, gate);
   }
   return el;
@@ -711,6 +870,11 @@ function paint() {
     el.style.visibility =
       +el.dataset.z0 - +el.dataset.len > camZ ? "hidden" : "visible";
   });
+  /* 가로등도 카메라에 가까워지면 페이드 — 행선판을 가리는 순간을 없앤다 */
+  lampEls.forEach(el => {
+    const dz = +el.dataset.z - camZ;
+    el.style.opacity = dz > -70 ? 0 : dz > -320 ? (-dz - 70) / 250 : 1;
+  });
 
   const seg = 1 / (SEMESTERS.length + 0.9);
   const idx = Math.min(SEMESTERS.length, Math.floor(p / seg));
@@ -744,4 +908,37 @@ if (!reduced) {
 /* 출발 버튼 → 복도로 스크롤 */
 document.querySelector(".go").addEventListener("click", () =>
   hallway.scrollIntoView({ behavior: reduced ? "auto" : "smooth" }));
+
+/* ---- 학기 상세 오버레이 ---- */
+const detail = document.getElementById("detail");
+let lastFocus = null;
+
+function openDetail(i) {
+  const s = SEMESTERS[i];
+  document.getElementById("detail-line").innerHTML = `MJ<b>0${s.line}</b>`;
+  document.getElementById("detail-name").textContent = s.name;
+  document.getElementById("detail-credits").textContent = s.credits + "학점 · " + s.en;
+  document.getElementById("detail-goal").textContent = "이 학기의 목표 — " + s.goal;
+  document.getElementById("detail-body").innerHTML = `
+    <h4>이수 과목 · 왜 이 학기인가</h4>
+    ${s.courses.map(([name, why]) => `
+      <div class="course-card"><b>${name}</b><p>${why}</p></div>`).join("")}
+    ${s.cert ? `
+      <h4>자격증 타이밍</h4>
+      <div class="cert-card"><b>🎫 ${s.cert}</b><p>${s.certTip || ""}</p></div>` : ""}
+    <p class="detail-foot">추천 근거: 교육과정표(이수구분·인재양성유형) × NCS 직무기술서 매핑 — 데모 목데이터. 실서비스에서는 검증기 통과 결과와 함께 제공됩니다.</p>`;
+  lastFocus = document.activeElement;
+  detail.classList.add("open");
+  document.body.style.overflow = "hidden";
+  detail.querySelector(".detail-close").focus();
+}
+function closeDetail() {
+  detail.classList.remove("open");
+  document.body.style.overflow = "";
+  if (lastFocus) lastFocus.focus();
+}
+detail.addEventListener("click", e => { if (e.target.dataset.close !== undefined) closeDetail(); });
+addEventListener("keydown", e => {
+  if (e.key === "Escape" && detail.classList.contains("open")) closeDetail();
+});
 </script>
