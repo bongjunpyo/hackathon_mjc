@@ -279,3 +279,31 @@ def test_대응_라벨이_있으면_무엇과_맞췄는지_알려준다(client):
     assert body["job_match"]["matched_labels"]
     assert body["job_match"]["related_courses"] > 0
 
+
+
+def test_직무_미정이면_추천_직무로_짠다(client):
+    """직무를 못 정한 학생 — 이 서비스가 가장 필요한 사용자 — 를 400으로 내쫓지 않는다."""
+    res = client.post(
+        "/roadmap",
+        json={
+            "dept_id": "itc",
+            "current_year": 1,
+            "current_semester": 1,
+            "completed_courses": [],
+        },
+    )
+
+    assert res.status_code == 200
+    body = res.json()
+    assert body["job_recommended"] is True
+    # 추천 근거는 라벨별 배정 학점 — 1위 직무로 짰음을 밝힌다
+    assert body["target_job"] == body["recommended_jobs"][0]["job"]
+    assert body["recommended_jobs"][0]["credits"] >= body["recommended_jobs"][-1]["credits"]
+    assert body["job_match"]["related_courses"] > 0
+
+
+def test_직무를_고르면_추천_필드가_없다(client):
+    body = _roadmap(client, "네트워크 엔지니어").json()
+
+    assert "job_recommended" not in body
+    assert "recommended_jobs" not in body

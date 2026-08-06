@@ -61,7 +61,8 @@ class RoadmapRequest(BaseModel):
     current_year: int
     current_semester: int
     completed_courses: list[str] = []
-    target_job: str
+    # 빈 값 = 직무 미정. 커버리지 1위 직무를 추천해 그걸로 짠다 (8/7 02시 팀 결정)
+    target_job: str = ""
 
 
 @app.get("/depts")
@@ -77,12 +78,19 @@ def post_roadmap(req: RoadmapRequest):
     except CatalogError as e:
         raise ApiError("DEPT_NOT_FOUND", str(e), status=404) from e
 
+    # 직무 미정이면 커버리지(직무 라벨 학점 합) 1위 직무를 추천해 그걸로 짠다.
+    # 막아버리면 "아직 못 정한" 학생 — 이 서비스가 가장 필요한 사용자 — 를 내쫓는 셈이다
+    target_job = req.target_job
+    recommended = _recommend_jobs(dept) if not target_job else None
+    if recommended:
+        target_job = recommended[0]["job"]
+
     # 오타 하나로 조용히 일반 로드맵이 나가면 "직무 역산"이라는 주장이 무너진다.
     # 둘 다 받는다 — talent_types는 교과과정표 비고 열의 라벨(과목과 직접 연결),
     # careers는 학과 소개 페이지의 진로다. 한쪽만 보면 다른 쪽 값이 전부 400이 된다.
     # 비어 있으면(Tier 2 추출 누락) 비교 대상이 없으므로 막지 않는다
     jobs = job_choices(dept)
-    if jobs and req.target_job not in jobs:
+    if req.target_job and jobs and req.target_job not in jobs:
         raise ApiError(
             "UNKNOWN_JOB",
             f"'{req.target_job}'는 {dept['dept_name']}의 직무가 아닙니다. "
@@ -92,7 +100,7 @@ def post_roadmap(req: RoadmapRequest):
 
     spec = {
         "dept": dept,
-        "target_job": req.target_job,
+        "target_job": target_job,
         "current_year": req.current_year,
         "current_semester": req.current_semester,
         "completed": completed,
@@ -101,10 +109,15 @@ def post_roadmap(req: RoadmapRequest):
     }
 
     result = _generate(spec)
+    if recommended:
+        # 프론트가 "추천된 직무로 짰다"를 표시하고, 다른 후보로 바꿔 재생성할 수 있게
+        result["target_job"] = target_job
+        result["job_recommended"] = True
+        result["recommended_jobs"] = recommended[:5]
     # 진로에 대응하는 교육과정 라벨이 없을 수 있다. 로드맵은 내되 "직무 맞춤이 안 됐다"를
     # 숨기지 않는다 — 조용히 일반 로드맵을 주면 "직무 역산"이 거짓이 된다
     labels = sorted({c["talent_type"] for c in dept["courses"] if c.get("talent_type")})
-    matched = set(match_labels(req.target_job, labels))
+    matched = set(match_labels(target_job, labels))
     # 생성기가 무엇이든 서버가 붙인다 — planner는 달지만 LLM 에이전트는 달지 않는다
     related = 0
     for semester in result["semesters"]:
@@ -116,7 +129,7 @@ def post_roadmap(req: RoadmapRequest):
         "related_courses": related,
         "note": ""
         if matched
-        else f"'{req.target_job}'에 대응하는 교육과정 인재양성유형이 없습니다. "
+        else f"'{target_job}'에 대응하는 교육과정 인재양성유형이 없습니다. "
         "졸업요건만 맞춘 일반 로드맵입니다",
     }
 
@@ -126,20 +139,31 @@ def post_roadmap(req: RoadmapRequest):
     return result
 
 
+def _recommend_jobs(dept):
+    """직무 미정 학생에게 줄 추천 순위. 라벨별 배정 학점이 근거다 — 트랙 B 커버리지와
+    같은 계산이라, "왜 이 직무냐"에 학과 데이터로 답할 수 있다."""
+    by_job = {}
+    for c in dept["courses"]:
+        label = c.get("talent_type")
+        if label:
+            entry = by_job.setdefault(label, {"job": label, "credits": 0, "courses": 0})
+            entry["credits"] += c["credits"]
+            entry["courses"] += 1
+    return sorted(by_job.values(), key=lambda e: (-e["credits"], e["job"]))
+
+
 def _generate(spec):
-    """LLM으로 짜고, 실패하면 규칙 플래너로 떨어진다.
+    """규칙 엔진이 메인이다 (8/7 02시 팀 결정 — 학교 실데이터 기반 결정론 추천).
 
-    폴백을 두는 이유는 발표 중 API 키 만료·레이트리밋·네트워크로 데모가 통째로
-    죽는 것을 막기 위해서다. 검증기 루프는 어느 쪽이든 그대로 돈다.
+    근거가 전부 데이터에 있어 "왜 이 과목이냐"에 답할 수 있고, 응답이 즉시이며,
+    토큰 비용이 없다. LLM은 비교 데모용 보조로 남긴다 — `MJC_ENGINE=llm`일 때만
+    시도하고, 실패하면 규칙으로 떨어진다. 검증기 루프는 어느 쪽이든 그대로 돈다.
 
-    어느 엔진이 짰는지 `engine`으로 알린다. 폴백이 조용히 일어나면 "LLM이 짠다"는
-    주장을 확인할 방법이 없어진다 — 규칙 코드 결과를 LLM 결과로 오인하게 된다.
-
-    키가 없으면 LLM을 **시도조차 하지 않는다.** 매 요청이 예외를 던지고 스택트레이스가
-    쌓인다. 진짜 폴백 대상은 "키가 있는데 레이트리밋·네트워크로 죽는" 경우다.
+    어느 엔진이 짰는지 `engine`으로 알린다. 조용히 바뀌면 결과의 출처를
+    오인하게 된다.
     """
     envfile.load()  # 여러 번 불러도 안전하다
-    if not os.getenv("ANTHROPIC_API_KEY"):
+    if os.getenv("MJC_ENGINE") != "llm" or not os.getenv("ANTHROPIC_API_KEY"):
         return {**generate_roadmap(spec, generate_roadmap_plan), "engine": "rule"}
     try:
         return {**generate_roadmap(spec, agent.generate), "engine": "llm"}
