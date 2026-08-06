@@ -5,35 +5,41 @@
 API 라우터를 먼저 걸고 StaticFiles는 맨 마지막에 마운트한다.
 """
 
-import logging
-import os
-from contextlib import asynccontextmanager
-from pathlib import Path
-
-from fastapi import FastAPI
-from fastapi.exceptions import RequestValidationError
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-
-import agent
-import auth
-import catalog
-import db
 import envfile
-from catalog import CatalogError
-from sqlalchemy.exc import SQLAlchemyError
 
-from errors import (
+# **다른 import보다 먼저 실행돼야 한다.** db·security·auth·mailer는 모듈 최상단에서
+# os.getenv를 읽는데, 그 코드는 import 시점에 돈다. 아래 import들 뒤에서 load()를
+# 부르면 이미 늦어서 .env의 JWT_SECRET·DATABASE_URL이 조용히 무시된다.
+envfile.load()
+
+import logging  # noqa: E402
+import os  # noqa: E402
+from contextlib import asynccontextmanager  # noqa: E402
+from pathlib import Path  # noqa: E402
+
+from fastapi import FastAPI  # noqa: E402
+from fastapi.exceptions import RequestValidationError  # noqa: E402
+from fastapi.staticfiles import StaticFiles  # noqa: E402
+from pydantic import BaseModel  # noqa: E402
+
+import agent  # noqa: E402
+import auth  # noqa: E402
+import catalog  # noqa: E402
+import db  # noqa: E402
+from catalog import CatalogError  # noqa: E402
+from sqlalchemy.exc import SQLAlchemyError  # noqa: E402
+
+from errors import (  # noqa: E402
     ApiError,
     api_error_handler,
     db_error_handler,
     validation_error_handler,
 )
-from jobmap import choices as job_choices
-from jobmap import match_labels
-from loop import generate_roadmap
-from planner import generate as generate_roadmap_plan
-from report import build_report
+from jobmap import choices as job_choices  # noqa: E402
+from jobmap import match_labels  # noqa: E402
+from loop import generate_roadmap  # noqa: E402
+from planner import generate as generate_roadmap_plan  # noqa: E402
+from report import build_report  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -43,9 +49,6 @@ async def lifespan(_):
     db.init_db()  # 실패해도 예외를 던지지 않는다 — 코어는 DB 없이 돈다
     yield
 
-
-# DATABASE_URL·ANTHROPIC_API_KEY 등을 읽는 코드보다 먼저 와야 한다
-envfile.load()
 
 app = FastAPI(title="MJC 취업 로드맵 에이전트", lifespan=lifespan)
 app.add_exception_handler(ApiError, api_error_handler)

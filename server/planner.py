@@ -50,7 +50,9 @@ def generate(spec, feedback=None, attempt=1):
 
     semesters = _by_semester(chosen, targets, job)
     _place_certificates(dept, semesters)
-    return {"semesters": semesters}
+    # 동결 계약(DESIGN.md §5)이 `reasoning`을 항상 요구하고 "규칙 폴백 시 빈 문자열"로
+    # 정의한다. 키를 빼면 프론트가 undefined를 받는다 — agent.py와 모양을 맞춘다
+    return {"semesters": semesters, "reasoning": ""}
 
 
 def _fill_to_requirement(chosen, tiers, dept, spec):
@@ -73,8 +75,6 @@ def _fill_to_requirement(chosen, tiers, dept, spec):
             total_gap, major_gap = short()
             if total_gap <= 0 and major_gap <= 0:
                 return
-            if major_gap <= 0 and course["category"] == "전공" and total_gap <= 0:
-                continue
             chosen.append(course)
 
 
@@ -99,6 +99,9 @@ def _by_semester(courses, targets, job):
                 "year": year,
                 "semester": semester,
                 "courses": items,
+                # agent.py가 내는 필드다. 없으면 규칙 폴백일 때 프론트의 학기 학점
+                # 라벨이 undefined가 된다
+                "credits": sum(c["credits"] for c in items),
                 "certificates": [],
                 "notes": f"{job} 관련 {related}과목" if related else "",
             }

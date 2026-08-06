@@ -12,6 +12,12 @@ from datetime import UTC, datetime, timedelta
 import bcrypt
 import jwt
 
+import envfile
+
+# 아래 os.getenv는 import 시점에 돈다. main.py의 load()에만 의존하면 이 모듈을 직접
+# import하는 경로에서 .env의 JWT_SECRET이 무시되고 개발용 기본키로 토큰이 서명된다
+envfile.load()
+
 SECRET = os.getenv("JWT_SECRET", "dev-only-secret-바꿔야-한다")
 ALGORITHM = "HS256"
 

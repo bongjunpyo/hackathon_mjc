@@ -7,6 +7,12 @@ SMTP 설정이 있으면 진짜 메일을 보내고, 없으면 콘솔에 링크�
 import os
 import smtplib
 from email.message import EmailMessage
+from html import escape
+
+import envfile
+
+# 아래 SMTP_* 는 import 시점에 읽힌다 — main.py의 load()만 믿으면 늦는다
+envfile.load()
 
 SMTP_HOST = os.getenv("SMTP_HOST")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
@@ -49,7 +55,7 @@ def configured():
 def send_verification(to, name, link):
     outbox.append({"to": to, "name": name, "link": link})
 
-        # 버퍼링되면 서버를 파이프로 띄웠을 때 링크가 영영 안 보인다. SMTP가 없으면 유일한 전달 경로다
+    # 버퍼링되면 서버를 파이프로 띄웠을 때 링크가 영영 안 보인다. SMTP가 없으면 유일한 전달 경로다
     if not configured():
         print(f"\n[mailer] SMTP 미설정 — 콘솔로 대체\n  받는사람: {to}\n  인증링크: {link}\n", flush=True)
         return False
@@ -59,7 +65,10 @@ def send_verification(to, name, link):
     message["From"] = SMTP_FROM
     message["To"] = to
     message.set_content(BODY.format(name=name, link=link))
-    message.add_alternative(HTML.format(name=name, link=link), subtype="html")
+    # 이름은 사용자가 넣은 값이다. HTML 본문에 그대로 끼우지 않는다
+    message.add_alternative(
+        HTML.format(name=escape(name), link=escape(link, quote=True)), subtype="html"
+    )
 
     try:
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as smtp:

@@ -9,6 +9,12 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
+import envfile
+
+# main.py를 거치지 않는 경로(verify_db.py, 테스트)로도 들어온다. 아래 os.getenv는
+# import 시점에 도니 그 전에 .env를 반영해 둔다 — 여러 번 불러도 안전하다
+envfile.load()
+
 DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql+psycopg://mjc:mjc@localhost:5433/mjc"
 )
