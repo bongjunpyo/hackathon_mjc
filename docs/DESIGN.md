@@ -11,7 +11,7 @@
 ## 1. 문제 정의
 
 - 전문대는 2~3년 안에 졸업요건·자격증·현장실습·취업을 동시에 끝내야 한다. 4년제와 달리 복구할 시간이 없다: 1학년에 선수과목·자격증 타이밍을 놓치면 만회가 어렵다.
-- 그런데 학생이 손에 쥐는 정보는 교육과정표 문서 한 장이다. "네트워크 엔지니어가 되려면 어느 학기에 뭘 듣고 CCNA를 언제 따야 하는가"는 아무도 알려주지 않는다.
+- 그런데 학생이 손에 쥐는 정보는 교육과정표 문서 한 장이다. "시스템관리·운용엔지니어가 되려면 어느 학기에 뭘 듣고 CCNA를 언제 따야 하는가"는 아무도 알려주지 않는다.
 - 이 정보격차는 신입생·편입생·유학생에게 더 크다 (→ 공익 앵글: 정보 접근성).
 - 학교 포털의 졸업사정 시뮬레이션은 "졸업 가능 여부 **확인**"이다. 우리는 목표 직무에서 역산한 "경로 **설계**"를 한다. 이 구분이 차별화의 핵심이다.
 
@@ -47,7 +47,8 @@
 [수집]  학과 소개 페이지 (faculty/facultyIntro.do?facultyType=코드, 전 학과 동일 구조)
         연도별 교육과정표 게시판 (menu_idx=2207, 첨부파일 HWP/PDF/엑셀)
    ↓
-[추출]  LLM 구조화 추출 → JSON 스키마 검증 → 실패 시 재추출 루프
+[추출]  pdfplumber 표 추출 → 헤더 기반 코드 파싱 → Pydantic 스키마 검증
+        └(헤더를 못 찾으면)→ LLM 구조화 폴백 → 재시도   ※ 실제 폴백 발동 0회
    ↓
 [DB]    courses.json (전 학과) + certificates + careers + 졸업요건 룰
    ↓
@@ -74,15 +75,21 @@
 | 졸업요건 | `mjc.ac.kr/ibuilder.do?menu_idx=1942` | 아래 룰 |
 | NCS 직무기술서 | ncs.go.kr (공공데이터) | 직무별 요구역량 (트랙 B 비교축) |
 
-### 졸업요건 룰 (검증기 스펙)
+### 졸업요건 룰 (검증기 스펙 — 구현: `server/validator.py`)
 
-| 학제 | 총학점 | 교양 | 전공 | 재학 |
+**`passed`는 판정할 수 있는 것만 본다.** 실데이터를 돌려보고 바꾼 규칙이다 (이슈 #24).
+
+| 학제 | 전공 | 교양필수 | 재학 | 총학점 |
 |---|---|---|---|---|
-| 2년제 | 75+ | 6+ | 45+ | 4학기+ |
-| 3년제 | 110+ | 10+ | 66+ | 6학기+ |
+| 2년제 | 45+ | 3 | 4학기+ | 75 (정보) |
+| 3년제 | 66+ | 3 | 6학기+ | 110 (정보) |
 
-- 교양필수: 인성채플(1), 성경과삶(2) — 입학년도별 상이 가능, Tier 1 학과에서 원본 확인
+- **총학점은 미달로 잡지 않는다.** 교육과정표가 전공 전용 문서라 교양선택·일반선택 과목이 아예 없다. 정보통신공학과는 열거된 81학점 = 전공 78 + 교양필수 3이고, 학생이 실제로 채우는 자유 학점 29가 데이터에 없다. 없는 과목을 가짜 블록으로 채우면 거짓말이고, 미달로 잡으면 어떤 로드맵도 통과하지 못한다 — **초안 룰(교양 10)로 34개 학과를 돌렸더니 32개가 졸업 불가**로 나왔다.
+- 대신 `remaining_credits`(졸업까지 남은 학점)로 화면에 알린다. 룰 이름도 `liberal_credits` → **`liberal_required`**로 바꿨다. 판정 대상이 교양 전체가 아니라 교양필수임을 이름이 말하게.
+- 교양필수 3학점 = 인성채플(1) + 성경과삶(2). 교양선택 몫은 `remaining_credits`에 포함된다.
 - 전공심화(연계): 2년제 55학점(전공42+교양9) — v1 범위 밖, 스키마만 대비
+
+**결과: 34개 학과 중 33개 통과.** 유일한 미달은 드론정보공학과이고 사유는 전공 43/45 하나다.
 
 ### 교육과정표 원본 컬럼 (컴공 페이지에서 확인)
 
@@ -121,10 +128,11 @@
     }
   ],
   "certificates": ["정보처리산업기사", "CCNA", "..."],
-  "careers": ["시스템응용SW개발엔지니어", "시스템관리·운용엔지니어"],  // 비고 열의 직무 라벨
-  "liberal_elective_credits": 7,  // 교양선택 필요 학점. 교육과정표에 교양 과목이
-                                  // 열거되지 않아 학점 버킷으로만 준다 — 로드맵
-                                  // 에이전트가 category:"교양" 블록으로 배치한다
+  "careers": ["모바일 앱 프로그래머", "웹프로그래머", "..."],        // 학과 소개 페이지의 진로
+  "talent_types": ["시스템관리·운용엔지니어", "시스템응용SW개발엔지니어"],  // 비고 열의 직무 라벨
+  "liberal_elective_credits": 29, // 졸업까지 남은 자유 학점(교양선택+일반선택).
+                                  // 교육과정표에 그 과목이 없어 **배치하지 않고**
+                                  // remaining_credits로 화면에 알리기만 한다
   "source_url": "...",
   "extraction_confidence": 1.0    // 코드 파싱 1.0, LLM 폴백은 재시도마다 0.15 차감
 }
@@ -134,11 +142,13 @@
 
 | 구분 | 처리 |
 |---|---|
-| 교양필수 | 인성채플(1) · 성경과삶(2) — `courses[]`에 실명 주입, `required: true` |
-| 교양선택 | 과목마다 학점이 달라 열거 불가 → `liberal_elective_credits` 학점 버킷 |
+| 교양필수 | 인성채플(1) · 성경과삶(2) — `courses[]`에 실명 주입, `required: true`. **검증 대상** |
+| 교양선택·일반선택 | 과목마다 학점이 달라 열거 불가 → `liberal_elective_credits` 학점 버킷. **검증 대상 아님** |
 
-로드맵 에이전트는 이 버킷만큼 `category: "교양"` 블록을 배치해야 한다. 안 그러면
-검증기의 교양 학점 룰이 항상 미달로 나온다 (3년제 10 · 2년제 6).
+**로드맵 에이전트는 이 버킷을 배치하지 않는다 (변경됨).** 초안에서는 `category: "교양"`
+블록을 깔게 했는데, 학과 문서에 없는 과목을 지어내는 셈이었다. 지금은 배치하지 않고
+`validation.remaining_credits`로 "졸업까지 29학점 남음"이라고 알리기만 한다. 검증기도
+총학점을 미달로 잡지 않는다 — 위 졸업요건 룰 참조.
 
 ### 트랙 B 진단 항목 (구현: `pipeline/build_report.py`)
 
@@ -147,7 +157,7 @@
 
 | 항목 | 계산 | 무엇을 드러내나 |
 |---|---|---|
-| 직무별 커버리지 | 직무 라벨별 학점 / 전공 총학점 | 한쪽에 쏠렸으면 다른 직무 지망생은 들을 과목이 없다 |
+| 직무별 커버리지 | 직무 라벨별 학점 / **교양 제외** 전 과목 학점 | 한쪽에 쏠렸으면 다른 직무 지망생은 들을 과목이 없다 |
 | 준비 시점 | 직무 과목의 학기 분포 | 3학년에만 몰리면 자격증·현장실습을 앞당길 수 없다 |
 | 자격증 결손 | 학과가 내건 자격증 ↔ 대응 과목 유무 | 대응 과목이 없으면 그 자격증은 학생 개인 몫이다 |
 | NCS 적용률 | NCS기반 과목 / 전공 과목 | |
@@ -186,30 +196,54 @@ LLM이 지으면 재추출·재시도마다 값이 달라져 프론트·DB·검�
 
 ### API 스펙 (v1 — P2↔P3 계약)
 
+> **이 절은 `server/` 구현과 대조해 갱신했다 (이슈 #24).** 동결 이후 구현이 앞서 나간 부분은 **구현을 정답으로 삼고 설계서를 맞췄다** — 프론트가 이미 그 형태로 붙어 있기 때문이다.
+
 ```
 POST /roadmap
   in:  { dept_id, current_year, current_semester, completed_courses: [course_id], target_job }
-  out: { semesters: [ { year, semester, courses: [...], certificates: [...], notes } ],
+  out: { semesters: [ { year, semester, courses: [...], credits, certificates: [...], notes } ],
+         reasoning,                       # LLM이 직무에서 역산한 근거 (규칙 폴백 시 빈 문자열)
          validation: { passed, total_credits, major_credits, liberal_credits, semesters,
-                       details: [ { rule, label, required, actual, shortfall } ] } }
-  # 졸업요건 4종(총학점·교양·전공·재학학기)을 모두 최상위에 — 배지 UI 항목별 충족 표시용
-  # label: 화면 표시용 한글명 ("전공 학점" 등). rule은 기계용 키
-  # 동결 검토 반영: details는 구조화 배열 — 재생성 프롬프트에 그대로 투입 + 발표 화면 표시
-  # 재생성 루프 상한 max_retries=3. 초과 시 passed=false + 부분 로드맵을 "정상 응답"으로 반환 (에러 아님)
+                       remaining_credits,
+                       details: [ { rule, label, required, actual, shortfall, fix } ] },
+         unknown_courses: [...] }         # 카탈로그에 없는 completed_courses가 있을 때만
+  # label: 화면 표시용 한글명. rule은 기계용 키 — `liberal_required` · `major_credits`
+  #        · `semesters` · `malformed_course`
+  # fix: 미달을 메우는 지시문. **재생성 프롬프트로 그대로 들어가고 동시에 화면에 뜬다.**
+  # 재생성 루프 상한 max_retries=3. 초과 시 passed=false + 부분 로드맵을 "정상 응답"으로 반환
+  # `total_credits`는 배지 4종이 아니라 **정보**다 — details에 나오지 않는다.
+  #   화면 문구: "배치 81학점 · 졸업까지 29학점 남음" (remaining_credits)
 
 GET /report/{dept_id}
-  out: { jobs: [ { job, coverage_pct, covered_courses: [...], gaps: [...], label_mismatches: [...] } ] }
+  out: { dept_id, dept_name, years, tier, extraction_confidence,
+         jobs: [ { job, coverage_pct, credits, covered_courses: [...], semesters: [...], gaps: [...] } ],
+         certificates: { total, evaluated, supported, unsupported: [...], unevaluated: [...], detail: [...] },
+         ncs_ratio, field_based_courses: [...] }
+  # 자격증은 **대응있음 / 대응없음 / 판정불가** 3분류다. 키워드 사전이 IT·공학 위주라
+  # 디자인·어학 자격증은 애초에 판정할 수 없는데, 이를 "결손"으로 세면 없는 문제를 지어낸다
 
 GET /depts
-  out: [ { dept_id, dept_name, years, tier } ]
+  out: [ { dept_id, dept_name, years, tier, careers: [...], certificates: [...], talent_types: [...] } ]
+  # careers/certificates/talent_types 추가 — 입력 화면의 목표 직무 드롭다운 재료.
+  # 없으면 프론트가 직무를 하드코딩해야 하고, 그러면 "전 학과 대응"이 성립하지 않는다
+
+# 에러 (전 엔드포인트 공통) — 프론트 lib/api.js가 err?.error?.message를 읽는다
+{ error: { code, message } }
+  DEPT_NOT_FOUND  404   없는 dept_id
+  UNKNOWN_JOB     400   그 학과의 직무가 아닌 target_job. message에 고를 수 있는 직무를 담는다
+  # 입력 검증 실패(422)도 이 형식으로 접는다. FastAPI 기본형({detail:[...]})은 프론트가 못 읽는다
 
 # 인증 (2차 결정 추가 — 코어 통합 후 구현)
-POST /auth/signup   in: { student_id, name, password, dept_id }
+POST /auth/signup   in: { student_id, name, password, dept_id } → 201
 POST /auth/login    in: { student_id, password } → { access_token, refresh_token }
 POST /auth/refresh  in: { refresh_token } → { access_token }
+POST /auth/resend · GET /auth/verify · POST /auth/exchange   # 메일 인증 흐름
 GET  /me            → 내 정보 + 이수내역 + 저장된 로드맵
 PUT  /me/courses    → 이수내역 저장
+POST /me/roadmaps   → 로드맵 저장 (201)
 ```
+
+**미해결 (이슈 #40).** `UNKNOWN_JOB` 판정이 `careers`만 보는데 **데모 대본 직무 `시스템관리·운용엔지니어`는 `talent_types`에 있어 400이 난다.** 직무 역산의 축이 `courses[].talent_type`이므로 두 목록을 모두 허용해야 한다.
 
 ### DB (PostgreSQL — 유저 데이터 전용)
 
