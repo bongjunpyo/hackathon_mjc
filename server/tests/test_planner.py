@@ -148,3 +148,19 @@ def test_1차만으로는_졸업요건에_모자란다():
     validation = validate_roadmap(first["semesters"], ITC["years"])
 
     assert validation["passed"] is False
+
+
+# --- 검증기 효과 (설계서 §9) ---
+
+
+def test_재생성_루프가_충족률을_올린다():
+    """1차는 직무 경로만 짜서 전공 학점이 모자란다. 검증기가 잡아 채운다.
+    이 차이가 기술 점수의 근거이므로 코드로 고정한다."""
+    from loop import generate_roadmap
+
+    off = generate_roadmap(SPEC, generate, max_attempts=1)
+    on = generate_roadmap(SPEC, generate, max_attempts=3)
+
+    assert off["validation"]["passed"] is False
+    assert any(d["rule"] == "major_credits" for d in off["validation"]["details"])
+    assert on["validation"]["passed"] is True
