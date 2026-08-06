@@ -137,6 +137,40 @@ def test_커버리지_분자는_전공_과목만_센다():
     assert [j["coverage_pct"] for j in before] == [j["coverage_pct"] for j in after]
 
 
+# ── 직무 미정 모드 (PR #53) ────────────────────────────────────────
+def test_직무를_지정해도_응답에_target_job이_있다(client):
+    """추천일 때만 넣으면 프론트가 body.target_job을 그대로 못 읽고 분기해야 한다."""
+    body = client.post(
+        "/roadmap",
+        json={
+            "dept_id": "itc",
+            "current_year": 1,
+            "current_semester": 1,
+            "completed_courses": [],
+            "target_job": "네트워크 엔지니어",
+        },
+    ).json()
+
+    assert body["target_job"] == "네트워크 엔지니어"
+    assert "job_recommended" not in body
+
+
+def test_추천_학점은_전공만_센다():
+    """트랙 B 커버리지는 분모가 전공 학점이다. 전 과목을 세면 두 화면이 같은 직무에
+    다른 숫자를 말한다 — 유아교육과에서 95학점 중 27학점이 비전공이었다."""
+    dept = catalog.load_dept("itc")
+    label = next(c["talent_type"] for c in dept["courses"] if c.get("talent_type"))
+    tainted = json.loads(json.dumps(dept))
+    for course in tainted["courses"]:
+        if course["category"] != "전공":
+            course["talent_type"] = label
+
+    before = {e["job"]: e["credits"] for e in main._recommend_jobs(dept)}
+    after = {e["job"]: e["credits"] for e in main._recommend_jobs(tainted)}
+
+    assert before == after
+
+
 # ── 두 엔진의 응답 모양이 같다 ─────────────────────────────────────
 def test_규칙_폴백도_reasoning과_학기학점을_낸다(client):
     body = client.post(
