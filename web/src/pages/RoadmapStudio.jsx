@@ -8,6 +8,7 @@ import ValidationBar from "../components/track/ValidationBar";
 import Walker from "../components/track/Walker";
 import { postRoadmap } from "../lib/api";
 import { DEPT_BY_ID, realJobs } from "../lib/depts";
+import { coursesBefore } from "../lib/curricula";
 import { bestJob } from "../lib/jobmatch";
 import { useApp } from "../store";
 import demo from "../fixtures/roadmap-demo.json";
@@ -15,6 +16,24 @@ import demo from "../fixtures/roadmap-demo.json";
 /* v2 메인 — 2D 트랙 스튜디오 (DESIGN §2). 상태 5종:
    INIT(예시 트랙 흐림) → GENERATING(제자리걸음+문구) → READY | PARTIAL | ERROR.
    캐릭터 위치(cursor)는 "보고 있는 학기" — 이동은 API를 다시 부르지 않는다. */
+
+/* 지나온 학기를 화면용으로 만든다. 데이터는 번들에 이미 있다 (curricula.coursesBefore) —
+   서버 계약을 건드리지 않는다. 체크를 푼 과목(재수강·미이수)은 뺀다:
+   그대로 두면 "들었다"고 두 번 말하는 셈이다. */
+function pastSemesters({ deptId, year, semester, completedCourses }) {
+  if (!deptId || !year) return [];
+  const done = new Set(completedCourses);
+  return coursesBefore(deptId, year, semester).map((s) => {
+    const courses = s.courses.filter((c) => done.has(c.course_id));
+    return {
+      ...s,
+      courses,
+      credits: courses.reduce((a, c) => a + c.credits, 0),
+      certificates: [],
+      past: true,
+    };
+  });
+}
 
 const GEN_STEPS = [
   "교육과정표에서 후보 과목을 고르는 중…",
@@ -72,10 +91,11 @@ export default function RoadmapStudio() {
     jobRef.current = sendJob || "추천 직무";
     try {
       const data = await postRoadmap({ ...input, targetJob: sendJob }, { strict: true });
-      setRoadmap(data);
+      setRoadmap({ ...data, past: pastSemesters(input) });
       if (data.target_job) jobRef.current = data.target_job; // 미정 모드가 채택한 직무
       setArrived(0);
-      setCursor(data.semesters.length > 0 ? 1 : 0); // 입학 → 첫 학기로 걸어간다
+      // 입학 → 고른 학기까지 걸어간다 (지나온 역을 지나며 이수 표시가 켜진다)
+      setCursor(pastSemesters(input).length + 1);
       setPhase(data.validation?.passed ? "READY" : "PARTIAL");
     } catch (err) {
       setError(err?.message ?? "서버에 연결할 수 없습니다");
@@ -84,7 +104,11 @@ export default function RoadmapStudio() {
   }
 
   const shown = phase === "READY" || phase === "PARTIAL" ? roadmap : demo;
-  const semesters = shown.semesters;
+  /* 서버는 **앞으로 들을** 학기만 준다 (planner.py:29). 지나온 역까지 붙여야
+     "전체 노선 중 지금 어디"가 보인다 — 3번째 역이라고 앞 두 역을 지우지 않는다 (이슈 #79).
+     붙이는 건 화면뿐이고 validation 숫자는 서버 값 그대로 쓴다. */
+  const semesters = [...(shown.past ?? []), ...shown.semesters];
+  const startIndex = (shown.past ?? []).length; // 캐릭터가 설 자리 = 고른 학기
   const targetJob = phase === "INIT" || phase === "GENERATING" ? "목표 직무" : jobRef.current;
   const dimmed = phase === "INIT" || phase === "GENERATING" || phase === "ERROR";
   // 도착 지점 기준 학기. i-0.5(분기)는 그 구간이 이끄는 학기 i다
