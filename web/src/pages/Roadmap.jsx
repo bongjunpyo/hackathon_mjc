@@ -35,21 +35,28 @@ function ValidationBadge({ validation }) {
             <li key={key} className={miss ? "font-bold" : "opacity-80"}>
               {miss ? "✗" : "✓"} {label} {value}
               {unit}
-              {miss && <span> (필요 {miss.required} — {miss.shortfall} 부족)</span>}
+              {miss && <span> (필요 {miss.required})</span>}
             </li>
           );
         })}
       </ul>
 
-      {/* details에만 있고 위 4종에 없는 규칙(교양필수 등)도 빠뜨리지 않는다.
-         label은 API가 주는 화면용 한글명, 없으면 기계용 rule로 폴백 */}
-      {validation.details
-        ?.filter((d) => !REQUIREMENTS.some((r) => r.rule === d.rule))
-        .map((d, i) => (
-          <p key={i} className="font-mono text-xs font-bold tabular-nums">
-            ✗ {d.label ?? d.rule}: 필요 {d.required} / 현재 {d.actual} — {d.shortfall} 부족
-          </p>
-        ))}
+      {/* 미달 항목의 "무엇을 어떻게 고칠지" — 검증기가 재생성 프롬프트로 쓰는 fix 문구를
+         화면에도 그대로 보여준다. LLM이 받는 지시와 사람이 보는 안내가 같아야
+         "검증기가 잡아서 다시 짰다"가 증명된다. */}
+      {validation.details?.length > 0 && (
+        <ul className="flex flex-col gap-1.5 border-t border-navy/15 pt-2.5">
+          {validation.details.map((d, i) => (
+            <li key={d.rule ?? i} className="flex flex-wrap items-baseline gap-x-2 text-sm">
+              <span className="font-bold">✗ {d.label ?? d.rule}</span>
+              <span className="font-mono text-xs tabular-nums opacity-70">
+                {d.actual} / {d.required} — {d.shortfall} 부족
+              </span>
+              {d.fix && <span className="w-full font-medium">→ {d.fix}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
