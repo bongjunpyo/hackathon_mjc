@@ -6,6 +6,7 @@ SMTP 설정이 있으면 진짜 메일을 보내고, 없으면 콘솔에 링크�
 
 import os
 import smtplib
+import sys
 from email.message import EmailMessage
 from html import escape
 
@@ -52,12 +53,27 @@ def configured():
     return bool(SMTP_HOST and SMTP_USER and SMTP_PASSWORD)
 
 
+def _console(text):
+    """콘솔 폴백 출력. 인코딩 때문에 요청이 죽는 일이 없어야 한다.
+
+    한국어 Windows 기본 코드페이지(cp949)는 못 찍는 문자가 있고, 그러면 print가
+    UnicodeEncodeError를 던져 가입 요청이 통째로 500이 됐다. 아래 SMTP 예외 메시지처럼
+    내용을 우리가 정할 수 없는 값도 여기로 들어온다 — 폴백이 요청을 죽이면
+    "메일이 막혀도 시연은 산다"는 이 함수의 존재 이유가 뒤집힌다.
+    """
+    try:
+        print(text, flush=True)
+    except UnicodeEncodeError:
+        encoding = sys.stdout.encoding or "utf-8"
+        print(text.encode(encoding, "replace").decode(encoding), flush=True)
+
+
 def send_verification(to, name, link):
     outbox.append({"to": to, "name": name, "link": link})
 
     # 버퍼링되면 서버를 파이프로 띄웠을 때 링크가 영영 안 보인다. SMTP가 없으면 유일한 전달 경로다
     if not configured():
-        print(f"\n[mailer] SMTP 미설정 — 콘솔로 대체\n  받는사람: {to}\n  인증링크: {link}\n", flush=True)
+        _console(f"\n[mailer] SMTP 미설정 - 콘솔로 대체\n  받는사람: {to}\n  인증링크: {link}\n")
         return False
 
     message = EmailMessage()
@@ -78,7 +94,7 @@ def send_verification(to, name, link):
         return True
     except Exception as e:
         # 메일 실패가 회원가입을 실패시키면 안 된다. 링크는 콘솔에 남는다
-        print(f"\n[mailer] 발송 실패({e}) — 콘솔로 대체\n  인증링크: {link}\n", flush=True)
+        _console(f"\n[mailer] 발송 실패({e}) - 콘솔로 대체\n  인증링크: {link}\n")
         return False
 
 
@@ -104,7 +120,7 @@ def send_code(to, code):
     outbox.append({"to": to, "code": code})
 
     if not configured():
-        print(f"\n[mailer] SMTP 미설정 — 콘솔로 대체\n  받는사람: {to}\n  인증번호: {code}\n", flush=True)
+        _console(f"\n[mailer] SMTP 미설정 - 콘솔로 대체\n  받는사람: {to}\n  인증번호: {code}\n")
         return False
 
     message = EmailMessage()
@@ -122,5 +138,5 @@ def send_code(to, code):
         return True
     except Exception as e:
         # 메일 실패가 가입을 막으면 안 된다. 번호는 콘솔에 남는다
-        print(f"\n[mailer] 발송 실패({e}) — 콘솔로 대체\n  인증번호: {code}\n", flush=True)
+        _console(f"\n[mailer] 발송 실패({e}) - 콘솔로 대체\n  인증번호: {code}\n")
         return False

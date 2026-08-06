@@ -1,3 +1,5 @@
+import io
+import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -452,3 +454,40 @@ def test_약관에_동의하지_않으면_가입이_막힌다(client):
 
     assert res.status_code == 400
     assert res.json()["error"]["code"] == "TERMS_REQUIRED"
+
+
+# --- 콘솔 폴백 ---
+
+
+def cp949_console(monkeypatch):
+    """한국어 Windows의 기본 콘솔 인코딩을 흉내 낸다.
+
+    pytest는 stdout을 자체 캡처 객체로 바꿔치기해서 인코딩을 타지 않는다. 그래서
+    실서버에서만 500이 나는 이 경로를 전체 테스트가 통과하면서 놓쳤다.
+    **픽스처에서 갈아끼우면 안 된다** — pytest가 call 단계에 캡처를 다시 걸어 덮어쓴다.
+    """
+    monkeypatch.setattr(mailer, "SMTP_HOST", None)  # 콘솔 폴백으로 몰아넣는다
+    monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(io.BytesIO(), encoding="cp949"))
+
+
+def test_한글_콘솔에서도_인증번호_요청이_죽지_않는다(monkeypatch):
+    """SMTP 미설정 폴백이 콘솔에 못 찍는 문자를 쓰면 요청이 통째로 500이 됐다."""
+    from main import app
+
+    client = TestClient(app, raise_server_exceptions=False)
+    cp949_console(monkeypatch)
+
+    res = client.post("/auth/email/code", json={"email": "other@example.com"})
+
+    assert res.status_code == 200
+
+
+def test_한글_콘솔에서도_회원가입이_죽지_않는다(monkeypatch):
+    from main import app
+
+    client = TestClient(app, raise_server_exceptions=False)
+    cp949_console(monkeypatch)
+
+    res = client.post("/auth/signup", json=SIGNUP)
+
+    assert res.status_code == 201

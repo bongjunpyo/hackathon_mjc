@@ -53,7 +53,7 @@ def init_db():
         Base.metadata.create_all(engine())
         return True
     except Exception as e:
-        print(f"[db] 연결 실패 — 로그인 기능만 비활성화됩니다: {e}")
+        print(f"[db] 연결 실패 - 로그인 기능만 비활성화됩니다: {e}")
         return False
 
 

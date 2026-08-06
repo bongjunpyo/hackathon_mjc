@@ -22,6 +22,10 @@ import catalog
 import db
 import mailer
 
+# 결과표에 ✅/❌를 쓴다. 한국어 Windows 콘솔(cp949)은 이걸 못 찍어서, 검증 스크립트가
+# 검증 결과 대신 UnicodeEncodeError를 뱉고 죽었다. 못 찍는 글자는 흘려보낸다
+sys.stdout.reconfigure(errors="replace")
+
 MARK = "verify-db-임시계정"
 ACCOUNT = {
     "student_id": "999999999",
