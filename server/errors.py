@@ -43,3 +43,21 @@ async def validation_error_handler(_: Request, exc):
         status_code=422,
         content={"error": {"code": "VALIDATION_ERROR", "message": message}},
     )
+
+
+async def db_error_handler(_: Request, exc):
+    """SQLAlchemy는 세션 생성이 아니라 **첫 쿼리에서** 연결한다.
+
+    세션 생성만 try로 감싸면 OperationalError가 라우트 밖에서 터져 500 + 프론트가
+    못 읽는 형식이 된다. DB가 없어도 코어는 돌아야 하므로, 로그인 계열만 503으로
+    떨어뜨리고 형식을 맞춘다.
+    """
+    return JSONResponse(
+        status_code=503,
+        content={
+            "error": {
+                "code": "DB_UNAVAILABLE",
+                "message": "로그인 기능을 쓸 수 없습니다. 게스트로 계속 진행할 수 있습니다",
+            }
+        },
+    )

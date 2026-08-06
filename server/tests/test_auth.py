@@ -328,3 +328,34 @@ def test_토큰_없이도_로드맵은_생성된다(client):
     )
 
     assert res.status_code == 200
+
+
+# --- DB가 죽었을 때 ---
+
+
+def test_DB가_없으면_500이_아니라_503을_낸다(client, monkeypatch):
+    """SQLAlchemy는 세션 생성이 아니라 첫 쿼리에서 연결한다. 세션 생성만 감싸면
+    OperationalError가 그대로 새어나가 500 + 프론트가 못 읽는 형식이 된다."""
+    db.use("sqlite:////열-수-없는-경로/x.db")
+
+    res = client.post("/auth/login", json={"student_id": "x", "password": "y1234567"})
+
+    assert res.status_code == 503
+    assert res.json()["error"]["code"] == "DB_UNAVAILABLE"
+
+
+def test_DB가_없어도_코어는_돈다(client, monkeypatch):
+    db.use("sqlite:////열-수-없는-경로/x.db")
+
+    res = client.post(
+        "/roadmap",
+        json={
+            "dept_id": "itc",
+            "current_year": 1,
+            "current_semester": 1,
+            "completed_courses": [],
+            "target_job": "네트워크 엔지니어",
+        },
+    )
+
+    assert res.status_code == 200

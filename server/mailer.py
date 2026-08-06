@@ -49,8 +49,9 @@ def configured():
 def send_verification(to, name, link):
     outbox.append({"to": to, "name": name, "link": link})
 
+        # 버퍼링되면 서버를 파이프로 띄웠을 때 링크가 영영 안 보인다. SMTP가 없으면 유일한 전달 경로다
     if not configured():
-        print(f"\n[mailer] SMTP 미설정 — 콘솔로 대체\n  받는사람: {to}\n  인증링크: {link}\n")
+        print(f"\n[mailer] SMTP 미설정 — 콘솔로 대체\n  받는사람: {to}\n  인증링크: {link}\n", flush=True)
         return False
 
     message = EmailMessage()
@@ -68,5 +69,5 @@ def send_verification(to, name, link):
         return True
     except Exception as e:
         # 메일 실패가 회원가입을 실패시키면 안 된다. 링크는 콘솔에 남는다
-        print(f"\n[mailer] 발송 실패({e}) — 콘솔로 대체\n  인증링크: {link}\n")
+        print(f"\n[mailer] 발송 실패({e}) — 콘솔로 대체\n  인증링크: {link}\n", flush=True)
         return False
