@@ -9,7 +9,9 @@ services:
       POSTGRES_PASSWORD: mjc
       POSTGRES_DB: mjc
     ports:
-      - "5432:5432"
+      # 5432는 로컬 PostgreSQL이 이미 쓰는 경우가 있다. 그러면 파이썬이 그쪽에 붙어
+      # "mjc 사용자 인증 실패"가 나는데, 연결 거부가 아니라 거절이라 원인이 안 보인다
+      - "5433:5432"
     volumes:
       - mjc-pgdata:/var/lib/postgresql/data
     healthcheck:
