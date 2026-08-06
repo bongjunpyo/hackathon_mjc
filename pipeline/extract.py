@@ -2,11 +2,15 @@
 
 파이프라인은 학과별 파서를 만들지 않는다. 어느 학과의 표든 같은 경로를 통과한다:
 
-    PDF → pdfplumber 표 추출 → LLM 구조화 → 스키마 검증 → (실패 시 재시도)
+    PDF → pdfplumber 표 추출 → 헤더 기반 파싱 → 스키마 검증
+                                    └(헤더 못 찾으면)→ LLM 구조화 → 재시도
 
-명지전문대 교과과정표 PDF는 학과마다 열 구성이 조금씩 다르고 교과목명에
-`네트워크I I`, `AI oT` 같은 공백 깨짐이 있다. 열 이름을 코드로 고정하지 않고
-LLM에 표 원문을 넘기는 이유다.
+**LLM은 폴백이다.** 35개 학과를 전수 확인했더니 필수 5개 열의 이름이 전부 같았다.
+열 이름으로 읽으면 코드로 끝나고, 그게 더 빠르고 공짜이고 결정론적이다. 판단이
+필요 없는 일에 LLM을 쓸 이유가 없다 — LLM 예산은 로드맵 에이전트에 쓴다.
+
+폴백을 남겨두는 이유는 다른 학년도 자료나 개편된 표에서 헤더가 달라질 수 있어서다.
+폴백이 몇 번 발동했는지는 산출물에 지표로 남긴다.
 """
 
 import argparse
@@ -16,10 +20,10 @@ import re
 import sys
 from pathlib import Path
 
-import anthropic
 import pdfplumber
 
 from course_id import assign_course_ids
+from parse_table import HeaderNotFound, parse_courses
 from schema import DeptCurriculum
 
 MODEL = "claude-sonnet-5"
@@ -99,8 +103,36 @@ def normalize_liberal(dept: DeptCurriculum) -> DeptCurriculum:
     return dept
 
 
-def structure(table: str, dept_id: str, dept_name: str, years: int, tier: int) -> tuple[DeptCurriculum, int]:
+def structure(
+    table: str, dept_id: str, dept_name: str, years: int, tier: int
+) -> tuple[DeptCurriculum, str]:
+    """표 → 검증 통과한 학과 데이터. 두 번째 값은 사용한 경로(`code` 또는 `llm:N`).
+
+    헤더 기반 파싱을 먼저 시도하고, 헤더를 못 찾을 때만 LLM으로 넘어간다.
+    """
+    try:
+        courses = parse_courses(table, dept_id)
+    except HeaderNotFound as e:
+        print(f"  헤더 파싱 실패({e}) — LLM 폴백", file=sys.stderr)
+        return _structure_with_llm(table, dept_id, dept_name, years, tier)
+
+    dept = DeptCurriculum(
+        dept_id=dept_id, dept_name=dept_name, years=years, tier=tier, courses=courses
+    )
+    problems = validate(dept, dept_id, years)
+    if problems:
+        print(f"  코드 파싱 검증 실패({'; '.join(problems)}) — LLM 폴백", file=sys.stderr)
+        return _structure_with_llm(table, dept_id, dept_name, years, tier)
+
+    return dept, "code"
+
+
+def _structure_with_llm(
+    table: str, dept_id: str, dept_name: str, years: int, tier: int
+) -> tuple[DeptCurriculum, str]:
     """LLM 구조화 → 스키마 검증. 실패하면 오류를 붙여 재시도한다."""
+    import anthropic
+
     client = anthropic.Anthropic()
     prompt = PROMPT.format(table=table, dept_id=dept_id, dept_name=dept_name)
     messages = [{"role": "user", "content": prompt}]
@@ -121,7 +153,7 @@ def structure(table: str, dept_id: str, dept_name: str, years: int, tier: int) -
         problems = validate(dept, dept_id, years)
         if not problems:
             dept.dept_id, dept.dept_name, dept.years, dept.tier = dept_id, dept_name, years, tier
-            return dept, attempt
+            return dept, f"llm:{attempt}"
 
         print(f"  [재시도 {attempt}] 검증 실패: {'; '.join(problems)}", file=sys.stderr)
         messages.append({"role": "assistant", "content": dept.model_dump_json()})
@@ -131,7 +163,7 @@ def structure(table: str, dept_id: str, dept_name: str, years: int, tier: int) -
 
 
 def validate(dept: DeptCurriculum, dept_id: str, years: int) -> list[str]:
-    """LLM 출력이 실제로 쓸 수 있는지 확인한다. 통과하면 빈 리스트."""
+    """추출 결과가 실제로 쓸 수 있는지 확인한다. 통과하면 빈 리스트."""
     problems = []
     if not dept.courses:
         problems.append("과목이 하나도 추출되지 않았다")
@@ -150,11 +182,9 @@ def validate(dept: DeptCurriculum, dept_id: str, years: int) -> list[str]:
         if re.search(r"[A-Za-z]\s+[A-Za-z]|\s{2,}", c.name):
             problems.append(f"{c.name}: 공백 깨짐이 남아 있음")
 
-    major = sum(c.credits for c in dept.courses if c.category == "전공")
-    need = GRADUATION_RULES[years]["major"]
-    if major < need:
-        problems.append(f"전공 학점 합계 {major}이 졸업요건 {need} 미만 — 표를 빠뜨렸을 가능성")
-
+    # 전공 학점이 졸업요건에 못 미치는 것은 추출 실패가 아니다. 드론정보공학과처럼
+    # 교육과정표가 원래 요건보다 적게 개설하는 학과가 실재한다(43/45). 재시도로
+    # 해결될 문제가 아니므로 여기서 막지 않고 품질 지표에만 남긴다.
     return problems[:8]
 
 
@@ -174,10 +204,13 @@ def main() -> None:
         sys.exit(f"표를 추출하지 못했다: {args.pdf}")
     print(f"표 {len(table.splitlines())}행 추출", file=sys.stderr)
 
-    dept, attempts = structure(table, args.dept_id, args.dept_name, args.years, args.tier)
+    dept, route = structure(table, args.dept_id, args.dept_name, args.years, args.tier)
     dept = normalize_liberal(dept)
     dept.source_url = args.source_url
-    dept.extraction_confidence = round(1.0 - (attempts - 1) * 0.15, 2)
+    # 코드 파싱은 결정론적이라 만점. LLM 폴백은 재시도마다 신뢰도를 깎는다.
+    dept.extraction_confidence = (
+        1.0 if route == "code" else round(1.0 - int(route.split(":")[1]) * 0.15, 2)
+    )
 
     out = Path(args.out) / f"{args.dept_id}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -188,7 +221,7 @@ def main() -> None:
     print(
         f"{out} 저장 — {len(dept.courses)}과목 "
         f"(전공 {major}학점 / 교양필수 {liberal}학점 + 교양선택 {dept.liberal_elective_credits}학점), "
-        f"시도 {attempts}회",
+        f"경로 {route}",
         file=sys.stderr,
     )
 
