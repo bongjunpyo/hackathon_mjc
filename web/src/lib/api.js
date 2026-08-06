@@ -1,7 +1,7 @@
 /* 백엔드 호출 단일 창구. 컴포넌트에서 fetch를 직접 부르지 않는다.
    게스트/토큰 분기와 목데이터 폴백이 전부 여기 모여 있다. */
 
-import { DEPT_BY_ID } from "./depts";
+import { DEPT_BY_ID, DEPTS } from "./depts";
 import { pathFor } from "./curricula";
 
 const TOKEN_KEY = "mjc_access_token";
@@ -127,7 +127,10 @@ export async function getDepts() {
   try {
     return await call("/depts");
   } catch {
-    return [{ dept_id: "itc", dept_name: "정보통신공학과", years: 3, tier: 1 }];
+    // 서버 미연결·오류 시에도 34개 학과가 그대로 뜬다 (lib/depts.js는 같은 소스에서 생성)
+    return DEPTS.map((d) => ({
+      dept_id: d.id, dept_name: d.name, years: d.years, tier: d.tier, careers: d.careers,
+    }));
   }
 }
 
