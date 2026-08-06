@@ -1,0 +1,83 @@
+/* 2D 트랙 씬 — 3D 복도(corridor.css)의 색 문법을 그대로 옮긴다.
+   하늘 그라디언트·노면 톤·유도선(점자블록) gold는 corridor와 같은 값.
+   브랜드 컬러는 Tailwind 토큰(--color-*)으로만 쓴다. */
+
+.track-scene {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  /* corridor .sky와 같은 낮 하늘 → 노면 톤 */
+  background: linear-gradient(
+    #bfe0f8 0%, #d8ecfb 26%, #edf6fe 52%,
+    #e8edf2 52.4%, #e4e9ef 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 45, 101, .10);
+}
+.track-canvas { position: relative; }
+.track-scene svg { display: block; width: 100%; height: auto; }
+
+/* 본선 — 바탕은 보도블록 경계 톤, 지나온 구간은 점자블록 유도선 gold */
+.track-base {
+  fill: none;
+  stroke: var(--color-edge);
+  stroke-width: 14;
+  stroke-linecap: round;
+}
+.track-walked {
+  fill: none;
+  stroke: color-mix(in srgb, var(--color-gold) 72%, #fff);
+  stroke-width: 14;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease-in-out;
+}
+/* 유도선 위 점형 블록 — corridor의 점자블록 반복 패턴을 점선으로 옮긴 것 */
+.track-dots {
+  fill: none;
+  stroke: color-mix(in srgb, var(--color-gold) 45%, #fff);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 22;
+}
+
+/* 역 노드 — 역명판 문법: 흰 판 + navy 링 (corridor .signboard 인셋 링과 같은 값) */
+.tnode { cursor: pointer; }
+.tnode circle.ring {
+  fill: #fff;
+  stroke: var(--color-navy);
+  stroke-width: 4;
+  transition: stroke 0.15s, r 0.15s;
+}
+.tnode.done circle.ring { stroke: color-mix(in srgb, var(--color-navy) 40%, #fff); }
+.tnode.current circle.ring { stroke: var(--color-gold); stroke-width: 6; }
+.tnode.shortfall circle.ring { stroke: var(--color-track-red, #ef4444); }
+.tnode:focus-visible { outline: none; }
+.tnode:focus-visible circle.ring { stroke: var(--color-gold); stroke-width: 7; }
+.tnode:hover circle.ring { stroke-width: 6; }
+.tnode text { user-select: none; }
+
+/* 분기 가지(자격증) — 유도선에서 갈라지는 얇은 지선 */
+.tbranch { stroke: var(--color-steel); stroke-width: 3; stroke-dasharray: 6 5; fill: none; }
+
+/* 종착 게이트 — corridor .gate-board 문법 (navy 판 + gold 테두리) */
+.tgoal-board { fill: var(--color-navy); }
+.tgoal-stripe { fill: var(--color-gold); }
+
+/* 캐릭터 — 씬 위 HTML 오버레이. 좌표는 viewBox 대비 %라 반응형에도 정확하다 */
+.track-canvas > .walker {
+  position: absolute;
+  width: 66px; height: 105px;
+  translate: -50% -88%; /* 발(y=88%)이 유도선에 닿게 */
+  pointer-events: none;
+  /* 역 하나 홉 = 0.35s. 홉 체인(360ms)과 맞물려 연속 걷기로 보인다 */
+  transition: left 0.35s linear, top 0.35s linear;
+}
+/* 진행 방향이 왼쪽이면 몸을 돌린다 */
+.track-canvas > .walker svg { scale: calc(var(--dir, 1)) 1; transition: scale 0.15s; }
+@media (prefers-reduced-motion: reduce) {
+  .track-walked { transition: none; }
+  .track-canvas > .walker { transition: none; }
+}
+
+/* 졸업 배지 팝 — ★ 도착 시 한 번 */
+.gpop { transform-box: fill-box; transform-origin: center 130%; animation: gpop 0.45s cubic-bezier(.2,1.4,.4,1); }
+@keyframes gpop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .gpop { animation: none; } }

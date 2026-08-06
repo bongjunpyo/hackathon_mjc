@@ -353,7 +353,8 @@
 /* 접지점 = 그림자 중심(viewBox cy=88 → 박스의 88%)을 노면 y=80%에 앉힌다.
    지평선이 46%라 원근상 정확한 키는 이보다 크지만(머리가 지평선에 닿는다)
    그러면 머리가 행선판을 가린다 — 의도적으로 덜 키운다. */
-.walker {
+/* 배치는 복도 전용 — 트랙(.track-scene)의 walker에 새지 않게 스코프한다 */
+.corridor .walker {
   position: absolute; left: 50%; top: 80%;
   translate: -50% -88%;
   scale: 1.28;
