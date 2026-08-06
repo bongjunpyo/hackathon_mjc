@@ -186,7 +186,7 @@ def test_없는_이메일로_재발송해도_가입_여부를_알려주지_않�
     res = client.post("/auth/resend", json={"email": "nobody@example.com"})
 
     assert res.status_code == 200
-    assert mailer.outbox == []
+    assert len(mailer.outbox) == 0
 
 
 # --- 로그인 실패 ---

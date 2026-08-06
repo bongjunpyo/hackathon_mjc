@@ -10,6 +10,8 @@ NCS 직무기술서는 수집되지 않았으므로 쓰지 않는다. 학교가 
 import re
 from itertools import combinations
 
+from jobmap import match_labels
+
 # 직무 자리에 들어온 직무 아닌 값
 NOT_A_JOB = {"공통", "전체", "-", "기타"}
 
@@ -61,22 +63,13 @@ def _raw_labels(dept):
 
 
 def _matches(career, labels):
-    """진로와 인재양성유형을 잇는다. 이름이 다르므로 토큰 겹침으로 본다.
+    """진로와 인재양성유형을 잇는다 — `/roadmap`과 **같은 구현**을 쓴다.
 
-    `시스템 엔지니어` ↔ `시스템 관리·운용 엔지니어` 처럼 학교가 두 문서에서 다르게
-    쓴 이름을 이어야 한다. 완전 일치만 보면 대부분이 결손으로 잡힌다.
+    따로 구현했더니 갈라졌다. `jobmap`에만 동률 처리가 있어서 리포트는 `시스템
+    엔지니어`에 라벨 2개를 붙이고 로드맵은 1개를 붙였다 — 두 화면이 같은 진로를
+    다르게 말하고 커버리지가 과대 집계됐다. 매핑 규칙은 한 곳에만 둔다.
     """
-    target = _normalize(career)
-    hits = []
-    for label in labels:
-        normalized = _normalize(label)
-        if target == normalized or target in normalized or normalized in target:
-            hits.append(label)
-            continue
-        tokens = [t for t in re.split(r"[\s·,/]", career) if len(t) >= 2]
-        if tokens and all(t in label for t in tokens):
-            hits.append(label)
-    return hits
+    return match_labels(career, labels)
 
 
 def _label_mismatches(dept, raw_labels):
@@ -103,8 +96,11 @@ def _label_mismatches(dept, raw_labels):
             )
 
     for a, b in combinations(raw_labels, 2):
-        pa = split_label(a, raw_labels)
-        pb = split_label(b, raw_labels)
+        # others에 자기 자신을 넣으면 안 된다 — `any(p in o for o in others)`가 o=a로
+        # 항상 참이 되어 가운뎃점을 무조건 구분자로 본다. `시스템관리·운용엔지니어`가
+        # ['시스템관리','운용엔지니어']로 쪼개져 same_set 오탐의 재료가 된다
+        pa = split_label(a, [x for x in raw_labels if x != a])
+        pb = split_label(b, [x for x in raw_labels if x != b])
         if len(pa) > 1 and {_normalize(x) for x in pa} == {_normalize(x) for x in pb}:
             found.append(
                 {
@@ -139,7 +135,13 @@ def build_report(dept):
     jobs = []
     for career in dept.get("careers") or []:
         matched = _matches(career, raw_labels)
-        covered = [c for c in dept["courses"] if c.get("talent_type") in matched]
+        # 분모가 전공 학점이므로 분자도 전공만 센다. 전 과목을 세면 비전공에 붙은
+        # talent_type(실데이터에 15건 — ece의 일반선택 등)이 섞여 100%를 넘을 수 있다 (이슈 #34)
+        covered = [
+            c
+            for c in dept["courses"]
+            if c.get("talent_type") in matched and c.get("category") == "전공"
+        ]
         credits = sum(c["credits"] for c in covered)
         jobs.append(
             {

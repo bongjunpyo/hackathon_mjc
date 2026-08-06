@@ -2,9 +2,12 @@
 
 재생성 루프를 끄고(1차 생성만) 켰을 때(최대 3회) 졸업요건 충족률을 비교한다.
 
-**재는 대상은 결정론적 planner다. LLM이 아니다.** "LLM 단독 27%"로 부르면 거짓이 된다 —
-심사에서 "27%는 어느 모델입니까"에 답이 없다. "1차 생성 27%"가 정확한 표현이다.
+**재는 대상은 결정론적 planner다. LLM이 아니다.** "LLM 단독 N%"로 부르면 거짓이 된다 —
+심사에서 "그 수치는 어느 모델입니까"에 답이 없다. **"1차 생성 N%"**가 정확한 표현이다.
 LLM 수치를 원하면 ANTHROPIC_API_KEY를 넣고 generate를 agent.generate로 바꿔 다시 잰다.
+
+수치를 문서에 옮겼으면 이 스크립트를 다시 돌려 재현되는지 확인한다 — 직무 목록이
+바뀌면 시나리오 수가 바뀌고 옛 수치는 재현되지 않는다.
 
     uv run python metrics.py            # 표 출력
     uv run python metrics.py --md       # README용 마크다운
@@ -14,6 +17,7 @@ import sys
 from collections import Counter
 
 import catalog
+from jobmap import choices as job_choices
 from loop import generate_roadmap
 from planner import generate
 
@@ -22,12 +26,16 @@ START_POINTS = [(1, 1), (2, 1)]
 
 
 def scenarios():
+    """API가 실제로 받는 직무 전부를 돈다.
+
+    `careers`만 돌렸더니 데모 대본의 직무(`시스템관리·운용엔지니어`)가 측정에서
+    빠져 있었다 — 그건 `talent_types` 쪽 값이다. 지표가 데모 경로를 재지 않으면
+    "검증기가 효과 있다"는 주장의 근거가 그 경로에 없는 셈이 된다.
+    """
     for meta in catalog.list_depts():
         dept = catalog.load_dept(meta["dept_id"])
-        for job in dept.get("careers") or []:
+        for job in job_choices(dept):
             for year, semester in START_POINTS:
-                if (year - 1) * 2 >= dept["years"] * 2:
-                    continue
                 yield dept, job, year, semester
 
 

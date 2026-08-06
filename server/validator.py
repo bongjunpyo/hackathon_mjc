@@ -41,6 +41,28 @@ def _sound(course):
     )
 
 
+def _dedupe(courses):
+    """같은 과목을 두 번 세지 않는다.
+
+    검증기는 생성기와 클라이언트를 신뢰하지 않는 자리다. 요청의 `completed_courses`에
+    같은 id가 여러 번 오거나 이수 과목이 로드맵에도 들어 있으면 학점이 중복 집계돼
+    졸업요건이 뚫린다 — 실제로 같은 id 5번에 전공 54→66학점(요건선)이 됐다.
+
+    `course_id`가 없는 과목은 합칠 근거가 없으므로 그대로 둔다.
+    """
+    seen, out = set(), []
+    for course in courses:
+        course_id = course.get("course_id")
+        if course_id is None:
+            out.append(course)
+            continue
+        if course_id in seen:
+            continue
+        seen.add(course_id)
+        out.append(course)
+    return out
+
+
 def _credits(courses, category=None):
     return sum(
         c["credits"] for c in courses if category is None or c["category"] == category
@@ -75,13 +97,17 @@ def validate_roadmap(semesters, years, completed=None, completed_semesters=0):
     req = REQUIREMENTS.get(years, REQUIREMENTS[3])
 
     raw = [c for s in semesters for c in s.get("courses", [])] + list(completed or [])
-    courses = [c for c in raw if _sound(c)]
-    malformed = len(raw) - len(courses)
+    courses = _dedupe([c for c in raw if _sound(c)])
+    malformed = len(raw) - len([c for c in raw if _sound(c)])
 
     total = _credits(courses)
     liberal = _credits(courses, "교양")
     major = _credits(courses, "전공")
-    semester_count = len(semesters) + completed_semesters
+    # 과목이 없는 학기는 세지 않는다. agent.py는 LLM이 빠뜨린 학기를 빈 칸으로 채우므로
+    # `len(semesters)`로 세면 LLM은 이 룰을 언제나 공짜로 통과하고, 빈 학기를 만들지
+    # 않는 planner만 실제로 채워야 했다 — 두 엔진을 같은 기준으로 판정한다
+    filled = sum(1 for s in semesters if s.get("courses"))
+    semester_count = filled + completed_semesters
 
     remaining = max(0, req["total_credits"] - total)
 

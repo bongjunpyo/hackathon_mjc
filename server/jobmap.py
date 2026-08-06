@@ -30,7 +30,12 @@ def match_labels(job, labels):
     hits = []
     for label in labels:
         flat = normalize(label)
-        if target == flat or target in flat or flat in target:
+        # 완전 일치는 곧바로 확정한다. 아래 동률 처리가 "가장 짧은 라벨"을 고르기
+        # 때문에, 이걸 먼저 걸러내지 않으면 자기 자신을 버린다 — `의료정보관리전문가
+        # 및보건교육사`를 고르면 부분문자열인 `보건교육사`로 매핑돼 11과목이 4과목이 됐다
+        if target == flat:
+            return [label]
+        if target in flat or flat in target:
             hits.append(label)
         elif tokens and all(t in label for t in tokens):
             hits.append(label)
