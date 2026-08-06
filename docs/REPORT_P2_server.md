@@ -281,7 +281,7 @@ LLM이 죽어도(키 만료·레이트리밋·네트워크) 규칙으로 떨어�
 
 | 검증 | 결과 |
 |---|---|
-| 단위·통합 테스트 | **153 passed** |
+| 단위·통합 테스트 | **160 passed** |
 | 변이 검사 | 룰을 일부러 깨면 해당 테스트만 실패하는지 확인 |
 | 실데이터 | 34개 학과 · **직무 조합 172개 전부 200** (404·400 0건) |
 | 실 PostgreSQL | **13/13** — 가입→인증→교환코드→로그인→이수내역 왕복 |
@@ -424,7 +424,7 @@ cd web && npm install && npm run dev         # 화면 :5173
 
 - 화면: http://127.0.0.1:5173
 - API 문서(Swagger): http://127.0.0.1:8000/docs
-- 테스트: `cd server && uv run pytest` (153개)
+- 테스트: `cd server && uv run pytest` (160개)
 - 지표 재현: `cd server && uv run python metrics.py`
 - LLM 비교 모드: `MJC_ENGINE=llm` 환경변수와 `ANTHROPIC_API_KEY` 설정 후 서버 실행
 
