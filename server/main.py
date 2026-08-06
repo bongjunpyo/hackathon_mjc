@@ -6,6 +6,7 @@ API 라우터를 먼저 걸고 StaticFiles는 맨 마지막에 마운트한다.
 """
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -18,6 +19,7 @@ import agent
 import auth
 import catalog
 import db
+import envfile
 from catalog import CatalogError
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -27,6 +29,8 @@ from errors import (
     db_error_handler,
     validation_error_handler,
 )
+from jobmap import choices as job_choices
+from jobmap import match_labels
 from loop import generate_roadmap
 from planner import generate as generate_roadmap_plan
 from report import build_report
@@ -39,6 +43,9 @@ async def lifespan(_):
     db.init_db()  # 실패해도 예외를 던지지 않는다 — 코어는 DB 없이 돈다
     yield
 
+
+# DATABASE_URL·ANTHROPIC_API_KEY 등을 읽는 코드보다 먼저 와야 한다
+envfile.load()
 
 app = FastAPI(title="MJC 취업 로드맵 에이전트", lifespan=lifespan)
 app.add_exception_handler(ApiError, api_error_handler)
@@ -74,7 +81,7 @@ def post_roadmap(req: RoadmapRequest):
     # 둘 다 받는다 — talent_types는 교과과정표 비고 열의 라벨(과목과 직접 연결),
     # careers는 학과 소개 페이지의 진로다. 한쪽만 보면 다른 쪽 값이 전부 400이 된다.
     # 비어 있으면(Tier 2 추출 누락) 비교 대상이 없으므로 막지 않는다
-    jobs = (dept.get("talent_types") or []) + (dept.get("careers") or [])
+    jobs = job_choices(dept)
     if jobs and req.target_job not in jobs:
         raise ApiError(
             "UNKNOWN_JOB",
@@ -94,6 +101,25 @@ def post_roadmap(req: RoadmapRequest):
     }
 
     result = _generate(spec)
+    # 진로에 대응하는 교육과정 라벨이 없을 수 있다. 로드맵은 내되 "직무 맞춤이 안 됐다"를
+    # 숨기지 않는다 — 조용히 일반 로드맵을 주면 "직무 역산"이 거짓이 된다
+    labels = sorted({c["talent_type"] for c in dept["courses"] if c.get("talent_type")})
+    matched = set(match_labels(req.target_job, labels))
+    # 생성기가 무엇이든 서버가 붙인다 — planner는 달지만 LLM 에이전트는 달지 않는다
+    related = 0
+    for semester in result["semesters"]:
+        for course in semester["courses"]:
+            course["job_related"] = course.get("talent_type") in matched
+            related += course["job_related"]
+    result["job_match"] = {
+        "matched_labels": sorted(matched),
+        "related_courses": related,
+        "note": ""
+        if matched
+        else f"'{req.target_job}'에 대응하는 교육과정 인재양성유형이 없습니다. "
+        "졸업요건만 맞춘 일반 로드맵입니다",
+    }
+
     if missing:
         # 프론트 체크박스와 데이터가 어긋난 신호. 코어를 죽이지는 않되 숨기지도 않는다
         result["unknown_courses"] = missing
@@ -108,12 +134,21 @@ def _generate(spec):
 
     어느 엔진이 짰는지 `engine`으로 알린다. 폴백이 조용히 일어나면 "LLM이 짠다"는
     주장을 확인할 방법이 없어진다 — 규칙 코드 결과를 LLM 결과로 오인하게 된다.
+
+    키가 없으면 LLM을 **시도조차 하지 않는다.** 매 요청이 예외를 던지고 스택트레이스가
+    쌓인다. 진짜 폴백 대상은 "키가 있는데 레이트리밋·네트워크로 죽는" 경우다.
     """
+    envfile.load()  # 여러 번 불러도 안전하다
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        return {**generate_roadmap(spec, generate_roadmap_plan), "engine": "rule"}
     try:
         return {**generate_roadmap(spec, agent.generate), "engine": "llm"}
     except Exception:
         log.exception("LLM 로드맵 생성 실패 — 규칙 플래너로 폴백")
-        return {**generate_roadmap(spec, generate_roadmap_plan), "engine": "rule"}
+        return {
+            **generate_roadmap(spec, generate_roadmap_plan),
+            "engine": "rule (llm-failed)",
+        }
 
 
 @app.get("/report/{dept_id}")

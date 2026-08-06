@@ -10,6 +10,7 @@
 재생성 루프가 실제로 일을 한다.
 """
 
+from jobmap import match_labels
 from validator import REQUIREMENTS
 
 # 재생성할 때마다 한 티어씩 더 연다
@@ -29,11 +30,16 @@ def generate(spec, feedback=None, attempt=1):
     ]
     electives = [c for c in pool if not c["required"]]
 
+    # 진로(careers)와 인재양성유형(talent_type)은 학교가 두 문서에서 다르게 쓴 이름이다.
+    # 옮기지 않으면 진로를 골랐을 때 tier 0이 비고 역산이 죽는다 (이슈 #40)
+    labels = {c["talent_type"] for c in dept["courses"] if c.get("talent_type")}
+    targets = set(match_labels(job, sorted(labels))) or {job}
+
     # 우선순위: 목표 직무 → 라벨은 있으나 다른 직무 → 라벨 없음.
     # attempt가 오를수록 뒤 티어가 열린다
     tiers = [
-        [c for c in electives if c.get("talent_type") == job],
-        [c for c in electives if c.get("talent_type") not in (None, job)],
+        [c for c in electives if c.get("talent_type") in targets],
+        [c for c in electives if c.get("talent_type") and c["talent_type"] not in targets],
         [c for c in electives if not c.get("talent_type")],
     ]
     # 필수 + 직무 매칭은 1차부터 전부. 그 뒤 티어는 **모자란 만큼만** 연다 —
@@ -42,7 +48,7 @@ def generate(spec, feedback=None, attempt=1):
     if attempt > 1:
         _fill_to_requirement(chosen, tiers[1 : min(attempt, TIERS)], dept, spec)
 
-    semesters = _by_semester(chosen, job)
+    semesters = _by_semester(chosen, targets, job)
     _place_certificates(dept, semesters)
     return {"semesters": semesters}
 
@@ -72,7 +78,7 @@ def _fill_to_requirement(chosen, tiers, dept, spec):
             chosen.append(course)
 
 
-def _by_semester(courses, job):
+def _by_semester(courses, targets, job):
     """직무 관련 과목을 표시하고 학기 안에서 앞으로 낸다.
 
     전문대 교육과정은 여유 학점이 적어 어떤 직무를 골라도 과목 **집합**은 크게
@@ -81,7 +87,7 @@ def _by_semester(courses, job):
     """
     buckets = {}
     for course in courses:
-        tagged = {**course, "job_related": course.get("talent_type") == job}
+        tagged = {**course, "job_related": course.get("talent_type") in targets}
         buckets.setdefault((course["year"], course["semester"]), []).append(tagged)
 
     semesters = []

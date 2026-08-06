@@ -199,14 +199,17 @@ def test_report는_jobs_키를_낸다(client):
     assert "jobs" in body
 
 
+
 def _roadmap(client, job):
     return client.post(
+
         "/roadmap",
         json={
             "dept_id": "itc",
             "current_year": 1,
             "current_semester": 1,
             "completed_courses": [],
+
             "target_job": job,
         },
     )
@@ -254,6 +257,25 @@ def test_LLM이_죽어도_규칙_플래너로_로드맵이_나간다(client, mon
     assert body["semesters"]
 
 
-def test_정상이면_LLM이_짰다고_표시한다(client):
-    """폴백이 조용히 일어나면 규칙 코드 결과를 LLM 결과로 오인한다."""
-    assert _roadmap(client, "네트워크 엔지니어").json()["engine"] == "llm"
+def test_어느_엔진이_짰는지_표시한다(client):
+    """폴백이 조용히 일어나면 규칙 코드 결과를 LLM 결과로 오인한다.
+
+    여기는 키가 없는 환경이라 `rule`이 정답이다. 세 상태(rule / llm / rule (llm-failed))를
+    실제 분기까지 확인하는 것은 test_engine.py에 있다."""
+    assert _roadmap(client, "네트워크 엔지니어").json()["engine"] == "rule"
+
+
+def test_대응_라벨이_없는_진로는_안내를_함께_낸다(client):
+    """학과가 홍보하는 진로에 교육과정 대응이 없을 수 있다. 로드맵은 내되
+    "직무 맞춤이 안 됐다"를 숨기지 않는다 — 조용히 일반 로드맵을 주면 거짓이다."""
+    body = _roadmap(client, "IoT 개발자").json()
+
+    assert "job_match" in body
+
+
+def test_대응_라벨이_있으면_무엇과_맞췄는지_알려준다(client):
+    body = _roadmap(client, "네트워크 엔지니어").json()
+
+    assert body["job_match"]["matched_labels"]
+    assert body["job_match"]["related_courses"] > 0
+

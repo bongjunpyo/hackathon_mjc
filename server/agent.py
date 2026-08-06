@@ -12,6 +12,8 @@ id만 뽑게 하고 나머지 필드는 카탈로그에서 코드가 채운다 �
 
 import json
 import os
+
+import envfile
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -24,15 +26,8 @@ MAX_CREDITS_PER_SEMESTER = 21
 
 
 def _load_env() -> None:
-    """python-dotenv 없이도 .env를 읽는다. 서버 실행 경로가 달라도 동작하게."""
-    env = Path(__file__).with_name(".env")
-    if not env.exists():
-        return
-    for line in env.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            key, value = line.split("=", 1)
-            os.environ.setdefault(key.strip(), value.strip())
+    """envfile로 위임한다 — 파서가 두 곳에 있으면 갈라진다."""
+    envfile.load()
 
 
 class SemesterPlan(BaseModel):
