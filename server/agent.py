@@ -147,7 +147,9 @@ def generate(spec, feedback=None, attempt=1):
         semesters=", ".join(f"{y}학년 {s}학기" for y, s in remaining),
         catalog=_catalog_lines(pool, job),
         total=req["total_credits"],
-        liberal=req["liberal_credits"],
+        # 검증기 룰 이름과 맞춘다 — 교양은 "필수 이수 학점"이고,
+        # 교양선택은 아래 liberal_bucket으로 따로 준다
+        liberal=req["liberal_required"],
         major=req["major_credits"],
         liberal_bucket=dept.get("liberal_elective_credits", 0),
         max_credits=MAX_CREDITS_PER_SEMESTER,
