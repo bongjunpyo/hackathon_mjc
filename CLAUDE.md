@@ -62,7 +62,7 @@ cd web && npm i && npm i -D tailwindcss @tailwindcss/vite
 ```
 web/
 ├── src/
-│   ├── pages/       # 화면 5개 — Landing · Login · Input · Roadmap · Report
+│   ├── pages/       # 화면 7종 — Landing · RoadmapStudio · Walk · Explore · DeptDetail · Report · Login
 │   ├── components/  # 재사용 (SignBoard, StationCard, ValidationBadge …)
 │   ├── lib/api.js   # fetch 래퍼 — 게스트/토큰 분기를 여기 한 곳에만
 │   └── index.css    # Tailwind 진입 + 디자인 토큰
@@ -70,7 +70,7 @@ web/
 ```
 
 - **디자인 토큰은 Tailwind 테마에 등록해 쓴다** — 명지전문대 브랜드 컬러 `navy #002D65` · `sky #6DCBF9` · `gold #FFBA00`. 컴포넌트에 하드코딩한 헥사값 금지.
-- **전역 상태는 Context 하나**로 끝낸다 (로드맵 결과 + 인증 토큰). Redux·Zustand·React Query 도입 금지 — 화면 5개에 과투자다.
+- **전역 상태는 Context 하나**로 끝낸다 (로드맵 결과 + 인증 토큰). Redux·Zustand·React Query 도입 금지 — 화면 7종에 과투자다.
 - API 호출은 `lib/api.js`만 통한다. 컴포넌트에서 `fetch`를 직접 부르지 않는다.
 - `completed_courses`는 **`course_id` 배열**로 보낸다. 과목명 문자열을 절대 키로 쓰지 않는다.
 - 3D 복도 연출(랜딩)은 `reference/walk-concept.html`의 CSS perspective + sticky + 스크롤 진행률 변수 방식을 그대로 옮긴다. 새 애니메이션 라이브러리를 추가하지 않는다.
@@ -84,7 +84,7 @@ web/
 |---|---|
 | `pipeline/` `data/` | P1 박효민 — 수집 + LLM 추출 파이프라인, courses.json 산출, 품질 지표 (data/는 전원 읽기 가능, 쓰기는 P1만) |
 | `server/` | P2 이동제 — 검증기 + 로드맵 에이전트 + 정합도 계산 + JWT 인증 + DB |
-| `web/` | P3 봉준표 — 화면 5개 (입력·로드맵·리포트 + 메인·로그인) |
+| `web/` | P3 봉준표 — 화면 7종 (랜딩·로드맵 스튜디오·3D 걷기·탐색·상세·리포트·로그인) |
 | `docs/` | P1 박효민 겸임 — README, 다이어그램, PPT, 회의록, 발표 |
 
 ## 코딩 규칙
