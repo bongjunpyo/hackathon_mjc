@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ControlBar from "../components/track/ControlBar";
 import TrackCanvas from "../components/track/TrackCanvas";
 import SemesterPanel from "../components/track/SemesterPanel";
 import ValidationBar from "../components/track/ValidationBar";
 import Walker from "../components/track/Walker";
 import { postRoadmap } from "../lib/api";
+import { useApp } from "../store";
 import demo from "../fixtures/roadmap-demo.json";
 
 /* v2 메인 — 2D 트랙 스튜디오 (DESIGN §2). 상태 5종:
@@ -31,6 +33,8 @@ export default function RoadmapStudio() {
   const [error, setError] = useState(null);
   const [cursor, setCursor] = useState(0);
   const jobRef = useRef(input.targetJob); // 생성 시점의 직무 — 컨트롤을 바꿔도 트랙은 그대로
+  const { setRoadmap: shareRoadmap } = useApp(); // 3D 걷기 모드(/app/walk)와 공유
+  const navigate = useNavigate();
 
   async function generate() {
     setPhase("GENERATING");
@@ -122,7 +126,21 @@ export default function RoadmapStudio() {
       )}
 
       {!dimmed && (
-        <ValidationBar validation={shown.validation} engine={shown.engine} />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex-1">
+            <ValidationBar validation={shown.validation} engine={shown.engine} />
+          </div>
+          {/* 2D=편집 모드, 3D=감상 모드. 같은 데이터·같은 캐릭터·같은 색이다 */}
+          <button
+            onClick={() => {
+              shareRoadmap({ ...shown, target_job: jobRef.current });
+              navigate("/app/walk");
+            }}
+            className="rounded-xl border-2 border-navy px-4 py-2.5 font-bold text-navy transition-[background-color,scale] duration-200 hover:bg-sky-soft active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-gold"
+          >
+            3D로 걸어보기 →
+          </button>
+        </div>
       )}
 
       {phase === "READY" && shown.job_match?.note && (

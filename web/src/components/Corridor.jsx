@@ -14,7 +14,7 @@ const SEGLEN = 300;    // 바닥 세그먼트 (거대 단일 평면은 카메라
 const prefersReduced = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export default function Corridor({ semesters, targetJob, stats, onSelect }) {
+export default function Corridor({ semesters, targetJob, stats, onSelect, passed = true }) {
   const hallwayRef = useRef(null);
   const sceneRef = useRef(null);
   const walkerRef = useRef(null);
@@ -191,7 +191,10 @@ export default function Corridor({ semesters, targetJob, stats, onSelect }) {
                 <div className="gate-kicker">FINAL DESTINATION</div>
                 <div className="gate-title">{targetJob}</div>
                 <div>{stats}</div>
-                <div className="gate-badge">✓ 졸업요건 충족 — 검증기 통과</div>
+                {/* passed=false에 ✓를 띄우면 거짓 데모다 — 미달이면 미달이라고 쓴다 */}
+                <div className={passed ? "gate-badge" : "gate-badge warn"}>
+                  {passed ? "✓ 졸업요건 충족 — 검증기 통과" : "⚠ 졸업요건 미달 — 검증기가 잡았습니다"}
+                </div>
                 <div className="gate-sub">
                   이 노선의 모든 역은 졸업요건 검증기(규칙 코드)가 결정론적으로 검사했습니다
                 </div>

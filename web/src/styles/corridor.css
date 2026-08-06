@@ -347,6 +347,7 @@
   font-weight: 800; font-size: var(--t-base);
   border-radius: 999px; padding: 8px 20px;
 }
+.gate-badge.warn { background: var(--gold); color: var(--navy-deep, #001a3d); }
 .gate-sub { color: var(--sky); font-size: var(--t-sm); margin-top: 12px; }
 
 /* 걷는 캐릭터 — SVG 인물 (등에 가방, 걷기 사이클) */
