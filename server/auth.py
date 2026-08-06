@@ -35,7 +35,7 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 # 인증 직후 프론트가 교환 코드를 들고 도착하는 곳. 새 페이지를 만들지 않아도 되게
 # 기존 라우트로 보낸다
-LANDING_PATH = os.getenv("VERIFY_LANDING", "/app/input")
+LANDING_PATH = os.getenv("VERIFY_LANDING", "/app/roadmap")
 EXCHANGE_TTL = timedelta(seconds=60)
 
 # 가입 전 이메일 인증번호. 유저 행이 아직 없어서 DB에 둘 자리가 없다 —
