@@ -1,15 +1,13 @@
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Corridor from "../components/Corridor";
-import SemesterDetail from "../components/SemesterDetail";
 import Walker from "../components/track/Walker";
 import { useApp } from "../store";
 import { DEPT_BY_ID, DEPTS } from "../lib/depts";
-import { pathFor } from "../lib/curricula";
 
-/* 랜딩 — 히어로(카피+CTA / 트랙 프리뷰) → 3스텝 → 문제 한 줄 → 3D 복도.
+/* 랜딩 — 히어로(카피+CTA / 트랙 프리뷰) → 3스텝 → 문제 한 줄.
    섹션 배열은 팀 시안, 색·폰트는 브랜드 토큰 그대로.
-   복도에 쓰는 건 교육과정표의 표준 이수 경로 — 개인화는 /app/roadmap 이후. */
+
+   3D 복도는 여기 두지 않는다 — 로드맵을 만들기 전에는 걸어볼 내용이 없다.
+   생성 후 스튜디오의 "3D로 걸어보기"(/app/walk)에서 자기 로드맵을 걷는다. */
 
 const STEPS = [
   {
@@ -89,17 +87,8 @@ function TrackPreview() {
 
 export default function Landing() {
   const { input } = useApp();
-  const [detailIndex, setDetailIndex] = useState(null);
   const navigate = useNavigate();
-
   const dept = DEPT_BY_ID[input.deptId] ?? DEPTS[0];
-  const job = input.targetJob || dept.careers[0];
-  const semesters = (pathFor(dept.id, job, dept.years) ?? []).map((s) => ({
-    ...s,
-    name: `${s.year}학년 ${s.semester}학기`,
-    en: `YEAR ${s.year} · SEM ${s.semester}`,
-  }));
-  const totalCredits = semesters.reduce((a, s) => a + s.credits, 0);
 
   const cta =
     "rounded-2xl px-8 py-4 text-lg font-bold transition-[background-color,scale] duration-200 active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-gold";
@@ -157,30 +146,15 @@ export default function Landing() {
         </p>
       </section>
 
-      {/* 3D 걷기 안내 */}
-      <section className="flex flex-wrap items-center gap-4 pb-8">
+      {/* 3D 걷기 안내 — 걷는 건 로드맵을 만든 뒤다 */}
+      <section className="mb-14 flex flex-wrap items-center gap-4 rounded-2xl bg-sky-soft px-8 py-6 inset-ring inset-ring-edge">
         <Walker className="walking shrink-0" style={{ width: 52, height: 84 }} />
         <p className="text-lg text-ink-2 text-pretty">
-          아래로 스크롤하면 이 노선을 <b className="text-navy">직접 걸어볼 수 있습니다</b>.
-          행선판을 누르면 그 학기의 추천 이유가 열립니다.
+          로드맵을 만들면 <b className="text-navy">그 길을 직접 걸어볼 수 있습니다</b>. 행선판을
+          누르면 그 학기의 추천 이유가 열립니다.
         </p>
       </section>
 
-      {/* 3D 복도 — 뷰포트 전체를 쓰도록 main의 좌우 여백을 벗어난다 */}
-      <div className="relative left-1/2 w-screen -translate-x-1/2">
-        <Corridor
-          semesters={semesters}
-          targetJob={job}
-          stats={`${dept.years}년제 · ${semesters.length}학기 · ${totalCredits}학점`}
-          onSelect={setDetailIndex}
-        />
-      </div>
-
-      <SemesterDetail
-        semester={detailIndex == null ? null : semesters[detailIndex]}
-        index={detailIndex}
-        onClose={() => setDetailIndex(null)}
-      />
     </>
   );
 }
