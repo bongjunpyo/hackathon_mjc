@@ -189,7 +189,17 @@ uv run python build_report.py         # 트랙 B 진단 → data/reports/*.json
 
 ## AI 코딩 에이전트 활용
 
-위임한 작업과 검증 과정은 [`docs/AI_USAGE.md`](docs/AI_USAGE.md)에 기록했다.
+위임한 작업과 검증 과정은 [`docs/AI_USAGE.md`](docs/AI_USAGE.md)에, 전체 활용 구성은 [개발 보고서](docs/REPORT.md) §3에 기록했다.
+
+**개발 전 과정을 Claude Code(CLI) 페어 프로그래밍으로 진행했다** — 20시간 단일 장기 세션(컨텍스트 요약 지속)으로 기획→설계→구현→검증→문서까지.
+
+| 구성 | 사용 | 용도 |
+|---|---|---|
+| 모델 | Claude **Opus 5** · Fable 5 (세션) / **Sonnet 5** (제품 내 LLM 비교 모드) | 코딩·리뷰·조사 / 로드맵 에이전트 |
+| 스킬 | `brainstorming` · `claude-api` · `artifact-design` | 주제 선정 / `agent.py` 작성 / 화면 프로토타입(클릭형)으로 팀 합의 |
+| MCP | `playwright` | 3D 랜딩 시각 버그 진단, 화면 확인 |
+| 도구 | WebFetch·WebSearch | **할루시네이션 방지** — 졸업요건·NCS·자격증을 원문 확인, 출처와 함께 `data/enrichment/`에 저장 |
+| 통제 | 폴더 소유권 + PR 리뷰 · main 직push 금지 | AI 산출물도 담당자 리뷰를 거쳐야 main에 들어간다 |
 
 **위임 범위를 측정으로 정했다.** 처음에는 교육과정표 추출도 LLM에 맡길 계획이었다. 그런데 35개 학과 PDF의 헤더를 전수 확인하니 필수 5개 열의 이름이 전부 같았다 — 코드로 읽으면 되는 일이었다. 추출을 코드로 옮기고 LLM은 헤더가 깨진 파일의 폴백으로 남겼다. **폴백 발동 0회**, LLM 예산은 판단이 필요한 로드맵 에이전트에 집중시켰다.
 
