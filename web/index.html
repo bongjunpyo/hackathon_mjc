@@ -611,29 +611,8 @@ footer {
   .signpost, .gate { position: static; translate: none; transform: none !important; opacity: 1 !important; visibility: visible !important; }
   .railseg, .tacseg, .fenceseg, .lamp, .walker, .hud, .scroll-cue, .cloud, .skyline { display: none; }
 }
-:root.static-mode .hallway { height: auto; }
-:root.static-mode .stage { position: relative; height: auto; overflow: visible; perspective: none; background: var(--hall); }
-:root.static-mode .stage::before, :root.static-mode .stage::after { display: none; }
-:root.static-mode .scene { position: static; transform: none !important; display: flex; flex-direction: column; gap: 26px; padding: 48px var(--gut); align-items: center; }
-:root.static-mode .signpost, :root.static-mode .gate { position: static; translate: none; transform: none !important; opacity: 1 !important; visibility: visible !important; }
-:root.static-mode .railseg, :root.static-mode .tacseg, :root.static-mode .fenceseg,
-:root.static-mode .lamp, :root.static-mode .walker, :root.static-mode .hud,
-:root.static-mode .scroll-cue, :root.static-mode .cloud, :root.static-mode .skyline { display: none; }
-
-/* 전체 보기 버튼 */
-.overview {
-  position: absolute; top: 18px; right: 18px; z-index: 8;
-  font-family: var(--f-mono); font-size: var(--t-xs); letter-spacing: 0.08em;
-  color: var(--ink-2);
-  background: color-mix(in srgb, var(--surface) 90%, transparent);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--edge); border-radius: 999px;
-  padding: 10px 16px; cursor: pointer;
-  transition-property: background-color, scale; transition-duration: .2s, .15s;
-}
-.overview:hover { background: var(--surface); }
-.overview:active { scale: .96; }
-.overview:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* 수동 전체 보기 토글은 제거 — 걷기 모드 단일 (2026-08-06 결정).
+   위 reduced-motion 블록이 접근성 폴백을 계속 담당한다. */
 </style>
 
 <!-- ================= 인트로 ================= -->
@@ -718,7 +697,6 @@ footer {
     </div>
 
     <div class="hud" id="hud" aria-label="노선 진행 상태"></div>
-    <button class="overview" id="overview">전체 보기</button>
   </div>
 </div>
 
@@ -1028,7 +1006,8 @@ async function fetchRoadmap(job) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         dept_id: "itc", current_year: 1, current_semester: 1,
-        completed_courses: [], target_job: job,
+        completed_courses: [],          // course_id 배열 (동결 스키마 — 과목명 금지)
+        target_job: job,
       }),
       signal: ctl.signal,
     });
@@ -1057,13 +1036,6 @@ document.querySelector(".go").addEventListener("click", async () => {
   hallway.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
 });
 
-/* ---- 전체 보기 토글 (시연 비상용 겸 접근성) ---- */
-const overviewBtn = document.getElementById("overview");
-overviewBtn.addEventListener("click", () => {
-  const on = document.documentElement.classList.toggle("static-mode");
-  overviewBtn.textContent = on ? "걷기 모드" : "전체 보기";
-  if (!on) paint();
-});
 
 /* ---- 학기 상세 오버레이 ---- */
 const detail = document.getElementById("detail");
