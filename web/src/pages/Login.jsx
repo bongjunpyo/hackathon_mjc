@@ -3,6 +3,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useApp } from "../store";
 import { auth } from "../lib/api";
 import { DEPTS } from "../lib/depts";
+import TermsBox from "../components/TermsBox";
+import { REQUIRED_TERMS } from "../lib/terms";
 
 /* 부가 화면 — 로그인 + 회원가입. 게스트 경로가 항상 살아 있어야 하므로 여기서 막지 않는다.
    가입은 토큰을 주지 않는다. 인증 메일 링크를 눌러야 로그인된다 (server/auth.py). */
@@ -170,6 +172,7 @@ function SignupForm({ onSent, onLoggedIn }) {
   });
   /* 이메일 인증 상태 — idle → sent(번호 입력 중) → done(티켓 확보).
      이메일을 고치면 idle로 되돌린다. 안 그러면 A로 받은 인증으로 B를 가입시킨다. */
+  const [agreed, setAgreed] = useState({});
   const [step, setStep] = useState("idle");
   const [code, setCode] = useState("");
   const [ticket, setTicket] = useState("");
@@ -182,6 +185,7 @@ function SignupForm({ onSent, onLoggedIn }) {
   const [sending, setSending] = useState(false);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const termsOk = REQUIRED_TERMS.every((t) => agreed[t.key]);
 
   function setId(e) {
     setForm({ ...form, student_id: e.target.value });
@@ -239,7 +243,12 @@ function SignupForm({ onSent, onLoggedIn }) {
     setBusy(true);
     setError(null);
     try {
-      const res = await auth.signup({ ...form, email_ticket: ticket });
+      const res = await auth.signup({
+        ...form,
+        email_ticket: ticket,
+        agreed_terms: Boolean(agreed.service),
+        agreed_privacy: Boolean(agreed.privacy),
+      });
       // 인증을 마친 가입이면 서버가 토큰을 준다 — 메일 안내 화면을 건너뛴다
       if (res.access_token) onLoggedIn(res.access_token);
       else onSent(form.email);
@@ -382,15 +391,23 @@ function SignupForm({ onSent, onLoggedIn }) {
         <p className="mt-1.5 text-xs text-steel">8자 이상</p>
       </div>
 
+      <TermsBox value={agreed} onChange={setAgreed} />
+
       {error && <Notice>{error}</Notice>}
 
       {/* 인증 전에는 가입을 막는다 — 인증이 가입의 전제라는 걸 화면이 말해야 한다 */}
       <button
         type="submit"
-        disabled={busy || step !== "done"}
+        disabled={busy || step !== "done" || !termsOk}
         className={`self-start ${primary} disabled:opacity-50`}
       >
-        {busy ? "가입 중…" : step === "done" ? "회원가입하기" : "이메일 인증 후 가입"}
+        {busy
+          ? "가입 중…"
+          : step !== "done"
+            ? "이메일 인증 후 가입"
+            : termsOk
+              ? "회원가입하기"
+              : "약관 동의 후 가입"}
       </button>
     </form>
   );

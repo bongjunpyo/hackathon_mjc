@@ -29,6 +29,10 @@ ACCOUNT = {
     "email": "verify-db-999999999@example.com",  # .invalid는 email-validator가 예약 도메인으로 거부한다
     "password": "verify-db-1234",
     "dept_id": None,  # 첫 학과로 채운다
+    # 필수 약관 동의 — 없으면 가입 체크가 400 TERMS_REQUIRED로 죽는다.
+    # pytest는 SQLite라 여기까지 못 잡는다 (이 스크립트는 PostgreSQL 실물에 붙는다)
+    "agreed_terms": True,
+    "agreed_privacy": True,
 }
 
 results = []
