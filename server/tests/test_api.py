@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+import agent
 import catalog
 from main import app
 
@@ -134,12 +135,13 @@ def test_학과에_없는_직무는_400(client):
 
 
 def test_직무_목록이_비어_있으면_막지_않는다(client, tmp_path, monkeypatch):
-    """Tier 2는 파이프라인 자동 통과라 careers 추출이 비어 있을 수 있다.
+    """Tier 2는 파이프라인 자동 통과라 직무 추출이 비어 있을 수 있다.
     비교 대상이 없는데 막으면 그 학과는 아무것도 못 한다."""
     import json
 
     data = json.loads((FIXTURES / "itc.json").read_text(encoding="utf-8"))
     data["careers"] = []
+    data["talent_types"] = []
     (tmp_path / "itc.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     monkeypatch.setattr(catalog, "DATA_DIR", tmp_path)
 
@@ -197,34 +199,83 @@ def test_report는_jobs_키를_낸다(client):
     assert "jobs" in body
 
 
-def test_대응_라벨이_없는_진로는_안내를_함께_낸다(client):
-    """학과가 홍보하는 진로에 교육과정 대응이 없을 수 있다. 로드맵은 내되
-    "직무 맞춤이 안 됐다"를 숨기지 않는다 — 조용히 일반 로드맵을 주면 거짓이다."""
-    body = client.post(
+
+def _roadmap(client, job):
+    return client.post(
+
         "/roadmap",
         json={
             "dept_id": "itc",
             "current_year": 1,
             "current_semester": 1,
             "completed_courses": [],
-            "target_job": "IoT 개발자",  # 픽스처에 매칭 과목 1개뿐
+
+            "target_job": job,
         },
-    ).json()
+    )
+
+
+def test_talent_type_직무도_받는다(client):
+    """비고 열 라벨은 careers에 없다. 한쪽만 보면 데모 직무가 400이 된다 (이슈 #40)."""
+    assert _roadmap(client, "시스템관리·운용엔지니어").status_code == 200
+
+
+def test_careers_직무도_그대로_받는다(client):
+    assert _roadmap(client, "네트워크 엔지니어").status_code == 200
+
+
+def test_두_목록에_없는_직무는_400이고_고를_수_있는_직무를_알려준다(client):
+    res = _roadmap(client, "우주비행사")
+
+    assert res.status_code == 400
+    body = res.json()
+    assert body["error"]["code"] == "UNKNOWN_JOB"
+    # 두 목록을 합쳐 안내해야 사용자가 실제로 고를 수 있다
+    assert "시스템관리·운용엔지니어" in body["error"]["message"]
+    assert "네트워크 엔지니어" in body["error"]["message"]
+
+
+def test_depts는_직무_드롭다운_재료를_낸다(client):
+    body = client.get("/depts").json()
+
+    assert {"talent_types", "careers", "certificates"} <= set(body[0])
+
+
+def test_LLM이_죽어도_규칙_플래너로_로드맵이_나간다(client, monkeypatch):
+    """발표 중 키 만료·레이트리밋으로 데모가 통째로 죽지 않아야 한다."""
+
+    def 폭발(*args, **kwargs):
+        raise RuntimeError("API 다운")
+
+    monkeypatch.setattr(agent, "generate", 폭발)
+
+    res = _roadmap(client, "네트워크 엔지니어")
+
+    assert res.status_code == 200
+    body = res.json()
+    assert body["engine"] == "rule"
+    assert body["semesters"]
+
+
+def test_어느_엔진이_짰는지_표시한다(client):
+    """폴백이 조용히 일어나면 규칙 코드 결과를 LLM 결과로 오인한다.
+
+    여기는 키가 없는 환경이라 `rule`이 정답이다. 세 상태(rule / llm / rule (llm-failed))를
+    실제 분기까지 확인하는 것은 test_engine.py에 있다."""
+    assert _roadmap(client, "네트워크 엔지니어").json()["engine"] == "rule"
+
+
+def test_대응_라벨이_없는_진로는_안내를_함께_낸다(client):
+    """학과가 홍보하는 진로에 교육과정 대응이 없을 수 있다. 로드맵은 내되
+    "직무 맞춤이 안 됐다"를 숨기지 않는다 — 조용히 일반 로드맵을 주면 거짓이다."""
+    body = _roadmap(client, "IoT 개발자").json()
 
     assert "job_match" in body
 
 
 def test_대응_라벨이_있으면_무엇과_맞췄는지_알려준다(client):
-    body = client.post(
-        "/roadmap",
-        json={
-            "dept_id": "itc",
-            "current_year": 1,
-            "current_semester": 1,
-            "completed_courses": [],
-            "target_job": "네트워크 엔지니어",
-        },
-    ).json()
+    body = _roadmap(client, "네트워크 엔지니어").json()
 
     assert body["job_match"]["matched_labels"]
     assert body["job_match"]["related_courses"] > 0
+

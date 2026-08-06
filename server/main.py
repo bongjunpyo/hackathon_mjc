@@ -5,6 +5,7 @@
 API 라우터를 먼저 걸고 StaticFiles는 맨 마지막에 마운트한다.
 """
 
+import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -14,6 +15,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+import agent
 import auth
 import catalog
 import db
@@ -32,6 +34,8 @@ from jobmap import match_labels
 from loop import generate_roadmap
 from planner import generate as generate_roadmap_plan
 from report import build_report
+
+log = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -74,14 +78,15 @@ def post_roadmap(req: RoadmapRequest):
         raise ApiError("DEPT_NOT_FOUND", str(e), status=404) from e
 
     # 오타 하나로 조용히 일반 로드맵이 나가면 "직무 역산"이라는 주장이 무너진다.
-    # careers가 비어 있으면(Tier 2 추출 누락) 비교 대상이 없으므로 막지 않는다
-    # 데모 대본 직무는 talent_types에 있고 진로는 careers에 있다. 둘 다 받는다 (이슈 #40)
-    allowed = job_choices(dept)
-    if allowed and req.target_job not in allowed:
+    # 둘 다 받는다 — talent_types는 교과과정표 비고 열의 라벨(과목과 직접 연결),
+    # careers는 학과 소개 페이지의 진로다. 한쪽만 보면 다른 쪽 값이 전부 400이 된다.
+    # 비어 있으면(Tier 2 추출 누락) 비교 대상이 없으므로 막지 않는다
+    jobs = job_choices(dept)
+    if jobs and req.target_job not in jobs:
         raise ApiError(
             "UNKNOWN_JOB",
             f"'{req.target_job}'는 {dept['dept_name']}의 직무가 아닙니다. "
-            f"고를 수 있는 직무: {', '.join(allowed)}",
+            f"고를 수 있는 직무: {', '.join(jobs)}",
             status=400,
         )
 
@@ -95,8 +100,7 @@ def post_roadmap(req: RoadmapRequest):
         "completed_semesters": (req.current_year - 1) * 2 + (req.current_semester - 1),
     }
 
-    result, generator = _run(spec)
-    result["generator"] = generator
+    result = _generate(spec)
     # 진로에 대응하는 교육과정 라벨이 없을 수 있다. 로드맵은 내되 "직무 맞춤이 안 됐다"를
     # 숨기지 않는다 — 조용히 일반 로드맵을 주면 "직무 역산"이 거짓이 된다
     labels = sorted({c["talent_type"] for c in dept["courses"] if c.get("talent_type")})
@@ -115,39 +119,36 @@ def post_roadmap(req: RoadmapRequest):
         else f"'{req.target_job}'에 대응하는 교육과정 인재양성유형이 없습니다. "
         "졸업요건만 맞춘 일반 로드맵입니다",
     }
+
     if missing:
         # 프론트 체크박스와 데이터가 어긋난 신호. 코어를 죽이지는 않되 숨기지도 않는다
         result["unknown_courses"] = missing
     return result
 
 
-def pick_generator():
-    """API 키가 있으면 LLM 에이전트, 없으면 결정론적 planner.
+def _generate(spec):
+    """LLM으로 짜고, 실패하면 규칙 플래너로 떨어진다.
 
-    두 생성기가 같은 계약(spec, feedback, attempt)이라 loop에 그대로 꽂힌다.
-    키가 없어도 데모는 돌아야 하므로 planner가 항상 대기한다 — mailer가 SMTP 없으면
-    콘솔로 떨어지는 것과 같은 구조다.
+    폴백을 두는 이유는 발표 중 API 키 만료·레이트리밋·네트워크로 데모가 통째로
+    죽는 것을 막기 위해서다. 검증기 루프는 어느 쪽이든 그대로 돈다.
+
+    어느 엔진이 짰는지 `engine`으로 알린다. 폴백이 조용히 일어나면 "LLM이 짠다"는
+    주장을 확인할 방법이 없어진다 — 규칙 코드 결과를 LLM 결과로 오인하게 된다.
+
+    키가 없으면 LLM을 **시도조차 하지 않는다.** 매 요청이 예외를 던지고 스택트레이스가
+    쌓인다. 진짜 폴백 대상은 "키가 있는데 레이트리밋·네트워크로 죽는" 경우다.
     """
-    # .env가 아직 안 읽혔을 수도 있다 — 여러 번 불러도 안전하다
-    envfile.load()
-    if os.getenv("ANTHROPIC_API_KEY"):
-        from agent import generate as llm_generate
-
-        return llm_generate
-    return generate_roadmap_plan
-
-
-def _run(spec):
-    """LLM이 죽어도 로드맵은 나온다. 무엇이 돌았는지는 응답에 남긴다."""
-    chosen = pick_generator()
-    label = "agent (LLM)" if getattr(chosen, "__module__", "") == "agent" else "planner"
+    envfile.load()  # 여러 번 불러도 안전하다
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        return {**generate_roadmap(spec, generate_roadmap_plan), "engine": "rule"}
     try:
-        return generate_roadmap(spec, chosen), label
-    except Exception as e:
-        if chosen is generate_roadmap_plan:
-            raise
-        print(f"[roadmap] LLM 실패({e}) — planner로 대체", flush=True)
-        return generate_roadmap(spec, generate_roadmap_plan), "planner (LLM 실패)"
+        return {**generate_roadmap(spec, agent.generate), "engine": "llm"}
+    except Exception:
+        log.exception("LLM 로드맵 생성 실패 — 규칙 플래너로 폴백")
+        return {
+            **generate_roadmap(spec, generate_roadmap_plan),
+            "engine": "rule (llm-failed)",
+        }
 
 
 @app.get("/report/{dept_id}")

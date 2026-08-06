@@ -70,8 +70,10 @@ def list_depts(root=None):
                 "years": dept["years"],
                 "tier": dept["tier"],
                 # 입력 화면의 목표 직무 드롭다운 재료. 없으면 프론트가 하드코딩해야 하고,
-                # 그러면 "전 학과 대응"이 성립하지 않는다
-                # 역산의 축이라 프론트 드롭다운에 함께 있어야 한다 (이슈 #40)
+                # 그러면 "전 학과 대응"이 성립하지 않는다.
+                # talent_types가 드롭다운의 **기본값**이다 — courses[].talent_type과
+                # 같은 값이라 직무 역산이 실제로 걸린다. careers는 학과 소개 페이지의
+                # 진로라 과목과 연결돼 있지 않다 (이슈 #40)
                 "talent_types": dept.get("talent_types", []),
                 "careers": dept.get("careers", []),
                 "certificates": dept.get("certificates", []),
