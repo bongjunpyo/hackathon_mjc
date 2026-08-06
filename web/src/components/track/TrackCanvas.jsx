@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import "../../styles/track.css";
 import { VIEW_W, buildTrack, trackNodes } from "../../lib/track-geometry";
+
+/* 자격증 이름이 길다 — "국제공인정보시스템보안전문가(CISSP)"를 그대로 그리면
+   옆 구간 이름표를 덮는다. 트랙에서는 줄이고 전체 이름은 패널에서 본다. */
+const short = (text, n = 13) => (text.length > n ? `${text.slice(0, n)}…` : text);
 import Walker from "./Walker";
 
 /* 2D 트랙 캔버스 (DESIGN §2.3).
@@ -51,20 +55,58 @@ export default function TrackCanvas({ semesters, targetJob, cursor, passed, shor
         />
         <path className="track-dots" d={path} />
 
-        {/* 분기 가지 — 자격증은 그 학기 **구간 중앙**에서 갈라진다. 자격증은 학기를
-           보내는 중에 따는 것이라 역(노드)이 아니라 구간에 붙는 게 맞다 */}
+        {/* 자격증 분기 — 그 학기 **구간 중앙**에서 갈라진다. 학기를 보내는 중에 따는
+           것이라 역(노드)이 아니라 구간에 붙는 게 맞다. 이름을 같이 낸다 — 🎫만
+           있으면 무슨 자격증인지 패널을 열어야 안다.
+
+           구간당 1개까지만 건다. 정보통신공학과는 자격증이 16종이라 다 걸면
+           이름표가 서로를 덮는다 — 나머지는 "외 N"으로 세고 패널에서 본다.
+           세로 구간(행 전환)은 모서리라 대각으로 빼면 여백 밖으로 나간다 —
+           안쪽으로 수평 분기하고 이름표를 점 옆에 둔다. */}
         {meta.map((m, i) => {
-          if (m.kind !== "semester" || !m.branches) return null;
+          const cert = m.branches?.find((x) => x.kind === "cert");
+          if (!cert) return null;
+          const extra = m.branches.filter((x) => x.kind === "cert").length - 1;
           const a = nodes[i - 1];
           const b = nodes[i];
           const mx = (a.x + b.x) / 2;
           const my = (a.y + b.y) / 2;
-          const up = Math.floor(i / 3) % 2 === 1;
-          const dy = up ? -56 : 56;
+          const vertical = a.x === b.x;
+          const inward = mx > VIEW_W / 2 ? -1 : 1;
+          const cx = vertical ? mx + 110 * inward : mx + 56;
+          // 세로 구간은 모서리 — 가로 구간 이름표 밴드(my+90)를 피해 비켜 건다.
+          // 왼쪽 열은 아래에 종착 게이트 판이 있으므로 위로 뺀다
+          const cy = vertical ? my + (inward > 0 ? -55 : 55) : my + 58;
           return (
-            <g key={`br-${i}`} aria-hidden="true">
-              <path className="tbranch" d={`M ${mx} ${my} l 56 ${dy}`} />
-              <text x={mx + 64} y={my + dy + (up ? 0 : 12)} fontSize="26" textAnchor="start">🎫</text>
+            <g key={`cert-${i}`} className="tbranch-g cert" aria-hidden="true">
+              <path className="tbranch" d={`M ${mx} ${my} L ${cx} ${cy}`} />
+              <circle className="tbranch-dot" cx={cx} cy={cy} r="12" />
+              <text
+                className="tbranch-label"
+                x={vertical ? cx + 20 * inward : Math.min(Math.max(cx, 110), VIEW_W - 110)}
+                y={vertical ? cy + 6 : cy + 32}
+                textAnchor={vertical ? (inward > 0 ? "start" : "end") : "middle"}
+              >
+                {short(cert.label)}
+                {extra > 0 && ` 외 ${extra}`}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* 일정 조언(이력서·포트폴리오)은 **역 아래**에 건다 (DESIGN §3).
+           자격증과 같은 구간을 쓰면 이름표가 겹친다 — 역 아래는 비어 있다 */}
+        {meta.map((m, i) => {
+          const advice = m.branches?.find((x) => x.kind === "advice");
+          if (!advice) return null;
+          const { x, y } = nodes[i];
+          return (
+            <g key={`adv-${i}`} className="tbranch-g advice" aria-hidden="true">
+              <path className="tbranch" d={`M ${x} ${y + 82} L ${x} ${y + 104}`} />
+              <circle className="tbranch-dot" cx={x} cy={y + 110} r="10" />
+              <text className="tbranch-label" x={x} y={y + 138} textAnchor="middle">
+                {advice.label}
+              </text>
             </g>
           );
         })}

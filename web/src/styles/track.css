@@ -54,8 +54,17 @@
 .tnode:hover circle.ring { stroke-width: 6; }
 .tnode text { user-select: none; }
 
-/* 분기 가지(자격증) — 유도선에서 갈라지는 얇은 지선 */
-.tbranch { stroke: var(--color-steel); stroke-width: 3; stroke-dasharray: 6 5; fill: none; }
+/* 분기(자격증·일정 조언) — 유도선에서 갈라지는 지선 + 이름표.
+   자격증은 gold(취득 목표), 조언은 steel(우리가 계산한 일정)로 갈라 읽게 한다 */
+.tbranch { stroke: var(--color-steel); stroke-width: 3; stroke-dasharray: 7 6; fill: none; }
+.tbranch-dot { fill: #fff; stroke: var(--color-steel); stroke-width: 3.5; }
+.tbranch-label {
+  font-size: 19px; font-weight: 700; fill: var(--color-ink-2);
+  paint-order: stroke; stroke: #fff; stroke-width: 5px; stroke-linejoin: round;
+}
+.tbranch-g.cert .tbranch { stroke: color-mix(in srgb, var(--color-gold) 78%, var(--color-steel)); }
+.tbranch-g.cert .tbranch-dot { stroke: var(--color-gold); }
+.tbranch-g.cert .tbranch-label { fill: var(--color-navy); }
 
 /* 종착 게이트 — corridor .gate-board 문법 (navy 판 + gold 테두리) */
 .tgoal-board { fill: var(--color-navy); }
