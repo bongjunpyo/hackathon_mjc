@@ -161,6 +161,63 @@ export default function Report() {
         )}
       </div>
 
+      {/* 자격증 결손 — 파이프라인이 교육과정표와 대조해 3분류한 값 (이슈 #78-②) */}
+      {r.certificates && (
+        <div className="flex flex-col gap-3">
+          <h3 className="font-extrabold text-navy">
+            자격증 대응{" "}
+            <span className="font-mono text-sm tabular-nums">
+              {r.certificates.total}종
+            </span>
+          </h3>
+          <p className="max-w-[62ch] text-sm text-ink-2">
+            학과가 안내하는 자격증에 대응하는 과목이 교육과정표에 있는지 봅니다.
+            {r.ncs_ratio != null && (
+              <> 이 학과 NCS 반영률은 <b className="text-navy">{r.ncs_ratio}%</b>입니다.</>
+            )}
+          </p>
+
+          {r.certificates.unsupported.length > 0 ? (
+            <div className="flex flex-col gap-2 rounded-xl border-2 border-gold bg-gold/15 px-4 py-3.5">
+              <b className="text-navy">
+                ⚠ 대응 과목이 없는 자격증{" "}
+                <span className="font-mono tabular-nums">
+                  {r.certificates.unsupported.length}종
+                </span>
+              </b>
+              <p className="text-sm text-ink-2">
+                학과가 취득을 권하는데 교육과정표에서 준비할 과목을 찾지 못했습니다.
+              </p>
+              <ul className="flex flex-wrap gap-1.5">
+                {r.certificates.unsupported.map((c) => (
+                  <li
+                    key={c}
+                    className="rounded-lg border border-gold/60 bg-white px-2.5 py-1 text-sm text-navy"
+                  >
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className="text-sm text-ink-2">
+              판정한 자격증은 모두 대응 과목이 있습니다.
+            </p>
+          )}
+
+          {/* 판정불가는 목록을 내지 않는다. 자격증명 추출이 불완전해
+             '중국어능력시험(HSK' 같은 조각이 섞여 있다 — 우리 파싱 실패를
+             진단 결과인 척 전시하게 된다 (이슈 #78 코멘트) */}
+          {r.certificates.unevaluated.length > 0 && (
+            <p className="rounded-lg border border-dashed border-edge p-3 text-xs text-steel">
+              판정불가 {r.certificates.unevaluated.length}종 — 자격증명 추출이 불완전해
+              대응 여부를 판정하지 못했습니다. <b>결손으로 세지 않습니다.</b> 목록은
+              추출 정확도가 확보되면 공개합니다.
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
         <h3 className="font-extrabold text-navy">
           라벨 점검 <span className="font-mono text-sm tabular-nums">{r.label_mismatches.length}건</span>
