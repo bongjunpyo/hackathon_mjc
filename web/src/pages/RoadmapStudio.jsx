@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ControlBar from "../components/track/ControlBar";
 import TrackCanvas from "../components/track/TrackCanvas";
 import SemesterPanel from "../components/track/SemesterPanel";
+import CertPanel from "../components/track/CertPanel";
 import ValidationBar from "../components/track/ValidationBar";
 import Walker from "../components/track/Walker";
 import { postRoadmap } from "../lib/api";
@@ -157,7 +158,8 @@ export default function RoadmapStudio() {
         )}
         </div>
 
-        {semIndex != null && (
+        {/* 역 도착(정수) = 학기별 전공 추천, 분기 도착(소수) = 자격증 — 내용이 다르다 */}
+        {semIndex != null && (Number.isInteger(arrived) ? (
           <SemesterPanel
             semester={semesters[semIndex]}
             index={semIndex}
@@ -165,8 +167,19 @@ export default function RoadmapStudio() {
             isLast={semIndex === semesters.length - 1}
             onNext={() => setCursor(Math.floor(cursor) + 1)}
             onGraduate={() => setCursor(semesters.length + 1)}
+            onCerts={
+              semesters[semIndex].certificates?.length
+                ? () => setCursor(semIndex + 0.5)
+                : undefined
+            }
           />
-        )}
+        ) : (
+          <CertPanel
+            semester={semesters[semIndex]}
+            index={semIndex}
+            onCourses={() => setCursor(semIndex + 1)}
+          />
+        ))}
       </div>
 
     </section>

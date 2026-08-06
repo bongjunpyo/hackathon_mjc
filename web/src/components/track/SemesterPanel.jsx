@@ -1,6 +1,5 @@
-import { certName, certTip } from "../../lib/external";
-
-/* 학기 상세 패널 (DESIGN §2.6).
+/* 학기 상세 패널 (DESIGN §2.6) — **학기별 전공 추천** 전용.
+   자격증은 여기 없다 — 분기(동그라미)를 눌러 CertPanel(gold)에서 본다.
    과목마다 한 줄 카드로 끊는다 — 이름·태그·학점이 한 덩어리로 붙어 있으면
    6과목이 문단처럼 읽힌다. 헤더 문법(navy+gold+MJ0N)은 3D 모달과 같다. */
 
@@ -35,7 +34,7 @@ function CourseRow({ course, targetJob }) {
   );
 }
 
-export default function SemesterPanel({ semester, index, targetJob, isLast, onNext, onGraduate }) {
+export default function SemesterPanel({ semester, index, targetJob, isLast, onNext, onGraduate, onCerts }) {
   if (!semester) return null;
   const credits =
     semester.credits ?? semester.courses.reduce((a, c) => a + (c.credits ?? 0), 0);
@@ -50,7 +49,7 @@ export default function SemesterPanel({ semester, index, targetJob, isLast, onNe
           {semester.year}학년 {semester.semester}학기{" "}
           <span className="font-mono text-base tabular-nums text-sky">· {credits}학점</span>
         </h3>
-        <p className="font-mono text-xs text-sky/80">과목 {semester.courses.length}개</p>
+        <p className="font-mono text-xs text-sky/80">이 학기 전공 추천 · 과목 {semester.courses.length}개</p>
       </header>
 
       <ul className="flex flex-col gap-1.5 px-4 py-4 text-sm">
@@ -60,14 +59,12 @@ export default function SemesterPanel({ semester, index, targetJob, isLast, onNe
       </ul>
 
       {semester.certificates?.length > 0 && (
-        <div className="mx-4 mb-3 flex flex-col gap-1 rounded-xl bg-gold/15 px-3.5 py-3 inset-ring inset-ring-gold/50">
-          {semester.certificates.map((c) => (
-            <p key={certName(c)} className="text-sm text-navy">
-              🎫 <b>{certName(c)}</b>
-              {certTip(c) && <span className="block text-xs text-ink-2">{certTip(c)}</span>}
-            </p>
-          ))}
-        </div>
+        <button
+          onClick={onCerts}
+          className="mx-4 mb-3 rounded-xl border border-gold/60 bg-gold/10 px-3.5 py-2.5 text-left text-sm font-bold text-navy transition-[background-color,scale] duration-150 hover:bg-gold/20 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-gold"
+        >
+          🎫 이 학기 자격증 {semester.certificates.length}종 → 분기에서 보기
+        </button>
       )}
 
       {semester.notes && (
