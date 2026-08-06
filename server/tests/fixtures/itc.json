@@ -1,0 +1,54 @@
+{
+  "dept_id": "itc",
+  "dept_name": "정보통신공학과",
+  "faculty_type_code": "A08",
+  "years": 3,
+  "tier": 1,
+  "courses": [
+    { "course_id": "itc-인성채플", "name": "인성채플", "year": 1, "semester": 1, "credits": 1, "category": "교양", "required": true, "talent_type": null, "ncs": false, "field_based": false },
+    { "course_id": "itc-성경과삶", "name": "성경과삶", "year": 1, "semester": 1, "credits": 2, "category": "교양", "required": true, "talent_type": null, "ncs": false, "field_based": false },
+    { "course_id": "itc-프로그래밍언어실습1", "name": "프로그래밍언어실습Ⅰ", "year": 1, "semester": 1, "credits": 3, "category": "전공", "required": true, "talent_type": "응용소프트웨어 개발자", "ncs": true, "field_based": false },
+    { "course_id": "itc-컴퓨터네트워크기초", "name": "컴퓨터네트워크기초", "year": 1, "semester": 1, "credits": 3, "category": "전공", "required": true, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": false },
+    { "course_id": "itc-디지털논리회로", "name": "디지털논리회로", "year": 1, "semester": 1, "credits": 3, "category": "전공", "required": true, "talent_type": null, "ncs": false, "field_based": false },
+    { "course_id": "itc-정보통신개론", "name": "정보통신개론", "year": 1, "semester": 1, "credits": 3, "category": "전공", "required": false, "talent_type": "네트워크 엔지니어", "ncs": false, "field_based": false },
+
+    { "course_id": "itc-프로그래밍언어실습2", "name": "프로그래밍언어실습Ⅱ", "year": 1, "semester": 2, "credits": 3, "category": "전공", "required": true, "talent_type": "응용소프트웨어 개발자", "ncs": true, "field_based": false },
+    { "course_id": "itc-네트워크실무", "name": "네트워크실무", "year": 1, "semester": 2, "credits": 3, "category": "전공", "required": true, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": true },
+    { "course_id": "itc-데이터베이스기초", "name": "데이터베이스기초", "year": 1, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": "응용소프트웨어 개발자", "ncs": true, "field_based": false },
+    { "course_id": "itc-전자회로", "name": "전자회로", "year": 1, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": null, "ncs": false, "field_based": false },
+    { "course_id": "itc-웹프로그래밍", "name": "웹프로그래밍", "year": 1, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": "응용소프트웨어 개발자", "ncs": true, "field_based": false },
+
+    { "course_id": "itc-라우팅및스위칭", "name": "라우팅 및 스위칭", "year": 2, "semester": 1, "credits": 3, "category": "전공", "required": true, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": true },
+    { "course_id": "itc-리눅스서버운용", "name": "리눅스서버운용", "year": 2, "semester": 1, "credits": 3, "category": "전공", "required": true, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": true },
+    { "course_id": "itc-자료구조", "name": "자료구조", "year": 2, "semester": 1, "credits": 3, "category": "전공", "required": true, "talent_type": "응용소프트웨어 개발자", "ncs": true, "field_based": false },
+    { "course_id": "itc-임베디드시스템", "name": "임베디드시스템", "year": 2, "semester": 1, "credits": 3, "category": "전공", "required": false, "talent_type": null, "ncs": false, "field_based": false },
+    { "course_id": "itc-데이터통신", "name": "데이터통신", "year": 2, "semester": 1, "credits": 3, "category": "전공", "required": false, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": false },
+    { "course_id": "itc-네트워크프로그래밍", "name": "네트워크프로그래밍", "year": 2, "semester": 1, "credits": 3, "category": "전공", "required": false, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": false },
+    { "course_id": "itc-확률과통계", "name": "확률과통계", "year": 2, "semester": 1, "credits": 3, "category": "일반선택", "required": false, "talent_type": null, "ncs": false, "field_based": false },
+
+    { "course_id": "itc-무선네트워크", "name": "무선네트워크", "year": 2, "semester": 2, "credits": 3, "category": "전공", "required": true, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": false },
+    { "course_id": "itc-네트워크보안", "name": "네트워크보안", "year": 2, "semester": 2, "credits": 3, "category": "전공", "required": true, "talent_type": "정보보안 전문가", "ncs": true, "field_based": false },
+    { "course_id": "itc-캡스톤디자인1", "name": "캡스톤디자인Ⅰ", "year": 2, "semester": 2, "credits": 3, "category": "전공", "required": true, "talent_type": null, "ncs": false, "field_based": true },
+    { "course_id": "itc-운영체제", "name": "운영체제", "year": 2, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": "응용소프트웨어 개발자", "ncs": true, "field_based": false },
+    { "course_id": "itc-iot센서응용", "name": "IoT센서응용", "year": 2, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": "IoT 개발자", "ncs": true, "field_based": false },
+    { "course_id": "itc-기술영어", "name": "기술영어", "year": 2, "semester": 2, "credits": 3, "category": "일반선택", "required": false, "talent_type": null, "ncs": false, "field_based": false },
+
+    { "course_id": "itc-클라우드인프라", "name": "클라우드인프라", "year": 3, "semester": 1, "credits": 3, "category": "전공", "required": true, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": true },
+    { "course_id": "itc-네트워크설계", "name": "네트워크설계", "year": 3, "semester": 1, "credits": 3, "category": "전공", "required": true, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": true },
+    { "course_id": "itc-캡스톤디자인2", "name": "캡스톤디자인Ⅱ", "year": 3, "semester": 1, "credits": 3, "category": "전공", "required": true, "talent_type": null, "ncs": false, "field_based": true },
+    { "course_id": "itc-정보보안실무", "name": "정보보안실무", "year": 3, "semester": 1, "credits": 3, "category": "전공", "required": false, "talent_type": "정보보안 전문가", "ncs": true, "field_based": true },
+    { "course_id": "itc-빅데이터처리", "name": "빅데이터처리", "year": 3, "semester": 1, "credits": 3, "category": "전공", "required": false, "talent_type": "AI 개발자", "ncs": true, "field_based": false },
+    { "course_id": "itc-창업과직업윤리", "name": "창업과직업윤리", "year": 3, "semester": 1, "credits": 3, "category": "일반선택", "required": false, "talent_type": null, "ncs": false, "field_based": false },
+
+    { "course_id": "itc-현장실습", "name": "현장실습(4주)", "year": 3, "semester": 2, "credits": 4, "category": "전공", "required": true, "talent_type": null, "ncs": false, "field_based": true },
+    { "course_id": "itc-취업역량강화", "name": "취업역량강화", "year": 3, "semester": 2, "credits": 3, "category": "전공", "required": true, "talent_type": null, "ncs": false, "field_based": false },
+    { "course_id": "itc-네트워크운용관리", "name": "네트워크운용관리", "year": 3, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": true },
+    { "course_id": "itc-ai서비스개발", "name": "AI서비스개발", "year": 3, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": "AI 개발자", "ncs": true, "field_based": false },
+    { "course_id": "itc-종합설계프로젝트", "name": "종합설계프로젝트", "year": 3, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": null, "ncs": false, "field_based": true }
+  ],
+  "certificates": ["정보처리산업기사", "네트워크관리사 2급", "CCNA", "리눅스마스터 2급", "정보보안기사"],
+  "careers": ["네트워크 엔지니어", "응용소프트웨어 개발자", "정보보안 전문가", "IoT 개발자", "AI 개발자"],
+  "liberal_elective_credits": 7,
+  "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
+  "extraction_confidence": 0.95
+}
