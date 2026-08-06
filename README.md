@@ -209,7 +209,7 @@ cd hackathon_mjc
 ```bash
 cd server
 uv sync
-uv run pytest          # 153개 테스트 (검증기 · 엔진 · 카탈로그 · 인증 · 트랙 B)
+uv run pytest          # 160개 테스트 (검증기 · 엔진 · 카탈로그 · 인증 · 트랙 B)
 uv run fastapi dev main.py   # API + 프론트 빌드 정적 서빙 (web/dist가 있으면)
 ```
 
@@ -251,12 +251,16 @@ uv run python build_report.py         # 트랙 B 진단 → data/reports/*.json
 
 **개발 전 과정을 Claude Code(CLI) 페어 프로그래밍으로 진행했다** — 20시간 단일 장기 세션(컨텍스트 요약 지속)으로 기획→설계→구현→검증→문서까지.
 
+세 사람이 각자 Claude Code 세션을 돌렸고, 폴더 소유권이 그대로 에이전트 경계였다. 아래는 세 세션 합산 구성이다 (파트별 상세: [P2](docs/REPORT_P2_server.md) · [P3](docs/REPORT_P3_web.md)).
+
 | 구성 | 사용 | 용도 |
 |---|---|---|
-| 모델 | Claude **Opus 5** · Fable 5 (세션) / **Sonnet 5** (제품 내 LLM 비교 모드) | 코딩·리뷰·조사 / 로드맵 에이전트 |
-| 스킬 | `brainstorming` · `claude-api` · `artifact-design` | 주제 선정 / `agent.py` 작성 / 화면 프로토타입(클릭형)으로 팀 합의 |
-| MCP | `playwright` | 3D 랜딩 시각 버그 진단, 화면 확인 |
-| 도구 | WebFetch·WebSearch | **할루시네이션 방지** — 졸업요건·NCS·자격증을 원문 확인, 출처와 함께 `data/enrichment/`에 저장 |
+| 모델 | Claude **Opus 5** · **Fable 5** (세션 — `/model`로 구간별 전환) / **Sonnet 5** (제품 내 LLM 비교 모드) | 설계·디버깅은 Opus, 빠른 반복은 Fable / 로드맵 에이전트 |
+| 모드 | 플랜 모드(분석·계획) · 대화형 페어 프로그래밍(구현) | 수상작 분석·설계 / 코딩 전 과정 |
+| 스킬 | `brainstorming` · `claude-api` · `artifact-design` · `notebooklm` · `make-interfaces-feel-better` | 주제 선정 / `agent.py` / 화면 프로토타입 / 수상작 43소스 분석 / UI 디테일 점검 |
+| 플러그인 | `superpowers` | 스킬 우선 실행 규율 |
+| MCP | `claude-in-chrome` · `playwright` | 화면 검증 전부(스크린샷 대조·픽셀 실측·상태 시퀀스) / 3D 잘림 해상도별 실측 |
+| 도구 | WebFetch·WebSearch | **할루시네이션 방지** — 졸업요건·NCS·자격증·선행 서비스를 원문 확인, 출처와 함께 `data/enrichment/`에 저장 |
 | 통제 | 폴더 소유권 + PR 리뷰 · main 직push 금지 | AI 산출물도 담당자 리뷰를 거쳐야 main에 들어간다 |
 
 **위임 범위를 측정으로 정했다.** 처음에는 교육과정표 추출도 LLM에 맡길 계획이었다. 그런데 35개 학과 PDF의 헤더를 전수 확인하니 필수 5개 열의 이름이 전부 같았다 — 코드로 읽으면 되는 일이었다. 추출을 코드로 옮기고 LLM은 헤더가 깨진 파일의 폴백으로 남겼다. **폴백 발동 0회**, LLM 예산은 판단이 필요한 로드맵 에이전트에 집중시켰다.
@@ -269,7 +273,7 @@ uv run python build_report.py         # 트랙 B 진단 → data/reports/*.json
 
 | | |
 |---|---|
-| 테스트 | 153개 |
+| 테스트 | 160개 |
 | 변이 검사 | 10종, 전부 검출 |
 | 파이프라인 | 34개 학과 · 842과목 · **코드 파싱 100% · LLM 폴백 0회** |
 | `course_id` 충돌 | 776과목 **0건** |

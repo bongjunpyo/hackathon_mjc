@@ -69,7 +69,7 @@
 | | |
 |---|---|
 | **검증기 효과** | **274개 시나리오: 1차 생성 15.0% → 루프 후 99.3%** (결정론 — `uv run python metrics.py`로 즉시 재현) |
-| 테스트 | 156개 통과 · 변이 검사로 테스트 자체를 검증 |
+| 테스트 | 160개 통과 · 변이 검사로 테스트 자체를 검증 |
 | 재현성 | 새 폴더 clone → 설치 → 테스트 → 빌드 → API 전 경로 통과 확인. **API 키 없이 동작** |
 | 인증 | JWT(액세스+리프레시) + 이메일 인증번호 가입 · 게스트 모드 항상 유지 |
 
@@ -147,7 +147,7 @@
 
 ```bash
 git clone https://github.com/bongjunpyo/hackathon_mjc.git
-cd hackathon_mjc/server && uv sync && uv run pytest      # 156개 테스트
+cd hackathon_mjc/server && uv sync && uv run pytest      # 160개 테스트
 uv run uvicorn main:app --port 8000                       # API + 웹 서빙
 # 프론트 재빌드: cd web && npm install && npm run build
 # 지표 재현:    cd server && uv run python metrics.py
