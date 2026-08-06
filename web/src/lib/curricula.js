@@ -1,3 +1,5 @@
+import { matchLabels } from "./jobmatch.js";
+
 /* 학과별 표준 이수 경로 — data/depts/*.json에서 생성. 손으로 고치지 말 것.
    교육과정표에 실린 학년·학기 배치 그대로다. AI가 재배치한 로드맵이 아니라
    "학교가 편성한 표준 경로"이며, API(POST /roadmap)가 뜨면 그쪽이 우선한다.
@@ -76,29 +78,29 @@ export function lookupCourses(deptId, courseIds) {
     그대로 쓰면 묶임("A, B")·오타 라벨이 선택지로 올라오고, 서버는 그걸 400으로
     돌려보낸다. 근거만 커리큘럼에서 세어 붙인다: 그 직무로 라벨링된 과목이 몇 개인가.
     서버 추천(_recommend_jobs)과 같은 계산이라 화면과 추천 순서가 어긋나지 않는다. */
-const flat = (t) => t.replace(/[\s·,/]/g, "");
-
 export function jobEvidence(deptId, jobs) {
   const d = CURRICULA[deptId];
-  if (!d) return jobs.map((job) => ({ job, courses: 0, credits: 0 }));
+  if (!d) return jobs.map((job) => ({ job, courses: 0, credits: 0, matched: [] }));
+
+  // 과목에 실제로 붙어 있는 라벨. 서버가 보는 것과 같은 집합이어야 한다
+  const labels = [...new Set(d.sem.flatMap((s) => s.c.map((c) => c.job).filter(Boolean)))];
 
   return jobs
     .map((job) => {
-      const target = flat(job);
+      // 서버(jobmap.match_labels)와 같은 규칙으로 라벨을 고르고, 그 라벨이 붙은
+      // 과목만 센다. 규칙이 갈리면 "근거 없음"이라 써놓고 서버는 매칭하는 일이 생긴다
+      const matched = new Set(matchLabels(job, labels));
       let courses = 0;
       let credits = 0;
       for (const sem of d.sem) {
         for (const c of sem.c) {
-          if (!c.job) continue;
-          const label = flat(c.job);
-          // 묶인 라벨("A, B")도 각 직무의 근거로 센다 — 실제로 그 과목이 그 직무 것이다
-          if (label === target || label.includes(target) || target.includes(label)) {
+          if (c.job && matched.has(c.job)) {
             courses += 1;
             credits += c.cr;
           }
         }
       }
-      return { job, courses, credits };
+      return { job, courses, credits, matched: [...matched] };
     })
     .sort((a, b) => b.credits - a.credits);
 }
