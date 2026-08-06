@@ -4,7 +4,18 @@ version = "0.1.0"
 description = "졸업요건 검증기 + 로드맵 에이전트 + 정합도 계산 API"
 requires-python = ">=3.11"
 dependencies = [
+<<<<<<< Updated upstream
     "fastapi[standard]>=0.115",
+=======
+    "anthropic>=0.120.2",
+    "bcrypt>=4.2",
+    "email-validator>=2.2",
+    "fastapi[standard]>=0.115",
+    "psycopg[binary]>=3.2",
+    "pyjwt>=2.9",
+    "python-dotenv>=1.2.2",
+    "sqlalchemy>=2.0",
+>>>>>>> Stashed changes
 ]
 
 [dependency-groups]
