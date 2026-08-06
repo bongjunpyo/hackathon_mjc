@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Input from "./pages/Input";
 import Roadmap from "./pages/Roadmap";
 import Report from "./pages/Report";
+import RoadmapStudio from "./pages/RoadmapStudio";
 
 function Nav() {
   const { guest } = useApp();
@@ -45,6 +46,9 @@ export default function App() {
             <Route path="/app/login" element={<Login />} />
             <Route path="/app/input" element={<Input />} />
             <Route path="/app/plan" element={<Roadmap />} />
+            {/* v2 (PLAN.md P0) — 문서의 /roadmap·/explore를 /app/* 아래로 옮겼다.
+                /roadmap은 동결 API 경로라 vite 프록시·정적 서빙 양쪽과 충돌한다 (PR #7) */}
+            <Route path="/app/roadmap" element={<RoadmapStudio />} />
             <Route path="/app/report" element={<Report />} />
           </Routes>
         </main>

@@ -1,0 +1,35 @@
+/* 걷는 캐릭터 — 3D 복도(corridor)와 2D 트랙이 공유하는 자산.
+   배치(position·scale)는 쓰는 쪽이 정한다. 여기는 몸통·팔다리·걸음 애니메이션만.
+   색은 corridor의 지역 변수(--figure 등)가 있으면 따르고, 없으면 브랜드 토큰. */
+
+.walker { width: 104px; height: 166px; }
+.walker svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.w-shadow { fill: rgba(0, 26, 61, 0.28); transition: transform .3s; transform-origin: 30px 88px; }
+.w-figure { fill: var(--figure, var(--color-navy)); }
+.w-bag    { fill: var(--gold, var(--color-gold)); }
+.w-cap    { fill: var(--sky, var(--color-sky)); }
+.w-leg, .w-arm { transform-box: fill-box; transform-origin: 50% 8%; }
+.w-body   { transform-origin: 30px 60px; }
+
+.walker.walking .w-body  { animation: w-bob var(--step, .62s) ease-in-out infinite; }
+.walker.walking .w-shadow{ animation: w-shade var(--step, .62s) ease-in-out infinite; }
+.walker.walking .w-leg.a { animation: w-swing var(--step, .62s) ease-in-out infinite; }
+.walker.walking .w-leg.b { animation: w-swing var(--step, .62s) ease-in-out infinite; animation-delay: calc(var(--step, .62s) / -2); }
+.walker.walking .w-arm.a { animation: w-swing-s var(--step, .62s) ease-in-out infinite; animation-delay: calc(var(--step, .62s) / -2); }
+.walker.walking .w-arm.b { animation: w-swing-s var(--step, .62s) ease-in-out infinite; }
+
+@keyframes w-bob {
+  0%   { transform: translate(-2.2px, 0) rotate(-1.1deg) }
+  25%  { transform: translate(0, -3.5px) rotate(0deg) }
+  50%  { transform: translate(2.2px, 0) rotate(1.1deg) }
+  75%  { transform: translate(0, -3.5px) rotate(0deg) }
+  100% { transform: translate(-2.2px, 0) rotate(-1.1deg) }
+}
+@keyframes w-shade { 0%,100% { transform: scaleX(1) }      50% { transform: scaleX(.86) } }
+@keyframes w-swing   { 0%,100% { transform: rotate(24deg) } 50% { transform: rotate(-24deg) } }
+@keyframes w-swing-s { 0%,100% { transform: rotate(15deg) } 50% { transform: rotate(-15deg) } }
+
+@media (prefers-reduced-motion: reduce) {
+  .walker.walking .w-body, .walker.walking .w-shadow,
+  .walker.walking .w-leg, .walker.walking .w-arm { animation: none; }
+}
