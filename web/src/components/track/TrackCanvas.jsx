@@ -30,6 +30,20 @@ export default function TrackCanvas({ semesters, targetJob, cursor, passed, shor
     const b = nodes[k + 1];
     return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
   };
+  /* 분기 점(자격증 동그라미) 좌표 — 렌더링과 같은 식. p는 i-0.5 꼴 */
+  const branchDot = (p) => {
+    const i = Math.ceil(p);
+    const a = nodes[i - 1];
+    const b = nodes[i];
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2;
+    const vertical = a.x === b.x;
+    const inward = mx > VIEW_W / 2 ? -1 : 1;
+    return vertical
+      ? { x: mx + 110 * inward, y: my + (inward > 0 ? -55 : 55) }
+      : { x: mx + 56, y: my + 58 };
+  };
+
   const atOf = (p) => {
     const k = Math.floor(p);
     const f = p - k;
@@ -38,6 +52,9 @@ export default function TrackCanvas({ semesters, targetJob, cursor, passed, shor
   };
 
   const [pos, setPos] = useState(target);
+  // 분기 목적지에서는 트랙 위(구간 중앙)에 멈추지 않고 점선을 따라 **점까지** 내려선다.
+  // dot은 그 마지막 반 발짝 — 트랙 밖이라 pos와 별도 단계로 둔다
+  const [dot, setDot] = useState(false);
   const dirRef = useRef(1);
   const arriveRef = useRef(onArrive);
   arriveRef.current = onArrive;
@@ -47,11 +64,31 @@ export default function TrackCanvas({ semesters, targetJob, cursor, passed, shor
       setPos(goal);
       return;
     }
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isBranch = !Number.isInteger(target);
+
     if (pos === target) {
-      arriveRef.current?.(pos);
+      if (isBranch && !dot) {
+        // 중앙 도착 → 점으로 반 발짝
+        const d = branchDot(pos);
+        if (d.x !== coord(pos).x) dirRef.current = Math.sign(d.x - coord(pos).x);
+        if (reduced) {
+          setDot(true);
+          return;
+        }
+        const t = setTimeout(() => setDot(true), 380);
+        return () => clearTimeout(t);
+      }
+      const t = setTimeout(() => arriveRef.current?.(pos), isBranch && !reduced ? 380 : 0);
+      return () => clearTimeout(t);
+    }
+
+    // 다른 곳으로 떠날 때는 점에서 트랙으로 먼저 돌아온다
+    if (dot) {
+      setDot(false);
       return;
     }
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (reduced) {
       setPos(target);
       return;
     }
@@ -64,10 +101,13 @@ export default function TrackCanvas({ semesters, targetJob, cursor, passed, shor
     if (dx) dirRef.current = Math.sign(dx);
     const t = setTimeout(() => setPos(next), 360);
     return () => clearTimeout(t);
-  }, [pos, target, goal]); // eslint-disable-line react-hooks/exhaustive-deps -- coord는 count에서 파생
-  const moving = pos !== target;
+  }, [pos, target, goal, dot]); // eslint-disable-line react-hooks/exhaustive-deps -- coord는 count에서 파생
+  const moving = pos !== target || (!Number.isInteger(target) && !dot);
   // 종착에서는 게이트 판을 가리지 않게 앞(트랙 위)에 세운다 — 3D의 CAM_STOP과 같은 이유
-  const stand = pos >= goal ? { x: nodes[goal].x - 150, y: nodes[goal].y } : coord(pos);
+  const stand =
+    pos >= goal ? { x: nodes[goal].x - 150, y: nodes[goal].y }
+    : dot ? branchDot(pos)
+    : coord(pos);
 
   // 미달(PARTIAL)이면 캐릭터가 멈춘 지점 뒤 학기를 붉게 (DESIGN §2.5)
   const shortfall = (shortfallRules?.length ?? 0) > 0;
