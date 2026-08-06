@@ -69,6 +69,10 @@ class LoginIn(BaseModel):
     password: str
 
 
+class CheckIdIn(BaseModel):
+    student_id: str = Field(min_length=4, max_length=32)
+
+
 class EmailIn(BaseModel):
     email: EmailStr
 
@@ -134,6 +138,16 @@ def current_user(session, authorization):
     return user
 
 
+@router.post("/auth/check-id")
+def check_id(body: CheckIdIn):
+    """가입 폼의 [중복 확인] 버튼. 아이디는 어차피 로그인 화면에서 열거 가능하다."""
+    with _session() as session:
+        taken = session.scalar(
+            select(models.User).where(models.User.student_id == body.student_id)
+        )
+    return {"available": taken is None}
+
+
 @router.post("/auth/signup", status_code=201)
 def signup(body: SignupIn):
     with _session() as session:
@@ -144,7 +158,7 @@ def signup(body: SignupIn):
             )
         )
         if taken:
-            field = "학번" if taken.student_id == body.student_id else "이메일"
+            field = "아이디" if taken.student_id == body.student_id else "이메일"
             raise ApiError("ALREADY_REGISTERED", f"이미 가입된 {field}입니다", status=409)
 
         user = models.User(

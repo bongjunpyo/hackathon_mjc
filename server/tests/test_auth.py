@@ -423,3 +423,15 @@ def test_남의_이메일_티켓으로는_가입할_수_없다(client):
     # 가입은 되되 인증은 안 된 상태 — 토큰 없이 메일 안내만
     assert res.status_code == 201
     assert "access_token" not in res.json()
+
+
+def test_아이디_중복_확인(client):
+    assert client.post("/auth/check-id", json={"student_id": "202512345"}).json() == {
+        "available": True
+    }
+
+    client.post("/auth/signup", json=SIGNUP)
+
+    assert client.post("/auth/check-id", json={"student_id": "202512345"}).json() == {
+        "available": False
+    }
