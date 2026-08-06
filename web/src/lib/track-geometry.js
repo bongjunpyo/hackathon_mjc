@@ -20,7 +20,7 @@ export function nodeXY(i) {
 
 export function trackHeight(count) {
   const rows = Math.ceil(count / PER_ROW);
-  return Y0 + (rows - 1) * ROW_H + 120;
+  return Y0 + (rows - 1) * ROW_H + 165;
 }
 
 /** 노드 배열 → {nodes:[{x,y}], path, at:[각 노드의 누적거리 %]} */
@@ -62,8 +62,29 @@ export function buildTrack(count) {
   return { nodes, path, at, height: trackHeight(count) };
 }
 
+/** 학기별 분기 항목 — 자격증 + 일정 조언 2줄 (DESIGN §3).
+
+    조언은 데이터가 아니라 프론트 규칙이다. 지어내는 게 아니라 규칙이 정한 두 개만
+    꽂는다: 현장실습 첫 학기의 직전 학기 → 이력서, 마지막 학기 → 포트폴리오. */
+export function branchesOf(semesters) {
+  const fieldAt = semesters.findIndex((s) => s.courses.some((c) => c.field_based));
+  const resumeAt = fieldAt > 0 ? fieldAt - 1 : -1;
+  const last = semesters.length - 1;
+
+  return semesters.map((s, i) => {
+    const items = (s.certificates ?? []).map((c) => ({
+      kind: "cert",
+      label: typeof c === "string" ? c : (c?.name ?? ""),
+    }));
+    if (i === resumeAt) items.push({ kind: "advice", label: "이력서 준비" });
+    if (i === last) items.push({ kind: "advice", label: "포트폴리오 완성" });
+    return items.filter((x) => x.label);
+  });
+}
+
 /** 로드맵 semesters → 트랙 노드 메타 [입학, ...학기, 종착] */
 export function trackNodes(semesters, targetJob) {
+  const branches = branchesOf(semesters);
   return [
     { kind: "start", label: "입학" },
     ...semesters.map((s, i) => ({
@@ -72,7 +93,7 @@ export function trackNodes(semesters, targetJob) {
       label: `${s.year}-${s.semester}`,
       title: `${s.year}학년 ${s.semester}학기`,
       credits: s.credits ?? s.courses.reduce((a, c) => a + (c.credits ?? 0), 0),
-      branches: (s.certificates ?? []).length,
+      branches: branches[i],
     })),
     { kind: "goal", label: targetJob || "목표 직무" },
   ];

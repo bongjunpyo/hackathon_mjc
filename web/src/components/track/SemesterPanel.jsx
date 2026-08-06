@@ -1,7 +1,40 @@
 import { certName, certTip } from "../../lib/external";
 
-/* 학기 상세 패널 (DESIGN §2.6) — 역명판 헤더 문법은 SemesterDetail(3D 모달)과 동일:
-   navy 헤더 + gold 하단 보더 + MJ0N 배지. 같은 데이터가 3D·2D 어디서든 같은 얼굴이다. */
+/* 학기 상세 패널 (DESIGN §2.6).
+   과목마다 한 줄 카드로 끊는다 — 이름·태그·학점이 한 덩어리로 붙어 있으면
+   6과목이 문단처럼 읽힌다. 헤더 문법(navy+gold+MJ0N)은 3D 모달과 같다. */
+
+function CourseRow({ course, targetJob }) {
+  const tag =
+    course.talent_type === targetJob
+      ? { text: "★ 목표직무", cls: "bg-gold text-navy-deep" }
+      : course.category === "교양"
+        ? { text: "교양필수", cls: "bg-sky-soft text-navy" }
+        : course.talent_type
+          ? { text: course.talent_type, cls: "bg-hall text-steel" }
+          : null;
+
+  return (
+    <li className="flex items-center gap-2 rounded-lg border border-edge bg-white px-3 py-2">
+      <span className="shrink-0 font-semibold">{course.name}</span>
+      {tag && (
+        <span
+          title={tag.text}
+          className={`min-w-0 truncate rounded px-1.5 py-0.5 text-xs font-bold ${tag.cls}`}
+        >
+          {tag.text}
+        </span>
+      )}
+      {course.field_based && (
+        <span className="shrink-0 rounded bg-sky-soft px-1.5 py-0.5 text-xs text-navy">현장중심</span>
+      )}
+      <span className="ml-auto shrink-0 font-mono text-xs tabular-nums text-steel">
+        {course.credits}학점
+      </span>
+    </li>
+  );
+}
+
 export default function SemesterPanel({ semester, index, targetJob, isLast, onNext, onGraduate }) {
   if (!semester) return null;
   const credits =
@@ -13,44 +46,34 @@ export default function SemesterPanel({ semester, index, targetJob, isLast, onNe
         <span className="inline-flex h-[24px] items-center rounded-full bg-gold px-2.5 font-mono text-xs font-extrabold text-navy-deep">
           MJ0{index + 1}
         </span>
-        <div className="mt-1 flex items-baseline gap-3">
-          <h3 className="text-xl font-extrabold">
-            {semester.year}학년 {semester.semester}학기
-          </h3>
-          <span className="ml-auto font-mono text-sm tabular-nums text-sky">{credits}학점</span>
-        </div>
+        <h3 className="mt-1 text-xl font-extrabold">
+          {semester.year}학년 {semester.semester}학기{" "}
+          <span className="font-mono text-base tabular-nums text-sky">· {credits}학점</span>
+        </h3>
+        <p className="font-mono text-xs text-sky/80">과목 {semester.courses.length}개</p>
       </header>
 
-      <ul className="flex flex-col gap-1.5 px-5 py-4">
+      <ul className="flex flex-col gap-1.5 px-4 py-4 text-sm">
         {semester.courses.map((c) => (
-          <li key={c.course_id} className="flex flex-wrap items-baseline gap-x-2 text-sm">
-            <span className="font-semibold">{c.name}</span>
-            <span className="font-mono text-xs tabular-nums text-steel">{c.credits}</span>
-            {c.talent_type === targetJob && (
-              <span className="rounded bg-gold/20 px-1.5 py-0.5 text-xs font-bold text-navy">
-                ★ 목표직무
-              </span>
-            )}
-            {c.field_based && (
-              <span className="rounded bg-sky-soft px-1.5 py-0.5 text-xs text-navy">현장중심</span>
-            )}
-          </li>
+          <CourseRow key={c.course_id} course={c} targetJob={targetJob} />
         ))}
       </ul>
 
       {semester.certificates?.length > 0 && (
-        <div className="mx-5 mb-4 rounded-xl bg-sky-soft px-3.5 py-3 inset-ring inset-ring-edge">
+        <div className="mx-4 mb-3 flex flex-col gap-1 rounded-xl bg-gold/15 px-3.5 py-3 inset-ring inset-ring-gold/50">
           {semester.certificates.map((c) => (
             <p key={certName(c)} className="text-sm text-navy">
               🎫 <b>{certName(c)}</b>
               {certTip(c) && <span className="block text-xs text-ink-2">{certTip(c)}</span>}
             </p>
           ))}
-          {semester.notes && <p className="mt-1 text-xs text-ink-2">{semester.notes}</p>}
         </div>
       )}
-      {!semester.certificates?.length && semester.notes && (
-        <p className="mx-5 mb-4 text-xs text-ink-2">{semester.notes}</p>
+
+      {semester.notes && (
+        <p className="mx-4 mb-3 rounded-xl bg-sky-soft px-3.5 py-3 text-sm text-ink-2 inset-ring inset-ring-edge">
+          💡 {semester.notes}
+        </p>
       )}
 
       <div className="mt-auto border-t border-edge px-5 py-3 text-right">

@@ -126,7 +126,7 @@ export default function RoadmapStudio() {
         {!dimmed && (
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1">
-              <ValidationBar validation={shown.validation} engine={shown.engine} />
+              <ValidationBar validation={shown.validation} engine={shown.engine} attempts={shown.attempts} />
             </div>
             {/* 2D=편집 모드, 3D=감상 모드. 같은 데이터·같은 캐릭터·같은 색이다 */}
             <button
