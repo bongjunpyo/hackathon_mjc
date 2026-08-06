@@ -40,28 +40,60 @@ export default function Login() {
   );
 
   return (
-    <section className="flex max-w-md flex-col gap-4">
-      <div className="flex gap-1.5">
-        {tab("login", "로그인")}
-        {tab("signup", "회원가입")}
+    <section className="grid items-start gap-10 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)]">
+      <div className="flex flex-col gap-4">
+        <div className="flex gap-1.5">
+          {tab("login", "로그인")}
+          {tab("signup", "회원가입")}
+        </div>
+
+        {mode === "login" ? (
+          <LoginForm onDone={() => navigate("/app/roadmap")} login={login} />
+        ) : (
+          <SignupForm
+            onSent={setSentTo}
+            onLoggedIn={(token) => {
+              login(token);
+              navigate('/app/roadmap');
+            }}
+          />
+        )}
+
+        <button type="button" onClick={() => navigate("/app/roadmap")} className={`self-start ${ghost}`}>
+          게스트로 둘러보기
+        </button>
       </div>
 
-      {mode === "login" ? (
-        <LoginForm onDone={() => navigate("/app/roadmap")} login={login} />
-      ) : (
-        <SignupForm
-          onSent={setSentTo}
-          onLoggedIn={(token) => {
-            login(token);
-            navigate('/app/roadmap');
-          }}
-        />
-      )}
-
-      <button type="button" onClick={() => navigate("/app/roadmap")} className={`self-start ${ghost}`}>
-        게스트로 둘러보기
-      </button>
+      <BenefitsPanel />
     </section>
+  );
+}
+
+/* 폼 오른쪽 — 가입하면 뭐가 달라지는지. 행선판 문법(상단 노선색 띠)을 빌린다. */
+function BenefitsPanel() {
+  const items = [
+    ["로드맵 저장·불러오기", "만든 로드맵이 계정에 남아 다음 방문에 이어서 봅니다."],
+    ["이수내역 자동 채움", "저장해 둔 이수 과목이 입력 화면에 자동으로 채워집니다."],
+    ["내 학과 기본 설정", "학과와 학년을 매번 다시 고르지 않아도 됩니다."],
+  ];
+  return (
+    <aside className="hidden lg:block lg:sticky lg:top-24">
+      <div className="rounded-xl border-t-8 border-navy bg-white p-8 shadow-[inset_0_0_0_1px_rgba(0,45,101,0.14),0_18px_44px_rgba(0,26,61,0.10)]">
+        <span className="font-mono text-xs tracking-[0.14em] text-steel">MEMBERS ONLY</span>
+        <h3 className="mt-2 text-xl font-extrabold tracking-tight text-ink">
+          가입하면 이런 게 됩니다
+        </h3>
+        <ul className="mt-6 flex flex-col gap-5">
+          {items.map(([title, desc]) => (
+            <li key={title} className="relative pl-5">
+              <span className="absolute left-0 top-[0.45em] size-2 rounded-full bg-sky" />
+              <b className="text-ink">{title}</b>
+              <p className="mt-0.5 text-sm text-ink-2">{desc}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
   );
 }
 
@@ -95,7 +127,7 @@ function LoginForm({ onDone, login }) {
       </p>
 
       <div>
-        <label className={label} htmlFor="sid">학번</label>
+        <label className={label} htmlFor="sid">아이디</label>
         <input
           id="sid"
           className={field}
@@ -142,11 +174,30 @@ function SignupForm({ onSent, onLoggedIn }) {
   const [code, setCode] = useState("");
   const [ticket, setTicket] = useState("");
   const [codeError, setCodeError] = useState(null);
+  // 아이디 중복 확인 — idle → ok | taken. 아이디를 고치면 idle로 되돌린다
+  const [idStatus, setIdStatus] = useState("idle");
+  const [idError, setIdError] = useState(null);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [sending, setSending] = useState(false);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+
+  function setId(e) {
+    setForm({ ...form, student_id: e.target.value });
+    setIdStatus("idle");
+    setIdError(null);
+  }
+
+  async function checkId() {
+    setIdError(null);
+    try {
+      const { available } = await auth.checkId(form.student_id);
+      setIdStatus(available ? "ok" : "taken");
+    } catch (err) {
+      setIdError(err.message ?? "중복 확인에 실패했습니다.");
+    }
+  }
 
   function setEmail(e) {
     setForm({ ...form, email: e.target.value });
@@ -206,17 +257,34 @@ function SignupForm({ onSent, onLoggedIn }) {
       </p>
 
       <div>
-        <label className={label} htmlFor="su-sid">학번</label>
-        <input
-          id="su-sid"
-          className={field}
-          value={form.student_id}
-          onChange={set("student_id")}
-          autoComplete="username"
-          minLength={4}
-          maxLength={32}
-          required
-        />
+        <label className={label} htmlFor="su-sid">아이디</label>
+        <div className="flex gap-2">
+          <input
+            id="su-sid"
+            className={`${field} flex-1`}
+            value={form.student_id}
+            onChange={setId}
+            autoComplete="username"
+            minLength={4}
+            maxLength={32}
+            required
+          />
+          <button
+            type="button"
+            onClick={checkId}
+            disabled={form.student_id.length < 4}
+            className="shrink-0 rounded-lg border-2 border-navy px-4 font-bold text-navy transition-[background-color,scale] duration-150 hover:bg-sky-soft active:scale-[0.96] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-gold"
+          >
+            중복 확인
+          </button>
+        </div>
+        {idStatus === "ok" && (
+          <p className="mt-1.5 text-sm font-bold text-navy">✓ 사용 가능한 아이디입니다.</p>
+        )}
+        {idStatus === "taken" && (
+          <div className="mt-1.5"><Notice>이미 사용 중인 아이디입니다.</Notice></div>
+        )}
+        {idError && <p className="mt-1.5 text-sm text-ink-2">{idError}</p>}
       </div>
       <div>
         <label className={label} htmlFor="su-name">이름</label>
