@@ -208,21 +208,7 @@ uv run python build_report.py         # 트랙 B 진단 → data/reports/*.json
 
 ## AI 코딩 에이전트 활용
 
-위임한 작업과 검증 과정은 [`docs/AI_USAGE.md`](docs/AI_USAGE.md)에, 심사 기준에 맞춘 정리는 [`docs/REPORT.md`](docs/REPORT.md) §2에 있다.
-
-**층위를 구분한다.** `Claude Code (Opus 5)`는 우리가 코드를 쓸 때 쓴 **개발 도구**이고, `claude-sonnet-5`는 제품이 런타임에 호출하는 **기능**이다(`server/agent.py`). 심사에서 "AI를 어디에 썼나"는 두 질문이고 답이 다르다.
-
-아래 표는 **P2(`server/`) 세션 기준**이다 — 실제로 쓴 것만 적었다. P1·P3 세션 내역은 [`docs/REPORT.md`](docs/REPORT.md) §2.11에서 합친다.
-
-| 구분 | 무엇을 썼나 |
-|---|---|
-| **모델** | 개발 전 구간 `Opus 5` · 제품 런타임 `claude-sonnet-5` · `claude-haiku-4-5`는 검토했으나 미사용 |
-| **모드** | 일반 대화 · **Plan 모드**(설계 확정) · Fast 모드(반복 수정) · **서브에이전트**(격리 탐색) · 백그라운드 작업(274 시나리오 측정) · **Monitor**(서버 로그 감시) · **git worktree**(남의 PR을 내 트리 안 건드리고 검증) |
-| **스킬** | `superpowers:test-driven-development`(검증기를 테스트 먼저) · `verification-before-completion`(증거 없는 완료 보고 차단) · `systematic-debugging` · `brainstorming`(주제 선정) · `artifact-design` |
-| **MCP** | **github**(PR 51개·이슈 16개가 이 경로) · tavily(웹 조사) · context7(라이브러리 문서) · obsidian · Google Drive |
-| **플러그인** | superpowers · context7 · claude-dashboard · notebooklm-ai-plugin · example-skills |
-
-**스킬이 실제로 판단을 바꾼 예**: `test-driven-development`가 RED → GREEN 순서를 강제해서, 검증기를 "통과하는 걸 봤다"가 아니라 **"실패하는 걸 먼저 봤다"** 로 만들었다. 이 습관이 아래 실패 사례 6건을 잡아냈다.
+위임한 작업과 검증 과정은 [`docs/AI_USAGE.md`](docs/AI_USAGE.md)에 기록했다.
 
 **위임 범위를 측정으로 정했다.** 처음에는 교육과정표 추출도 LLM에 맡길 계획이었다. 그런데 35개 학과 PDF의 헤더를 전수 확인하니 필수 5개 열의 이름이 전부 같았다 — 코드로 읽으면 되는 일이었다. 추출을 코드로 옮기고 LLM은 헤더가 깨진 파일의 폴백으로 남겼다. **폴백 발동 0회**, LLM 예산은 판단이 필요한 로드맵 에이전트에 집중시켰다.
 
