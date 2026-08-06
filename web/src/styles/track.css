@@ -63,8 +63,16 @@
   paint-order: stroke; stroke: #fff; stroke-width: 5px; stroke-linejoin: round;
 }
 .tbranch-g.cert .tbranch { stroke: color-mix(in srgb, var(--color-gold) 78%, var(--color-steel)); }
-.tbranch-g.cert .tbranch-dot { stroke: var(--color-gold); }
-.tbranch-g.cert .tbranch-label { fill: var(--color-navy); }
+.tbranch-g.cert .tbranch-dot { stroke: var(--color-gold); transition: r 0.15s, stroke-width 0.15s; }
+.tbranch-g.cert .tbranch-label { fill: var(--color-navy); transition: font-size 0.15s; }
+/* 분기는 누를 수 있다 — "외 N"의 나머지가 학기 패널에 있다 */
+.tbranch-g.cert { cursor: pointer; }
+.tbranch-g.cert:focus-visible { outline: none; }
+.tbranch-hit { fill: transparent; }
+.tbranch-g.cert:hover .tbranch-dot,
+.tbranch-g.cert:focus-visible .tbranch-dot { r: 15; stroke-width: 5; }
+.tbranch-g.cert:hover .tbranch-label,
+.tbranch-g.cert:focus-visible .tbranch-label { font-size: 21px; }
 
 /* 종착 게이트 — corridor .gate-board 문법 (navy 판 + gold 테두리) */
 .tgoal-board { fill: var(--color-navy); }

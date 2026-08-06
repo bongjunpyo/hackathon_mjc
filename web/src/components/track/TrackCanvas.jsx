@@ -78,8 +78,18 @@ export default function TrackCanvas({ semesters, targetJob, cursor, passed, shor
           // 왼쪽 열은 아래에 종착 게이트 판이 있으므로 위로 뺀다
           const cy = vertical ? my + (inward > 0 ? -55 : 55) : my + 58;
           return (
-            <g key={`cert-${i}`} className="tbranch-g cert" aria-hidden="true">
+            /* "외 N"의 나머지는 학기 패널에 있다 — 분기를 누르면 그 학기가 열린다 */
+            <g
+              key={`cert-${i}`}
+              className="tbranch-g cert"
+              role="button"
+              tabIndex={0}
+              aria-label={`${m.title} 자격증 ${extra + 1}종 보기`}
+              onClick={() => onSelect(i)}
+              onKeyDown={(e) => e.key === "Enter" && onSelect(i)}
+            >
               <path className="tbranch" d={`M ${mx} ${my} L ${cx} ${cy}`} />
+              <circle className="tbranch-hit" cx={cx} cy={cy} r="34" />
               <circle className="tbranch-dot" cx={cx} cy={cy} r="12" />
               <text
                 className="tbranch-label"
