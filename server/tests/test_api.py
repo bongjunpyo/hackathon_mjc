@@ -116,6 +116,55 @@ def test_교양선택_버킷이_교양_학점으로_집계된다(client):
     assert not any(d["rule"] == "liberal_credits" for d in body["validation"]["details"])
 
 
+def test_depts가_목표_직무_선택지를_준다(client):
+    itc = next(d for d in client.get("/depts").json() if d["dept_id"] == "itc")
+
+    assert "네트워크 엔지니어" in itc["careers"]
+
+
+def test_학과에_없는_직무는_400(client):
+    """오타 하나로 조용히 일반 로드맵이 나가면, 직무 역산이라는 주장 자체가 무너진다."""
+    res = client.post(
+        "/roadmap",
+        json={
+            "dept_id": "itc",
+            "current_year": 1,
+            "current_semester": 1,
+            "completed_courses": [],
+            "target_job": "우주비행사",
+        },
+    )
+
+    assert res.status_code == 400
+    assert res.json()["error"]["code"] == "UNKNOWN_JOB"
+    # 뭘 고를 수 있는지 알려준다
+    assert "네트워크 엔지니어" in res.json()["error"]["message"]
+
+
+def test_직무_목록이_비어_있으면_막지_않는다(client, tmp_path, monkeypatch):
+    """Tier 2는 파이프라인 자동 통과라 careers 추출이 비어 있을 수 있다.
+    비교 대상이 없는데 막으면 그 학과는 아무것도 못 한다."""
+    import json
+
+    data = json.loads((FIXTURES / "itc.json").read_text(encoding="utf-8"))
+    data["careers"] = []
+    (tmp_path / "itc.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    monkeypatch.setattr(catalog, "DATA_DIR", tmp_path)
+
+    res = client.post(
+        "/roadmap",
+        json={
+            "dept_id": "itc",
+            "current_year": 1,
+            "current_semester": 1,
+            "completed_courses": [],
+            "target_job": "아무 직무",
+        },
+    )
+
+    assert res.status_code == 200
+
+
 def test_없는_학과는_404와_에러_형식(client):
     res = client.post(
         "/roadmap",

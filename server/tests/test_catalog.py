@@ -98,3 +98,12 @@ def test_학과_목록은_GET_depts_형태로_낸다():
     depts = list_depts(root=FIXTURES)
 
     assert {"dept_id", "dept_name", "years", "tier"} <= set(depts[0])
+
+
+def test_학과_목록에_직무와_자격증이_들어간다():
+    """프론트가 목표 직무 드롭다운을 채울 데이터. 없으면 하드코딩할 수밖에 없고,
+    그러면 '전 학과 대응'이 성립하지 않는다."""
+    itc = next(d for d in list_depts(root=FIXTURES) if d["dept_id"] == "itc")
+
+    assert "네트워크 엔지니어" in itc["careers"]
+    assert itc["certificates"]

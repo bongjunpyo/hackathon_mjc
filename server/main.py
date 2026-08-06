@@ -57,6 +57,17 @@ def post_roadmap(req: RoadmapRequest):
     except CatalogError as e:
         raise ApiError("DEPT_NOT_FOUND", str(e), status=404) from e
 
+    # 오타 하나로 조용히 일반 로드맵이 나가면 "직무 역산"이라는 주장이 무너진다.
+    # careers가 비어 있으면(Tier 2 추출 누락) 비교 대상이 없으므로 막지 않는다
+    careers = dept.get("careers") or []
+    if careers and req.target_job not in careers:
+        raise ApiError(
+            "UNKNOWN_JOB",
+            f"'{req.target_job}'는 {dept['dept_name']}의 직무가 아닙니다. "
+            f"고를 수 있는 직무: {', '.join(careers)}",
+            status=400,
+        )
+
     spec = {
         "dept": dept,
         "target_job": req.target_job,
