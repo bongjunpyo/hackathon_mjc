@@ -18,7 +18,7 @@ function Nav() {
     }`;
   return (
     <header className="sticky top-0 z-40 border-b border-edge bg-white/85 backdrop-blur">
-      <nav className="mx-auto flex max-w-5xl items-center gap-2 px-5 py-3">
+      <nav className="mx-auto flex max-w-6xl items-center gap-2 px-5 py-3">
         <Link to="/" className="mr-auto font-extrabold tracking-tight text-navy">
           MJC 취업 로드맵
         </Link>
@@ -44,7 +44,7 @@ export default function App() {
     <AppProvider>
       <BrowserRouter>
         <Nav />
-        <main className="mx-auto max-w-5xl px-5 py-8">
+        <main className="mx-auto max-w-6xl px-5 py-8">
           {/* 화면 경로는 /app/* 로 묶는다 — 동결된 API 경로(/roadmap, /report/*, /auth/*)와
               충돌하면 dev 프록시와 프로덕션 catch-all 양쪽에서 화면이 API로 새어나간다 */}
           <Routes>
