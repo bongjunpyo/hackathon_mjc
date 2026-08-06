@@ -76,7 +76,7 @@
 | **모드** | 일반 대화(페어 프로그래밍) · **Plan 모드**(설계 확정) · Fast 모드 · 서브에이전트(격리 탐색) · 백그라운드(서버 상주·274개 시나리오 측정) · Monitor(서버 로그 감시) · **Git worktree**(남의 PR을 내 트리 안 건드리고 검증) | 전원 / P2 중심 |
 | **스킬** | `brainstorming`(주제 선정) · `test-driven-development`(검증기 RED→GREEN 강제) · `verification-before-completion`(증거 없는 완료 보고 차단) · `systematic-debugging`(.env 무시 원인 추적) · `claude-api`(`agent.py` 최신 SDK 패턴) · `artifact-design`(클릭형 화면 프로토타입으로 팀 합의) · `notebooklm`(타대학 수상작 43개 소스 분석) · `make-interfaces-feel-better`(UI 디테일 — scale 0.96·tabular-nums·힛에어리어 40px) | P1·P2 / P2 / P2 / P2 / P2 / P1·P3 / P1·P3 / P3 |
 | **플러그인** | `superpowers`(TDD·디버깅·검증 절차 묶음) · `context7` · `claude-dashboard` · `notebooklm-ai-plugin` · `example-skills` | 전원 / P2 |
-| **MCP** | `github`(PR 80여 개·이슈가 이 경로로) · **`claude-in-chrome`**(화면 검증 전부 — 스크린샷 대조·픽셀 실측·상태 시퀀스 재현) · `playwright`(3D 잘림 해상도별 실측) · `tavily` · `context7` · `obsidian` · Google Drive | P2 / P3 / P3 / P1·P2 |
+| **MCP** | `github`(PR 73개·이슈 23개가 이 경로로) · **`claude-in-chrome`**(화면 검증 전부 — 스크린샷 대조·픽셀 실측·상태 시퀀스 재현) · `playwright`(3D 잘림 해상도별 실측) · `tavily` · `context7` · `obsidian` · Google Drive | P2 / P3 / P3 / P1·P2 |
 | **내장 도구** | WebFetch·WebSearch — **할루시네이션 방지**: 졸업요건·NCS·자격증·선행 서비스를 원문에서 확인하고 출처 URL과 함께 저장(`data/enrichment/evidence.json`) | 전원 |
 
 ### 2.3 위임하지 않기로 한 결정 — 가장 중요한 판단
@@ -205,7 +205,7 @@ PostgreSQL ──► models.py                                            ▼
 
 | 검증 | 결과 |
 |---|---|
-| 단위·통합 테스트 | **160 passed** · 변이 검사로 테스트 자체를 검증 |
+| 단위·통합 테스트 | **165 passed** · 변이 검사로 테스트 자체를 검증 |
 | 실데이터 | 34개 학과 · **직무 조합 전부 200** (404·400 0건) |
 | 실 PostgreSQL | **13/13** — 가입→인증→교환코드→로그인→이수내역 왕복 |
 | 실 Claude API | 32~45초 · `engine=llm` · `passed=True` |
@@ -252,7 +252,7 @@ PostgreSQL ──► models.py                                            ▼
 
 | 항목 | 내용 |
 |---|---|
-| 머지된 PR | **80여 개** · 닫힌 이슈 20여 개 · 기여자 3명 |
+| 머지된 PR | **73개** · 닫힌 이슈 23개 · 기여자 3명 (PR·이슈 통산 #100까지) |
 | 원칙 | **한 방 커밋 없음** — 작업 단위 브랜치 → PR → 상호 리뷰 → 머지. main 직push·force push 금지 |
 | 경계 | 폴더 소유권 = 에이전트 경계. 담당 밖 문제는 직접 고치지 않고 이슈로 (경계는 이슈·PR 코멘트로만 넘김) |
 
@@ -291,7 +291,7 @@ git clone https://github.com/bongjunpyo/hackathon_mjc.git
 cd hackathon_mjc
 docker compose up -d db                      # PostgreSQL (없어도 코어 동작)
 cd server && uv sync
-uv run pytest                                # 160개 테스트
+uv run pytest                                # 165개 테스트
 uv run uvicorn main:app --port 8000          # API + 프론트 정적 서빙
 # 화면: http://localhost:8000  ·  Swagger: /docs
 # 지표 재현:      uv run python metrics.py
