@@ -1,29 +1,55 @@
 import { Link } from "react-router-dom";
 import { useApp } from "../store";
 
+/* 졸업요건 4종 — 값 키는 API 응답(DESIGN.md §5), 라벨은 화면용.
+   미달 항목은 details[].rule로 찾아 붙인다. */
+const REQUIREMENTS = [
+  { key: "total_credits", rule: "total_credits", label: "총 학점", unit: "학점" },
+  { key: "major_credits", rule: "major_credits", label: "전공", unit: "학점" },
+  { key: "liberal_credits", rule: "liberal_credits", label: "교양", unit: "학점" },
+  { key: "semesters", rule: "semesters", label: "재학", unit: "학기" },
+];
+
 function ValidationBadge({ validation }) {
   if (!validation) return null;
   const ok = validation.passed;
+  const shortfallOf = (rule) => validation.details?.find((d) => d.rule === rule);
+
   return (
     <div
-      className={`flex flex-wrap items-center gap-3 rounded-xl px-4 py-3 font-bold ${
+      className={`flex flex-col gap-3 rounded-xl px-4 py-3 ${
         ok ? "bg-navy text-white" : "border-2 border-gold bg-gold/15 text-navy"
       }`}
     >
-      <span>{ok ? "✓ 졸업요건 충족 — 검증기 통과" : "미달 항목이 있습니다"}</span>
-      <span className="font-mono text-xs font-medium tabular-nums opacity-80">
-        총 {validation.total_credits}학점 · 전공 {validation.major_credits} · 교양{" "}
-        {validation.liberal_credits}
+      <span className="font-bold">
+        {ok ? "✓ 졸업요건 충족 — 검증기 통과" : "⚠ 졸업요건 미달 항목이 있습니다"}
       </span>
-      {!ok && validation.details?.length > 0 && (
-        <ul className="w-full space-y-1 pt-1 font-mono text-xs font-medium">
-          {validation.details.map((d, i) => (
-            <li key={i}>
-              {d.rule}: 필요 {d.required} / 현재 {d.actual} — {d.shortfall} 부족
+
+      {/* 항목별 충족 상태 — 4종을 모두 보여준다 (issue #5) */}
+      <ul className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-xs tabular-nums">
+        {REQUIREMENTS.map(({ key, rule, label, unit }) => {
+          const value = validation[key];
+          if (value == null) return null;
+          const miss = shortfallOf(rule);
+          return (
+            <li key={key} className={miss ? "font-bold" : "opacity-80"}>
+              {miss ? "✗" : "✓"} {label} {value}
+              {unit}
+              {miss && <span> (필요 {miss.required} — {miss.shortfall} 부족)</span>}
             </li>
-          ))}
-        </ul>
-      )}
+          );
+        })}
+      </ul>
+
+      {/* details에만 있고 위 4종에 없는 규칙(교양필수 등)도 빠뜨리지 않는다.
+         label은 API가 주는 화면용 한글명, 없으면 기계용 rule로 폴백 */}
+      {validation.details
+        ?.filter((d) => !REQUIREMENTS.some((r) => r.rule === d.rule))
+        .map((d, i) => (
+          <p key={i} className="font-mono text-xs font-bold tabular-nums">
+            ✗ {d.label ?? d.rule}: 필요 {d.required} / 현재 {d.actual} — {d.shortfall} 부족
+          </p>
+        ))}
     </div>
   );
 }

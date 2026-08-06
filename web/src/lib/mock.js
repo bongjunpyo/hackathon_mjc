@@ -147,13 +147,31 @@ const aiSemesters = [
   { ...netSemesters[5] },
 ];
 
+/* 졸업요건 4종 요약 + 미달 상세. 키 이름은 DESIGN.md §5 동결 스펙 그대로.
+   validation.semesters(재학 학기 수)는 out.semesters(로드맵 배열)와 다른 값이다. */
 const validation = (semesters) => ({
   passed: true,
   total_credits: semesters.reduce((a, s) => a + s.credits, 0),
   major_credits: 78,
   liberal_credits: 12,
+  semesters: semesters.length,
   details: [],
 });
+
+/* 검증기가 미달을 잡아 재생성시키는 장면이 발표 훅이다 —
+   API 연결 전에도 그 화면을 리허설할 수 있게 실패 표본을 남겨둔다.
+   (?fail=1 쿼리로 확인) */
+export const MOCK_FAILED_VALIDATION = {
+  passed: false,
+  total_credits: 104,
+  major_credits: 60,
+  liberal_credits: 12,
+  semesters: 6,
+  details: [
+    { rule: "total_credits", label: "총 학점", required: 110, actual: 104, shortfall: 6 },
+    { rule: "major_credits", label: "전공 학점", required: 66, actual: 60, shortfall: 6 },
+  ],
+};
 
 export const MOCK_ROADMAPS = {
   "네트워크 엔지니어": { semesters: netSemesters, validation: validation(netSemesters) },

@@ -1,7 +1,7 @@
 /* 백엔드 호출 단일 창구. 컴포넌트에서 fetch를 직접 부르지 않는다.
    게스트/토큰 분기와 목데이터 폴백이 전부 여기 모여 있다. */
 
-import { MOCK_ROADMAPS } from "./mock";
+import { MOCK_FAILED_VALIDATION, MOCK_ROADMAPS } from "./mock";
 
 const TOKEN_KEY = "mjc_access_token";
 const TIMEOUT_MS = 4000;
@@ -59,7 +59,13 @@ export async function postRoadmap({ deptId, year, semester, completedCourses, ta
     return { ...data, source: "api" };
   } catch {
     const mock = MOCK_ROADMAPS[targetJob] ?? MOCK_ROADMAPS["네트워크 엔지니어"];
-    return { ...mock, source: "mock" };
+    // ?fail=1 — 검증 미달 화면을 API 없이 리허설한다 (발표 훅 장면)
+    const forceFail = new URLSearchParams(location.search).get("fail") === "1";
+    return {
+      ...mock,
+      validation: forceFail ? MOCK_FAILED_VALIDATION : mock.validation,
+      source: "mock",
+    };
   }
 }
 
