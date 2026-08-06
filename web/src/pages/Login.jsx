@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useApp } from "../store";
 import { auth } from "../lib/api";
@@ -177,6 +177,10 @@ function SignupForm({ onSent, onLoggedIn }) {
   const [code, setCode] = useState("");
   const [ticket, setTicket] = useState("");
   const [codeError, setCodeError] = useState(null);
+  /* 만료 시각은 서버가 준 expires_in으로 잡는다 (#99). 남은 초를 깎아 내려가면
+     가려진 탭에서 타이머가 1s로 클램프돼 실제보다 길게 남는다 — 시각차로 계산한다 */
+  const [expiresAt, setExpiresAt] = useState(null);
+  const [now, setNow] = useState(() => Date.now());
   // 아이디 중복 확인 — idle → ok | taken. 아이디를 고치면 idle로 되돌린다
   const [idStatus, setIdStatus] = useState("idle");
   const [idError, setIdError] = useState(null);
@@ -186,6 +190,15 @@ function SignupForm({ onSent, onLoggedIn }) {
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const termsOk = REQUIRED_TERMS.every((t) => agreed[t.key]);
+
+  const remaining = expiresAt ? Math.max(0, Math.ceil((expiresAt - now) / 1000)) : null;
+  const expired = step === "sent" && remaining === 0;
+
+  useEffect(() => {
+    if (step !== "sent" || !expiresAt || expired) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [step, expiresAt, expired]);
 
   function setId(e) {
     setForm({ ...form, student_id: e.target.value });
@@ -209,14 +222,19 @@ function SignupForm({ onSent, onLoggedIn }) {
     setCode("");
     setTicket("");
     setCodeError(null);
+    setExpiresAt(null);
   }
 
   async function sendCode() {
     setSending(true);
     setCodeError(null);
     try {
-      await auth.sendEmailCode(form.email);
+      const res = await auth.sendEmailCode(form.email);
       setStep("sent");
+      // 재발송이면 서버가 번호를 새로 발급한다 — 이전 입력과 타이머를 같이 버린다
+      setCode("");
+      setNow(Date.now());
+      setExpiresAt(Date.now() + (res.expires_in ?? 600) * 1000);
     } catch (err) {
       setCodeError(err.message ?? "인증번호를 보내지 못했습니다.");
     } finally {
@@ -331,6 +349,10 @@ function SignupForm({ onSent, onLoggedIn }) {
             </button>
           )}
         </div>
+        {/* 아이디 중복확인과 형제로 보이게 — 같은 자리, 같은 모양 (#99) */}
+        {step === "sent" && !expired && (
+          <p className="mt-1.5 text-sm font-bold text-navy">✓ 인증 메일이 전송되었습니다.</p>
+        )}
       </div>
 
       {/* 인증번호 — 이메일 바로 아래. 가입 화면을 떠나지 않는다 */}
@@ -351,15 +373,25 @@ function SignupForm({ onSent, onLoggedIn }) {
             <button
               type="button"
               onClick={checkCode}
-              disabled={sending || code.length !== 6}
+              disabled={sending || code.length !== 6 || expired}
               className="shrink-0 rounded-lg bg-navy px-5 font-bold text-white transition-[background-color,scale] duration-150 hover:bg-navy-deep active:scale-[0.96] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-gold"
             >
               확인
             </button>
           </div>
-          <p className="mt-1.5 text-xs text-steel">
-            메일함으로 6자리 번호를 보냈습니다 · 10분 안에 입력해 주세요
-          </p>
+          {expired ? (
+            <p className="mt-1.5 text-xs font-bold text-navy">
+              인증번호가 만료됐습니다. 재발송해 주세요.
+            </p>
+          ) : (
+            <p className="mt-1.5 text-xs text-steel">
+              메일함으로 6자리 번호를 보냈습니다 ·{" "}
+              <span className="font-mono font-bold tabular-nums text-navy">
+                {Math.floor(remaining / 60)}:{String(remaining % 60).padStart(2, "0")}
+              </span>{" "}
+              남음
+            </p>
+          )}
         </div>
       )}
       {step === "done" && (
