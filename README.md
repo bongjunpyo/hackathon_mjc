@@ -11,6 +11,8 @@
 
 ## 주요 화면
 
+![데모 — 랜딩 → 로드맵 생성 → 트랙 걷기 → 자격증 분기 → 졸업 배지 → 3D 걷기](docs/screenshots/demo.gif)
+
 | | |
 |---|---|
 | ![로드맵 스튜디오 — 2D 트랙](docs/screenshots/studio-track.png) | ![자격증 분기 패널](docs/screenshots/cert-panel.png) |
