@@ -17,6 +17,7 @@ from pydantic import BaseModel
 import auth
 import catalog
 import db
+import envfile
 from catalog import CatalogError
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -36,6 +37,9 @@ async def lifespan(_):
     db.init_db()  # 실패해도 예외를 던지지 않는다 — 코어는 DB 없이 돈다
     yield
 
+
+# DATABASE_URL·ANTHROPIC_API_KEY 등을 읽는 코드보다 먼저 와야 한다
+envfile.load()
 
 app = FastAPI(title="MJC 취업 로드맵 에이전트", lifespan=lifespan)
 app.add_exception_handler(ApiError, api_error_handler)
@@ -103,6 +107,8 @@ def pick_generator():
     키가 없어도 데모는 돌아야 하므로 planner가 항상 대기한다 — mailer가 SMTP 없으면
     콘솔로 떨어지는 것과 같은 구조다.
     """
+    # .env가 아직 안 읽혔을 수도 있다 — 여러 번 불러도 안전하다
+    envfile.load()
     if os.getenv("ANTHROPIC_API_KEY"):
         from agent import generate as llm_generate
 
