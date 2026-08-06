@@ -2,7 +2,7 @@
    게스트/토큰 분기와 목데이터 폴백이 전부 여기 모여 있다. */
 
 import { DEPT_BY_ID, DEPTS } from "./depts";
-import { pathFor } from "./curricula";
+import { lookupCourses, pathFor } from "./curricula";
 
 const TOKEN_KEY = "mjc_access_token";
 const TIMEOUT_MS = 4000;
@@ -61,7 +61,10 @@ export async function postRoadmap({ deptId, year, semester, completedCourses, ta
   } catch {
     // 서버 미연결 폴백 — 교육과정표의 표준 이수 경로를 그대로 보여준다.
     // AI가 재배치한 로드맵이 아니므로 화면에서 source로 구분해 표시한다.
-    return { ...standardPath(deptId, targetJob), source: "curriculum" };
+    return {
+      ...standardPath({ deptId, targetJob, year, semester, completedCourses }),
+      source: "curriculum",
+    };
   }
 }
 
@@ -70,19 +73,24 @@ export async function postRoadmap({ deptId, year, semester, completedCourses, ta
     룰은 server/validator.py와 같아야 한다. 총학점은 **미달로 잡지 않는다** —
     남은 몫은 학생이 교양선택·일반선택으로 채우는 자유 학점이고, 우리 데이터에
     그 과목이 없어서 판정할 근거가 없다. 몇 학점 남았는지만 알린다. */
-function standardPath(deptId, targetJob) {
+function standardPath({ deptId, targetJob, year = 1, semester = 1, completedCourses = [] }) {
   const dept = DEPT_BY_ID[deptId];
-  const semesters = pathFor(deptId, targetJob, dept?.years) ?? [];
-  const all = semesters.flatMap((s) => s.courses);
+  const semesters = pathFor(deptId, targetJob, dept?.years, { year, semester }) ?? [];
+
+  // 로드맵은 **남은 학기**만 담는다. 이수분을 합치지 않으면 2학년 학생은 어떤
+  // 로드맵으로도 요건을 못 채운다 (server/validator.py와 같은 이유)
+  const done = lookupCourses(deptId, completedCourses);
+  const all = semesters.flatMap((s) => s.courses).concat(done);
   const sum = (cat) =>
     all.filter((c) => !cat || c.category === cat).reduce((a, c) => a + c.credits, 0);
+  const passedSemesters = (year - 1) * 2 + (semester - 1);
 
   const req = dept?.years === 2
     ? { total: 75, liberal: 3, major: 45, semesters: 4 }
     : { total: 110, liberal: 3, major: 66, semesters: 6 };
   const actual = {
     total_credits: sum(), liberal_credits: sum("교양"),
-    major_credits: sum("전공"), semesters: semesters.length,
+    major_credits: sum("전공"), semesters: semesters.length + passedSemesters,
   };
   const LABEL = {
     liberal_required: "교양필수", major_credits: "전공 학점", semesters: "재학 학기",
