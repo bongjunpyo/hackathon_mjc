@@ -38,6 +38,21 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 LANDING_PATH = os.getenv("VERIFY_LANDING", "/app/input")
 EXCHANGE_TTL = timedelta(seconds=60)
 
+# 가입 전 이메일 인증번호. 유저 행이 아직 없어서 DB에 둘 자리가 없다 —
+# 스키마를 늘리는 대신 프로세스 메모리에 TTL과 함께 들고 있는다.
+# 재시작하면 사라진다(재발송하면 그만). 시도 횟수를 세서 무차별 대입을 막는다.
+CODE_TTL = timedelta(minutes=10)
+CODE_MAX_TRIES = 5
+TICKET_TTL = timedelta(minutes=30)
+_email_codes = {}  # email -> {"code", "expires_at", "tries"}
+_email_tickets = {}  # ticket -> {"email", "expires_at"}
+
+
+def _sweep(store):
+    now = datetime.now(UTC)
+    for key in [k for k, v in store.items() if v["expires_at"] < now]:
+        store.pop(key, None)
+
 
 class SignupIn(BaseModel):
     student_id: str = Field(min_length=4, max_length=32)
@@ -45,6 +60,8 @@ class SignupIn(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, description="최소 8자")
     dept_id: str
+    # 인증번호 방식으로 가입하면 발급되는 티켓. 있으면 가입과 동시에 인증·로그인된다
+    email_ticket: str = ""
 
 
 class LoginIn(BaseModel):
@@ -58,6 +75,11 @@ class EmailIn(BaseModel):
 
 class CodeIn(BaseModel):
     code: str
+
+
+class EmailCodeIn(BaseModel):
+    email: EmailStr
+    code: str = Field(min_length=6, max_length=6)
 
 
 class RefreshIn(BaseModel):
@@ -132,12 +154,67 @@ def signup(body: SignupIn):
             dept_id=body.dept_id,
             password_hash=hash_password(body.password),
         )
+
+        # 인증번호로 이미 확인한 이메일이면 메일을 한 번 더 보내지 않는다.
+        # 티켓의 이메일과 가입 이메일이 같아야 한다 — 다르면 남의 인증을 빌려 쓰는 것
+        _sweep(_email_tickets)
+        ticket = _email_tickets.get(body.email_ticket) if body.email_ticket else None
+        if ticket and ticket["email"] == body.email:
+            _email_tickets.pop(body.email_ticket, None)
+            user.email_verified_at = datetime.now(UTC)
+            session.add(user)
+            session.commit()
+            return _tokens(user)
+
         session.add(user)
         session.commit()
         _issue_verification(session, user)
 
     # 토큰을 주지 않는다. 인증을 마쳐야 로그인된다
     return {"message": "인증 메일을 보냈습니다. 메일함을 확인해 주세요."}
+
+
+@router.post("/auth/email/code")
+def send_email_code(body: EmailIn):
+    """가입 화면을 떠나지 않고 이메일을 인증한다 — 6자리 번호를 보낸다.
+
+    링크 방식(signup → 메일 → 클릭)은 화면을 벗어나 폼 입력이 날아간다.
+    이미 가입된 이메일인지는 알려주지 않는다 (계정 열거 방지) — 번호는 어차피
+    메일함 주인만 본다.
+    """
+    _sweep(_email_codes)
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    _email_codes[body.email] = {
+        "code": code,
+        "expires_at": datetime.now(UTC) + CODE_TTL,
+        "tries": 0,
+    }
+    mailer.send_code(body.email, code)
+    return {"message": "인증번호를 보냈습니다. 메일함을 확인해 주세요.", "expires_in": 600}
+
+
+@router.post("/auth/email/verify")
+def verify_email_code(body: EmailCodeIn):
+    _sweep(_email_codes)
+    entry = _email_codes.get(body.email)
+    if not entry:
+        raise ApiError("CODE_EXPIRED", "인증번호가 만료됐습니다. 다시 받아 주세요", status=400)
+
+    entry["tries"] += 1
+    if entry["tries"] > CODE_MAX_TRIES:
+        _email_codes.pop(body.email, None)
+        raise ApiError("TOO_MANY_TRIES", "시도가 너무 많습니다. 번호를 다시 받아 주세요", status=429)
+    if not secrets.compare_digest(entry["code"], body.code):
+        raise ApiError("INVALID_CODE", "인증번호가 일치하지 않습니다", status=400)
+
+    _email_codes.pop(body.email, None)
+    _sweep(_email_tickets)
+    ticket = secrets.token_urlsafe(24)
+    _email_tickets[ticket] = {
+        "email": body.email,
+        "expires_at": datetime.now(UTC) + TICKET_TTL,
+    }
+    return {"verified": True, "email_ticket": ticket}
 
 
 @router.post("/auth/resend")

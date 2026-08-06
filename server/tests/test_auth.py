@@ -359,3 +359,67 @@ def test_DB가_없어도_코어는_돈다(client, monkeypatch):
     )
 
     assert res.status_code == 200
+
+
+def test_인증번호로_가입하면_메일_링크_없이_바로_로그인된다(client):
+    """링크 방식은 화면을 떠나 폼 입력이 날아간다. 번호 방식은 가입 화면에서 끝난다."""
+    import mailer
+
+    email = "code-flow@mjc.ac.kr"
+    client.post("/auth/email/code", json={"email": email})
+    code = mailer.outbox[-1]["code"]
+
+    verified = client.post("/auth/email/verify", json={"email": email, "code": code})
+    assert verified.status_code == 200
+    ticket = verified.json()["email_ticket"]
+
+    res = client.post(
+        "/auth/signup",
+        json={
+            "student_id": "20250901",
+            "name": "코드",
+            "email": email,
+            "password": "password123",
+            "dept_id": "itc",
+            "email_ticket": ticket,
+        },
+    )
+
+    assert res.status_code == 201
+    assert res.json()["access_token"]  # 인증이 끝났으니 토큰이 나온다
+
+
+def test_틀린_인증번호는_티켓을_주지_않는다(client):
+    client.post("/auth/email/code", json={"email": "wrong@mjc.ac.kr"})
+
+    res = client.post("/auth/email/verify", json={"email": "wrong@mjc.ac.kr", "code": "000000"})
+
+    assert res.status_code == 400
+    assert res.json()["error"]["code"] == "INVALID_CODE"
+
+
+def test_남의_이메일_티켓으로는_가입할_수_없다(client):
+    """티켓의 이메일과 가입 이메일이 다르면 남의 인증을 빌려 쓰는 것이다."""
+    import mailer
+
+    client.post("/auth/email/code", json={"email": "owner@mjc.ac.kr"})
+    code = mailer.outbox[-1]["code"]
+    ticket = client.post(
+        "/auth/email/verify", json={"email": "owner@mjc.ac.kr", "code": code}
+    ).json()["email_ticket"]
+
+    res = client.post(
+        "/auth/signup",
+        json={
+            "student_id": "20250902",
+            "name": "도둑",
+            "email": "other@mjc.ac.kr",
+            "password": "password123",
+            "dept_id": "itc",
+            "email_ticket": ticket,
+        },
+    )
+
+    # 가입은 되되 인증은 안 된 상태 — 토큰 없이 메일 안내만
+    assert res.status_code == 201
+    assert "access_token" not in res.json()

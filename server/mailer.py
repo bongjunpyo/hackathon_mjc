@@ -80,3 +80,47 @@ def send_verification(to, name, link):
         # 메일 실패가 회원가입을 실패시키면 안 된다. 링크는 콘솔에 남는다
         print(f"\n[mailer] 발송 실패({e}) — 콘솔로 대체\n  인증링크: {link}\n", flush=True)
         return False
+
+
+CODE_SUBJECT = "[MJC 취업 로드맵] 이메일 인증번호"
+
+CODE_BODY = """인증번호는 {code} 입니다.
+
+회원가입 화면의 '인증번호' 칸에 입력해 주세요.
+이 번호는 10분 뒤 만료됩니다. 본인이 요청하지 않았다면 이 메일을 무시하세요.
+"""
+
+CODE_HTML = """<div style="font-family:system-ui,sans-serif;max-width:480px">
+  <p>회원가입 화면의 '인증번호' 칸에 아래 번호를 입력해 주세요.</p>
+  <p style="font-size:32px;font-weight:800;letter-spacing:8px;color:#002D65">{code}</p>
+  <p style="color:#6B84A0;font-size:13px">
+    이 번호는 10분 뒤 만료됩니다.<br>본인이 요청하지 않았다면 이 메일을 무시하세요.
+  </p>
+</div>"""
+
+
+def send_code(to, code):
+    """인증번호 메일. 링크 방식(send_verification)과 달리 화면을 떠나지 않는다."""
+    outbox.append({"to": to, "code": code})
+
+    if not configured():
+        print(f"\n[mailer] SMTP 미설정 — 콘솔로 대체\n  받는사람: {to}\n  인증번호: {code}\n", flush=True)
+        return False
+
+    message = EmailMessage()
+    message["Subject"] = CODE_SUBJECT
+    message["From"] = SMTP_FROM
+    message["To"] = to
+    message.set_content(CODE_BODY.format(code=code))
+    message.add_alternative(CODE_HTML.format(code=escape(code)), subtype="html")
+
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as smtp:
+            smtp.starttls()
+            smtp.login(SMTP_USER, SMTP_PASSWORD)
+            smtp.send_message(message)
+        return True
+    except Exception as e:
+        # 메일 실패가 가입을 막으면 안 된다. 번호는 콘솔에 남는다
+        print(f"\n[mailer] 발송 실패({e}) — 콘솔로 대체\n  인증번호: {code}\n", flush=True)
+        return False
