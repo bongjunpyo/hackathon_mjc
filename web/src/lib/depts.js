@@ -158,3 +158,8 @@ export function creditGap(dept) {
   const short = dept.majorRequired - dept.majorCredits;
   return short > 0 ? { short, have: dept.majorCredits, need: dept.majorRequired } : null;
 }
+
+/* 직무 자리에 들어온 직무 아닌 값 (server/report.py NOT_A_JOB과 동일).
+   데이터는 그대로 두고 표시단에서만 거른다 — 리포트가 이 라벨을 문제로 잡는 게 일이다. */
+const NOT_A_JOB = new Set(["공통", "전체", "-", "기타"]);
+export const realJobs = (list) => (list ?? []).filter((j) => !NOT_A_JOB.has(j.trim()));

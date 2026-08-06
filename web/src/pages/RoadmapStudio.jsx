@@ -6,7 +6,7 @@ import SemesterPanel from "../components/track/SemesterPanel";
 import ValidationBar from "../components/track/ValidationBar";
 import Walker from "../components/track/Walker";
 import { postRoadmap } from "../lib/api";
-import { DEPT_BY_ID } from "../lib/depts";
+import { DEPT_BY_ID, realJobs } from "../lib/depts";
 import { useApp } from "../store";
 import demo from "../fixtures/roadmap-demo.json";
 
@@ -32,7 +32,7 @@ export default function RoadmapStudio() {
       year: 1,
       semester: 1,
       completedCourses: [],
-      targetJob: handoff.targetJob ?? dept?.careers[0] ?? dept?.promoted?.[0] ?? "",
+      targetJob: handoff.targetJob ?? realJobs([...(dept?.careers ?? []), ...(dept?.promoted ?? [])])[0] ?? "",
     };
   });
   const [phase, setPhase] = useState("INIT");

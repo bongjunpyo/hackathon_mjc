@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { DEPTS } from "../lib/depts";
+import { DEPTS, realJobs } from "../lib/depts";
 import { CURRICULA } from "../lib/curricula";
 
 /* 학과 탐색 (DESIGN §4) — 전부 번들 데이터, 서버 0.
@@ -60,10 +60,10 @@ export default function Explore() {
                     {d.years}년제
                   </span>
                 </div>
-                {d.careers.length > 0 && (
+                {realJobs(d.careers).length > 0 && (
                   <p className="text-sm text-ink-2">
-                    {d.careers.slice(0, 2).join(" · ")}
-                    {d.careers.length > 2 && ` 외 ${d.careers.length - 2}`}
+                    {realJobs(d.careers).slice(0, 2).join(" · ")}
+                    {realJobs(d.careers).length > 2 && ` 외 ${realJobs(d.careers).length - 2}`}
                   </p>
                 )}
                 <p className="mt-auto font-mono text-xs tabular-nums text-steel">
