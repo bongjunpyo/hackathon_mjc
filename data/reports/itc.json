@@ -1,0 +1,216 @@
+{
+  "dept_id": "itc",
+  "dept_name": "정보통신공학과",
+  "years": 3,
+  "tier": 1,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "시스템응용SW개발엔지니어",
+      "coverage_pct": 53.8,
+      "credits": 42,
+      "covered_courses": [
+        "인터넷프로그래밍",
+        "프로그래밍언어실습",
+        "C언어I",
+        "객체지향언어",
+        "iOS프로그래밍",
+        "객체지향언어실습",
+        "데이터베이스",
+        "웹프로그래밍실습",
+        "인공지능기초",
+        "모바일프로그래밍",
+        "컴퓨터구조실습",
+        "인공지능실습",
+        "ICT최신기술",
+        "iOS프로그래밍응용"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2",
+        "3-1",
+        "3-2"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "시스템관리·운용엔지니어",
+      "coverage_pct": 46.2,
+      "credits": 36,
+      "covered_courses": [
+        "디지털공학개론",
+        "정보통신개론",
+        "AI전자계산기구조",
+        "임베디드시스템개론",
+        "데이터통신",
+        "운영체제",
+        "네트워크I",
+        "네트워크II",
+        "AIoT",
+        "무선네트워크",
+        "캡스톤디자인I",
+        "캡스톤디자인II"
+      ],
+      "semesters": [
+        "1-1",
+        "1-2",
+        "2-1",
+        "2-2",
+        "3-1",
+        "3-2"
+      ],
+      "gaps": []
+    }
+  ],
+  "certificates": {
+    "total": 16,
+    "evaluated": 16,
+    "supported": 16,
+    "unsupported": [],
+    "unevaluated": [],
+    "detail": [
+      {
+        "certificate": "정보처리 산업기사",
+        "courses": [
+          "인터넷프로그래밍",
+          "프로그래밍언어실습",
+          "iOS프로그래밍",
+          "운영체제",
+          "데이터베이스"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "정보통신 산업기사",
+        "courses": [
+          "정보통신개론",
+          "데이터통신",
+          "네트워크I",
+          "네트워크II",
+          "무선네트워크"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "MCSE",
+        "courses": [
+          "운영체제"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "CCNA",
+        "courses": [
+          "네트워크I",
+          "네트워크II",
+          "무선네트워크"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "CCNP",
+        "courses": [
+          "네트워크I",
+          "네트워크II",
+          "무선네트워크"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "CCIE",
+        "courses": [
+          "네트워크I",
+          "네트워크II",
+          "무선네트워크"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "ESDP",
+        "courses": [
+          "임베디드시스템개론"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "전자상거래 관리사",
+        "courses": [
+          "웹프로그래밍실습"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "웹마스터전문가",
+        "courses": [
+          "웹프로그래밍실습"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "웹 프로그래머",
+        "courses": [
+          "웹프로그래밍실습"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "웹서버관리사(WSMC)",
+        "courses": [
+          "웹프로그래밍실습"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "네트워크 관리사",
+        "courses": [
+          "정보통신개론",
+          "데이터통신",
+          "네트워크I",
+          "네트워크II",
+          "무선네트워크"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "리눅스 마스터",
+        "courses": [
+          "운영체제"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "OJCP",
+        "courses": [
+          "객체지향언어",
+          "객체지향언어실습"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "정보처리 기능사",
+        "courses": [
+          "인터넷프로그래밍",
+          "프로그래밍언어실습",
+          "iOS프로그래밍",
+          "운영체제",
+          "데이터베이스"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "PC 정비사",
+        "courses": [
+          "컴퓨터구조실습"
+        ],
+        "matched": true
+      }
+    ]
+  },
+  "ncs_ratio": 100.0,
+  "field_based_courses": [
+    "캡스톤디자인I",
+    "캡스톤디자인II"
+  ]
+}

@@ -1,0 +1,174 @@
+{
+  "dept_id": "cse",
+  "dept_name": "컴퓨터보안공학과",
+  "years": 3,
+  "tier": 2,
+  "extraction_confidence": 1.0,
+  "jobs": [
+    {
+      "job": "통신및정보보호시스템전문가",
+      "coverage_pct": 37.8,
+      "credits": 31,
+      "covered_courses": [
+        "정보보호개론",
+        "통신프로토콜과네트워크",
+        "데이터통신",
+        "인터넷보안",
+        "시스템보안",
+        "딥러닝기초 및 실습",
+        "보안시스템운영 및 실습",
+        "취창업실무",
+        "디지털포렌식",
+        "AI사이버보안",
+        "네트워크프로그래밍"
+      ],
+      "semesters": [
+        "1-2",
+        "2-1",
+        "2-2",
+        "3-1",
+        "3-2"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "컴퓨터응용시스템전문가",
+      "coverage_pct": 25.6,
+      "credits": 21,
+      "covered_courses": [
+        "프론트엔드개발기초",
+        "데이터베이스",
+        "객체지향언어",
+        "인공지능과 데이터분석",
+        "웹프로그래밍",
+        "모바일프로그래밍I",
+        "객체지향언어실습"
+      ],
+      "semesters": [
+        "1-2",
+        "2-1",
+        "2-2"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "컴퓨터응용시스템전문가, 통신및정보보호시스템전문가",
+      "coverage_pct": 22.0,
+      "credits": 18,
+      "covered_courses": [
+        "정보통신개론",
+        "보안코딩",
+        "운영체제",
+        "캡스톤디자인I",
+        "캡스톤디자인II",
+        "IT융합비즈니스보안"
+      ],
+      "semesters": [
+        "1-1",
+        "2-1",
+        "3-1",
+        "3-2"
+      ],
+      "gaps": []
+    },
+    {
+      "job": "컴퓨터응용시스템개발",
+      "coverage_pct": 11.0,
+      "credits": 9,
+      "covered_courses": [
+        "알고리즘과 데이터구조",
+        "인공지능코딩기초",
+        "모바일프로그래밍II"
+      ],
+      "semesters": [
+        "1-1",
+        "3-1"
+      ],
+      "gaps": [
+        "전공 학점의 11%만 배정돼 선택지가 좁다"
+      ]
+    },
+    {
+      "job": "컴퓨터응용시스템전문가 , 통신및정보호시스템전문가",
+      "coverage_pct": 3.7,
+      "credits": 3,
+      "covered_courses": [
+        "보안코딩실습"
+      ],
+      "semesters": [
+        "1-2"
+      ],
+      "gaps": [
+        "전공 학점의 4%만 배정돼 선택지가 좁다"
+      ]
+    }
+  ],
+  "certificates": {
+    "total": 8,
+    "evaluated": 5,
+    "supported": 5,
+    "unsupported": [],
+    "unevaluated": [
+      "개인정보관리사(CPPG)",
+      "국제공인정보시스템보안전문가(CISSP)",
+      "웹디자인기능사"
+    ],
+    "detail": [
+      {
+        "certificate": "정보보안기사/정보보안산업기사",
+        "courses": [
+          "보안코딩",
+          "보안코딩실습",
+          "인터넷보안",
+          "시스템보안",
+          "보안시스템운영 및 실습"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "정보처리산업기사",
+        "courses": [
+          "알고리즘과 데이터구조",
+          "데이터베이스",
+          "운영체제",
+          "웹프로그래밍",
+          "모바일프로그래밍I"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "네트워크관리사(CCNA)",
+        "courses": [
+          "정보통신개론",
+          "통신프로토콜과네트워크",
+          "데이터통신",
+          "네트워크프로그래밍"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "정보통신산업기사",
+        "courses": [
+          "정보통신개론",
+          "통신프로토콜과네트워크",
+          "데이터통신",
+          "네트워크프로그래밍"
+        ],
+        "matched": true
+      },
+      {
+        "certificate": "OCJP(Oracle Certified Java Programmer)",
+        "courses": [
+          "객체지향언어",
+          "객체지향언어실습"
+        ],
+        "matched": true
+      }
+    ]
+  },
+  "ncs_ratio": 85.7,
+  "field_based_courses": [
+    "캡스톤디자인I",
+    "캡스톤디자인II"
+  ]
+}

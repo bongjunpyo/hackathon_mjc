@@ -3,26 +3,25 @@ import { useNavigate } from "react-router-dom";
 import Corridor from "../components/Corridor";
 import SemesterDetail from "../components/SemesterDetail";
 import { useApp } from "../store";
-import { JOBS, MOCK_ROADMAPS } from "../lib/mock";
+import { DEPT_BY_ID, DEPTS } from "../lib/depts";
+import { pathFor } from "../lib/curricula";
 
 /* 랜딩 = 행선판 복도. 스크롤로 노선을 걸어 목표 직무 게이트에 도착한다.
-   여기 쓰는 데이터는 목표 직무의 표준 노선(목데이터) — 개인화는 /app/input 이후. */
+   여기 쓰는 건 교육과정표의 표준 이수 경로 — 개인화(이수분 반영)는 /app/input 이후. */
 export default function Landing() {
   const { input, setInput } = useApp();
   const [job, setJob] = useState(input.targetJob);
   const [detailIndex, setDetailIndex] = useState(null);
   const navigate = useNavigate();
 
-  const semesters = (MOCK_ROADMAPS[job] ?? MOCK_ROADMAPS[JOBS[0]]).semesters.map((s) => ({
+  const dept = DEPT_BY_ID[input.deptId] ?? DEPTS[0];
+  const semesters = (pathFor(dept.id, job, dept.years) ?? []).map((s) => ({
     ...s,
     name: `${s.year}학년 ${s.semester}학기`,
     en: `YEAR ${s.year} · SEM ${s.semester}`,
   }));
 
   const totalCredits = semesters.reduce((a, s) => a + s.credits, 0);
-  const certCount = semesters.filter((s) =>
-    s.certificates?.some((c) => !c.name.includes("학습")),
-  ).length;
 
   function start() {
     setInput({ ...input, targetJob: job });
@@ -48,7 +47,7 @@ export default function Landing() {
         <div className="flex max-w-2xl flex-wrap items-stretch overflow-hidden rounded-xl border border-edge bg-white shadow-[0_10px_34px_rgba(0,45,101,0.10)]">
           <div className="min-w-40 flex-1 border-r border-dashed border-edge px-5 py-3.5">
             <span className="mb-1 block font-mono text-xs tracking-[0.1em] text-steel">학과</span>
-            <b className="text-[1.0625rem]">정보통신공학과</b>
+            <b className="text-[1.0625rem]">{dept.name}</b>
           </div>
           <div className="min-w-40 flex-1 border-r border-dashed border-edge px-5 py-3.5">
             <span className="mb-1 block font-mono text-xs tracking-[0.1em] text-steel">현재</span>
@@ -67,7 +66,7 @@ export default function Landing() {
               onChange={(e) => setJob(e.target.value)}
               className="w-full cursor-pointer bg-transparent text-[1.0625rem] font-bold text-ink focus-visible:outline-2 focus-visible:outline-gold"
             >
-              {JOBS.map((j) => (
+              {dept.careers.map((j) => (
                 <option key={j}>{j}</option>
               ))}
             </select>
@@ -91,7 +90,7 @@ export default function Landing() {
         <Corridor
           semesters={semesters}
           targetJob={job}
-          stats={`3년 · ${semesters.length}학기 · ${totalCredits}학점 · 자격증 ${certCount}종`}
+          stats={`${dept.years}년제 · ${semesters.length}학기 · ${totalCredits}학점`}
           onSelect={setDetailIndex}
         />
       </div>
