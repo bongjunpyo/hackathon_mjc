@@ -131,7 +131,7 @@ h1,h2,h3 { margin: 0; line-height: 1.15; letter-spacing: -0.02em; text-wrap: bal
 
 /* ================= 복도 (핵심) ================= */
 
-.hallway { position: relative; height: 560vh; }
+.hallway { position: relative; height: 615vh; }
 .stage {
   position: sticky; top: 0; height: 100vh;
   overflow: hidden;
@@ -888,10 +888,10 @@ function buildScene() {
   }
   return el;
 });
-  gate.dataset.z = -(SEMESTERS.length + 0.9) * GAP;
+  gate.dataset.z = -(SEMESTERS.length + 1.6) * GAP;
   gate.style.transform = `translate3d(-50%, -50%, ${gate.dataset.z}px)`;
   /* 카메라는 게이트 420px 앞에서 멈춘다 — 게이트를 지나치면 도착 장면이 사라진다 */
-  DEPTH = Math.abs(+gate.dataset.z) - 420;
+  DEPTH = Math.abs(+gate.dataset.z) - 500;
   scene.style.setProperty("--depth", DEPTH + "px");
 
   /* 도로·안전선·펜스 — 세그먼트 배치 (거대 단일 평면은 카메라 교차 시 통째로 컬링됨) */
@@ -965,7 +965,7 @@ function paint() {
     el.style.opacity = dz > -70 ? 0 : dz > -320 ? (-dz - 70) / 250 : 1;
   });
 
-  const seg = 1 / (SEMESTERS.length + 0.9);
+  const seg = 1 / (SEMESTERS.length + 1.6);
   const idx = Math.min(SEMESTERS.length, Math.floor(p / seg));
   stops.forEach((el, i) => {
     el.classList.toggle("past", i < idx);
