@@ -172,3 +172,42 @@ def test_라벨이_하나도_없으면_빈_리포트를_낸다():
 
     assert report["jobs"] == []
     assert report["label_mismatches"] == []
+
+
+def test_파이프라인_자격증_3분류를_응답에_합친다(tmp_path):
+    """계산하지 않고 읽는다 — 화면과 파이프라인 지표가 갈리면 안 된다."""
+    import json
+
+    import report
+
+    (tmp_path / "t.json").write_text(
+        json.dumps(
+            {
+                "certificates": {
+                    "total": 6,
+                    "supported": 0,
+                    "unsupported": ["컴퓨터활용능력"],
+                    "unevaluated": ["공인행정관리사"],
+                },
+                "ncs_ratio": 83.3,
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    got = report._pipeline_metrics("t", root=tmp_path)
+
+    assert got["certificates"]["unsupported"] == ["컴퓨터활용능력"]
+    # 판정불가는 결손이 아니다 — 따로 온다
+    assert got["certificates"]["unevaluated"] == ["공인행정관리사"]
+    assert got["ncs_ratio"] == 83.3
+
+
+def test_파이프라인_파일이_없어도_리포트_본체는_나간다(tmp_path):
+    """자격증 절이 리포트 전체를 죽이면 안 된다."""
+    import report
+
+    got = report._pipeline_metrics("없는학과", root=tmp_path)
+
+    assert got == {"certificates": None, "ncs_ratio": None}
