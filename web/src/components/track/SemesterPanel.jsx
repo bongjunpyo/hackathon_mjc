@@ -1,3 +1,6 @@
+import ExternalPanel from "../ExternalPanel";
+import { externalFor } from "../../lib/external";
+
 /* 학기 상세 패널 (DESIGN §2.6) — **학기별 전공 추천** 전용.
    자격증은 여기 없다 — 분기(동그라미)를 눌러 CertPanel(gold)에서 본다.
    과목마다 한 줄 카드로 끊는다 — 이름·태그·학점이 한 덩어리로 붙어 있으면
@@ -72,6 +75,17 @@ export default function SemesterPanel({ semester, index, targetJob, isLast, onNe
           💡 {semester.notes}
         </p>
       )}
+
+      {/* 현장실습은 학교 시스템에서 신청한다 — 어디서 하는지 화면이 알려줘야 한다.
+         v1 로드맵·3D 모달에는 있었는데 v2 패널에서 빠져 있었다 */}
+      {semester.courses.map((c) => {
+        const ext = externalFor(c);
+        return ext ? (
+          <div key={`ext-${c.course_id}`} className="mx-4 mb-3">
+            <ExternalPanel info={ext} />
+          </div>
+        ) : null;
+      })}
 
       <div className="mt-auto border-t border-edge px-5 py-3 text-right">
         {isLast ? (

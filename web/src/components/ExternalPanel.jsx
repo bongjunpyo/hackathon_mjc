@@ -6,7 +6,9 @@ export default function ExternalPanel({ info }) {
   return (
     <div className="rounded-xl bg-sky-soft px-4 py-3.5 inset-ring inset-ring-edge">
       <div className="flex items-baseline gap-2">
-        <span className="rounded bg-navy px-1.5 py-0.5 font-mono text-[0.625rem] font-bold text-white">
+        {/* flex 자식이라 폭이 모자라면 배지부터 줄어든다 — 340px 패널에서 '자격/증'으로
+           접혔다 (이슈 #82). 라벨은 쪼개질 값이 아니므로 줄바꿈·수축을 둘 다 막는다 */}
+        <span className="shrink-0 whitespace-nowrap rounded bg-navy px-1.5 py-0.5 font-mono text-[0.625rem] font-bold text-white">
           {info.kind}
         </span>
         <b className="text-navy">{info.title}</b>
