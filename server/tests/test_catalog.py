@@ -24,7 +24,7 @@ def test_학과를_읽어온다():
     assert dept["dept_name"] == "정보통신공학과"
     assert dept["years"] == 3
     assert dept["liberal_elective_credits"] == 7
-    assert len(dept["courses"]) == 35
+    assert len(dept["courses"]) == 39
 
 
 def test_없는_학과는_CatalogError():

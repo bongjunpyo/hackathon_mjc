@@ -19,7 +19,7 @@ import db
 from catalog import CatalogError
 from errors import ApiError, api_error_handler, validation_error_handler
 from loop import generate_roadmap
-from planner import naive_generate
+from planner import generate as generate_roadmap_plan
 
 
 @asynccontextmanager
@@ -67,7 +67,7 @@ def post_roadmap(req: RoadmapRequest):
         "completed_semesters": (req.current_year - 1) * 2 + (req.current_semester - 1),
     }
 
-    result = generate_roadmap(spec, naive_generate)
+    result = generate_roadmap(spec, generate_roadmap_plan)
     if missing:
         # 프론트 체크박스와 데이터가 어긋난 신호. 코어를 죽이지는 않되 숨기지도 않는다
         result["unknown_courses"] = missing

@@ -40,7 +40,7 @@ class Generator:
         self.roadmaps = list(roadmaps)
         self.feedbacks = []
 
-    def __call__(self, spec, feedback=None):
+    def __call__(self, spec, feedback=None, attempt=1):
         self.feedbacks.append(feedback)
         i = min(len(self.feedbacks) - 1, len(self.roadmaps) - 1)
         return {"semesters": self.roadmaps[i]}

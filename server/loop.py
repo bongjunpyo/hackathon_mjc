@@ -35,7 +35,7 @@ def generate_roadmap(spec, generate_fn, max_attempts=MAX_ATTEMPTS):
     """
     feedback = None
     for attempt in range(1, max_attempts + 1):
-        roadmap = generate_fn(spec, feedback)
+        roadmap = generate_fn(spec, feedback, attempt)
         validation = validate_roadmap(
             roadmap["semesters"],
             spec["dept"]["years"],

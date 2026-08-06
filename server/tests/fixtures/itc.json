@@ -44,6 +44,10 @@
     { "course_id": "itc-취업역량강화", "name": "취업역량강화", "year": 3, "semester": 2, "credits": 3, "category": "전공", "required": true, "talent_type": null, "ncs": false, "field_based": false },
     { "course_id": "itc-네트워크운용관리", "name": "네트워크운용관리", "year": 3, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": true },
     { "course_id": "itc-ai서비스개발", "name": "AI서비스개발", "year": 3, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": "AI 개발자", "ncs": true, "field_based": false },
+    { "course_id": "itc-통신프로토콜", "name": "통신프로토콜", "year": 3, "semester": 1, "credits": 3, "category": "전공", "required": false, "talent_type": "네트워크 엔지니어", "ncs": true, "field_based": false },
+    { "course_id": "itc-머신러닝기초", "name": "머신러닝기초", "year": 2, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": "AI 개발자", "ncs": true, "field_based": false },
+    { "course_id": "itc-침해대응실무", "name": "침해대응실무", "year": 3, "semester": 1, "credits": 3, "category": "전공", "required": false, "talent_type": "정보보안 전문가", "ncs": true, "field_based": true },
+    { "course_id": "itc-모바일앱개발", "name": "모바일앱개발", "year": 2, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": "응용소프트웨어 개발자", "ncs": true, "field_based": false },
     { "course_id": "itc-종합설계프로젝트", "name": "종합설계프로젝트", "year": 3, "semester": 2, "credits": 3, "category": "전공", "required": false, "talent_type": null, "ncs": false, "field_based": true }
   ],
   "certificates": ["정보처리산업기사", "네트워크관리사 2급", "CCNA", "리눅스마스터 2급", "정보보안기사"],
