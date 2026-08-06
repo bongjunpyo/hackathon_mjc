@@ -28,6 +28,52 @@ cd web && npm run dev                      # 프론트 개발 서버 (개발 중
 cd web && npm run build                    # 제출용 빌드 → server가 서빙
 ```
 
+프론트 최초 부트스트랩(P3, 1회):
+
+```bash
+# 기존 바닐라 시안을 먼저 피신시킨다 — Vite가 web/index.html을 엔트리로 덮어쓴다
+git mv web/index.html web/reference/walk-concept.html
+npm create vite@latest web -- --template react
+cd web && npm i && npm i -D tailwindcss @tailwindcss/vite
+```
+
+## 화면 (DESIGN.md §6 요약)
+
+| # | 화면 | 구분 | 상태 |
+|---|---|---|---|
+| 1 | 입력 — 학과·학년/학기·이수 과목 체크·목표 직무 | 코어 | 먼저 |
+| 2 | 로드맵 뷰 — 학기별 타임라인 + "졸업요건 충족 ✓" | 코어 | 먼저 |
+| 3 | 리포트 뷰 — 직무별 커버리지·결손·라벨 불일치 (트랙 B) | 코어 | 먼저 |
+| 4 | 메인(랜딩) — 서비스 소개 + 시작하기 | 부가 | 05:00 이후 |
+| 5 | 로그인/회원가입 — 학번 기반 | 부가 | 05:00 이후 |
+
+```
+메인 → 로그인 ─┬→ 입력 → 로드맵 뷰 → [저장](로그인 시)
+              └→ 게스트로 둘러보기 ↗
+리포트 뷰: 상단 네비 "학교용 리포트" 탭으로 별도 진입
+```
+
+**게스트 모드는 필수 경로다.** 로그인이 미완이거나 컷돼도 `메인 → 게스트 → 입력 → 로드맵` 데모가 반드시 성립해야 한다. 로그인 상태를 전제로 하는 화면 로직을 짜지 않는다.
+
+## 프론트 컨벤션 (P3)
+
+```
+web/
+├── src/
+│   ├── pages/       # 화면 5개 — Landing · Login · Input · Roadmap · Report
+│   ├── components/  # 재사용 (SignBoard, StationCard, ValidationBadge …)
+│   ├── lib/api.js   # fetch 래퍼 — 게스트/토큰 분기를 여기 한 곳에만
+│   └── index.css    # Tailwind 진입 + 디자인 토큰
+└── reference/walk-concept.html   # 바닐라 시안 (수정 금지, 메인 디자인 참고용)
+```
+
+- **디자인 토큰은 Tailwind 테마에 등록해 쓴다** — 명지전문대 브랜드 컬러 `navy #002D65` · `sky #6DCBF9` · `gold #FFBA00`. 컴포넌트에 하드코딩한 헥사값 금지.
+- **전역 상태는 Context 하나**로 끝낸다 (로드맵 결과 + 인증 토큰). Redux·Zustand·React Query 도입 금지 — 화면 5개에 과투자다.
+- API 호출은 `lib/api.js`만 통한다. 컴포넌트에서 `fetch`를 직접 부르지 않는다.
+- `completed_courses`는 **`course_id` 배열**로 보낸다. 과목명 문자열을 절대 키로 쓰지 않는다.
+- 3D 복도 연출(랜딩)은 `reference/walk-concept.html`의 CSS perspective + sticky + 스크롤 진행률 변수 방식을 그대로 옮긴다. 새 애니메이션 라이브러리를 추가하지 않는다.
+- `prefers-reduced-motion`을 존중한다 — 정보 접근성이 이 프로젝트의 공익 앵글이다.
+
 ## 폴더 소유권
 
 한 파일은 한 사람이 맡는다. 에이전트에게도 담당 범위 밖을 고치게 두지 않는다.
@@ -49,6 +95,32 @@ cd web && npm run build                    # 제출용 빌드 → server가 서�
 - 미래 요구사항을 위한 추상화를 미리 만들지 않는다.
 - API 계약(docs/DESIGN.md §5)은 동결 상태다. `course_id`로만 과목을 주고받는다 — 과목명 문자열 매칭 금지.
 - 검증기 재생성 루프는 `max_retries: 3`. 초과 시 부분 로드맵 + 미달 사유를 **정상 응답으로** 반환한다.
+
+## API 계약 요약 (전문은 DESIGN.md §5 — 동결)
+
+| 엔드포인트 | 핵심 |
+|---|---|
+| `POST /roadmap` | in `completed_courses: [course_id]` / out `semesters[]` + `validation.details: [{rule, required, actual, shortfall}]` |
+| `GET /report/{dept_id}` | `jobs[]` — coverage_pct · gaps · label_mismatches |
+| `GET /depts` | `[{dept_id, dept_name, years, tier}]` |
+| `POST /auth/signup·login·refresh`, `GET /me`, `PUT /me/courses` | 인증 5종 — 코어 통합 후 착수 |
+
+`validation.details`는 재생성 프롬프트 입력이자 발표 화면 재료다. 사람이 읽는 문자열로 뭉개지 않는다.
+
+## 컷 규칙 (DESIGN.md §8 · 회의록 안건 5·6)
+
+시각은 절대시각. **컷 판정은 혼자 하지 않고 단톡에 한 줄 남긴다.**
+
+| 시각 | 판정 | 미달 시 |
+|---|---|---|
+| 22:00 | 파이프라인 (Tier1 추출) | Tier2를 "서브도메인 구조 동일 학과"로 축소 |
+| 02:00 | **프론트 React 포팅 — 로드맵 뷰가 목데이터로 도는가** | `reference/walk-concept.html`(바닐라)을 랜딩으로 그대로 쓰고, 코어 3화면만 React로 간다 |
+| 05:00 | 통합 시작 · 여기서부터 부가(메인·로그인) 착수 가능 | 코어 미완이면 부가 착수 금지 |
+| 07:00 | 트랙 B API | 정적 HTML 리포트 1장으로 대체 |
+| 10:00 | **기능 동결** — 이후 문서·치명 버그만 | 로그인 미완이면 게스트 모드로 컷 |
+| 11:40 | 제출 (마감 12:00의 20분 전) | — |
+
+**코어 데모가 부가 기능 때문에 깨지는 일은 금지한다.** 로그인·DB·랜딩은 언제든 잘라낼 수 있는 형태로만 붙인다.
 
 ## 커밋 규칙
 
