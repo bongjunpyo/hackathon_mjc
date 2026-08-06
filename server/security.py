@@ -18,7 +18,9 @@ import envfile
 # import하는 경로에서 .env의 JWT_SECRET이 무시되고 개발용 기본키로 토큰이 서명된다
 envfile.load()
 
-SECRET = os.getenv("JWT_SECRET", "dev-only-secret-바꿔야-한다")
+# `or`다. .env.example을 복사하면 `JWT_SECRET=`이 빈 문자열로 남는데, os.getenv의
+# 기본값은 키가 없을 때만 나와서 빈 키로 토큰을 서명하게 된다 (mailer._env와 같은 함정)
+SECRET = os.getenv("JWT_SECRET") or "dev-only-secret-바꿔야-한다"
 ALGORITHM = "HS256"
 
 ACCESS_TTL = timedelta(hours=12)  # 해커톤 시연 동안 만료되지 않게
