@@ -22,6 +22,15 @@ def roadmap(n_semesters, major=0, liberal=0, general=0):
     ]
 
 
+def done(major=0, liberal=0, general=0):
+    """이미 이수한 과목 목록. 학기 구조 없이 평평한 과목 배열이다."""
+    return (
+        [{"credits": 1, "category": "전공"}] * major
+        + [{"credits": 1, "category": "교양"}] * liberal
+        + [{"credits": 1, "category": "일반선택"}] * general
+    )
+
+
 def find(details, rule):
     return next(d for d in details if d["rule"] == rule)
 
@@ -102,6 +111,38 @@ def test_2년제_기준_미달은_2년제_수치로_보고한다():
     assert detail["required"] == 45
     assert detail["shortfall"] == 5
     assert rules(result) == ["major_credits"]
+
+
+# --- 재학 중인 학생: 로드맵은 남은 학기만 온다 ---
+
+
+def test_이미_이수한_학점과_학기를_합산한다():
+    # 2학년 1학기 학생. 1학년 2개 학기에 전공24·교양6을 이수했고,
+    # 남은 4개 학기 로드맵은 전공84·교양8. 합치면 122학점 6학기로 충족이다.
+    result = validate_roadmap(
+        roadmap(4, major=84, liberal=8),
+        years=3,
+        completed=done(major=24, liberal=6),
+        completed_semesters=2,
+    )
+
+    assert result["passed"] is True
+    assert result["total_credits"] == 122
+    assert result["semesters"] == 6
+
+
+def test_이수분을_합쳐도_모자라면_남은_양만_요구한다():
+    # 이수 전공 24 + 계획 전공 30 = 54. 3년제 66에 12 부족
+    result = validate_roadmap(
+        roadmap(4, major=30, liberal=10, general=76),
+        years=3,
+        completed=done(major=24),
+        completed_semesters=2,
+    )
+
+    detail = find(result["details"], "major_credits")
+    assert detail["actual"] == 54
+    assert detail["shortfall"] == 12
 
 
 # --- 동결 계약 (docs/DESIGN.md §5) ---
