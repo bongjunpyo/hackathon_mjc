@@ -1,0 +1,17 @@
+[project]
+name = "mjc-roadmap-server"
+version = "0.1.0"
+description = "졸업요건 검증기 + 로드맵 에이전트 + 정합도 계산 API"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]>=0.115",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
