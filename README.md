@@ -79,6 +79,63 @@ data/depts/*.json  (+ _report.json 품질 지표)
 
 **과목 식별자는 코드가 결정론적으로 조립한다.** 원본 과목명에 `Ⅰ`(U+2160) · `I`(라틴) · `1`이 섞여 있어, 문자열로 주고받으면 체크박스 하나가 어긋나 "미이수"로 오판된다. 정규화 슬러그로 수렴시켰다 — 전 학과 776과목 충돌 0건.
 
+## 데이터 아키텍처
+
+저장소를 **두 층으로 분리했다.** 과목 데이터는 DB에 넣지 않는다.
+
+```
+┌─ 교육과정 데이터 (읽기 전용) ────────────────────────────┐
+│  data/depts/*.json      34개 학과 · 842과목 · 직무 라벨   │
+│  파이프라인이 생성하고 서버는 읽기만 한다                  │
+│  catalog.py 가 유일한 창구 — 로드 시점에 경계 검증         │
+└──────────────────────────────────────────────────────────┘
+┌─ 유저 데이터 (CRUD) ─────────────────────────────────────┐
+│  PostgreSQL 16 · SQLAlchemy 2.0 + psycopg                │
+│  users · completed_courses · saved_roadmaps               │
+└──────────────────────────────────────────────────────────┘
+```
+
+**왜 나눴나.** 과목 데이터를 DB에 넣으면 DB가 죽을 때 코어(게스트 → 입력 → 로드맵)까지 죽는다. 지금은 **DB가 없어도 서버가 뜨고** 로그인 계열만 503으로 떨어진다. 게스트 모드가 필수 경로라 이렇게 해야 한다.
+
+### 테이블
+
+| 테이블 | 컬럼 | 비고 |
+|---|---|---|
+| `users` | `id` · `student_id`(unique) · `name` · `email`(unique) · `dept_id` · `password_hash` · `created_at` · `email_verified_at` · `verification_token` · `verification_expires_at` · `exchange_code` · `exchange_expires_at` | 비밀번호는 bcrypt 해시. 인증·교환 토큰에 만료시각 동반 |
+| `completed_courses` | `id` · `user_id`(FK) · `course_id` · `year` · `semester` | **`course_id`로 저장한다.** 과목명으로 저장하면 `Ⅰ/I/1` 표기 혼재로 매칭이 깨진다 |
+| `saved_roadmaps` | `id` · `user_id`(FK) · `target_job` · `roadmap_json` · `created_at` | 직무별 1개 — 같은 직무로 다시 저장하면 덮어쓴다 |
+
+`completed_courses` · `saved_roadmaps`는 `users`에 `cascade="all, delete-orphan"`으로 묶여 있다.
+
+### CRUD 대응
+
+| | 대상 | 엔드포인트 | 동작 |
+|---|---|---|---|
+| **C**reate | `users` | `POST /auth/signup` → 201 | 가입. 토큰을 주지 않는다 — 이메일 인증을 마쳐야 로그인된다 |
+| | `saved_roadmaps` | `POST /me/roadmaps` → 201 | 로드맵 저장 |
+| | `completed_courses` | `PUT /me/courses` | 이수 과목 행 삽입 |
+| **R**ead | 세 테이블 전부 | `GET /me` | 내 정보 + 이수 과목 + 저장 로드맵 |
+| **U**pdate | `users` | `GET /auth/verify` · `POST /auth/exchange` · `POST /auth/resend` | 인증 완료 표시, 1회용 교환 코드 발급·소진, 재발송 |
+| | `saved_roadmaps` | `POST /me/roadmaps` | **같은 `target_job`이면 덮어쓴다** — 시연 중 여러 번 눌러도 목록이 쌓이지 않게 |
+| | `completed_courses` | `PUT /me/courses` | 전체 교체 (아래 Delete 참조) |
+| **D**elete | `completed_courses` | `PUT /me/courses` | **교체 의미로 구현.** 기존 행을 지우고 받은 목록으로 다시 채운다 |
+| | 자식 행 전체 | ORM cascade | `users` 삭제 시 `delete-orphan`으로 함께 삭제 |
+
+> ⚠️ **독립 `DELETE` 엔드포인트는 만들지 않았다.** 회원 탈퇴·개별 과목 삭제는 데모 시나리오에 등장하지 않는다. 삭제 자체는 `PUT /me/courses`의 교체 동작과 ORM cascade로 이미 일어난다. 서비스로 운영하려면 `DELETE /me`(탈퇴)를 추가해야 한다.
+
+### 마이그레이션
+
+앱 시작 시 `Base.metadata.create_all()`을 쓴다. Alembic을 넣지 않았다 — 스키마가 3개 테이블로 고정되고 해커톤 기간에 변경이 없었다. **스키마를 바꾸면 볼륨을 지워야 한다** (`docker compose down -v`).
+
+### 무결성
+
+| 장치 | 어디서 |
+|---|---|
+| `student_id` · `email` 유일성 | DB unique 제약 + 가입 시 409 `ALREADY_REGISTERED` |
+| 중복 `course_id` 제거 | `catalog.resolve`와 `validator` **양쪽에서** — 중복을 흘리면 학점이 두 번 세어져 졸업요건이 뚫린다 |
+| 타임존 | 전 컬럼 `DateTime(timezone=True)`. SQLite는 naive를 주므로 비교 전에 UTC로 되돌린다 |
+| 교환 코드 | 60초 · **1회용**. JWT를 리다이렉트 URL에 싣지 않기 위한 것 |
+
 ## 트랙 B — 학교용 진단 리포트
 
 같은 데이터를 학교 쪽에서 본다. 외부 데이터 없이 **학교 자체 데이터 간 정합성**만으로 성립한다.
@@ -113,7 +170,7 @@ cd hackathon_mjc
 ```bash
 cd server
 uv sync
-uv run pytest          # 151개 테스트 (검증기 · 엔진 · 카탈로그 · 인증 · 트랙 B)
+uv run pytest          # 153개 테스트 (검증기 · 엔진 · 카탈로그 · 인증 · 트랙 B)
 uv run fastapi dev main.py   # API + 프론트 빌드 정적 서빙 (web/dist가 있으면)
 ```
 
@@ -151,7 +208,19 @@ uv run python build_report.py         # 트랙 B 진단 → data/reports/*.json
 
 ## AI 코딩 에이전트 활용
 
-위임한 작업과 검증 과정은 [`docs/AI_USAGE.md`](docs/AI_USAGE.md)에 기록했다.
+위임한 작업과 검증 과정은 [`docs/AI_USAGE.md`](docs/AI_USAGE.md)에, 심사 기준에 맞춘 정리는 [`docs/REPORT.md`](docs/REPORT.md) §2에 있다.
+
+**층위를 구분한다.** `Claude Code (Opus 5)`는 우리가 코드를 쓸 때 쓴 **개발 도구**이고, `claude-sonnet-5`는 제품이 런타임에 호출하는 **기능**이다(`server/agent.py`). 심사에서 "AI를 어디에 썼나"는 두 질문이고 답이 다르다.
+
+| 구분 | 무엇을 썼나 |
+|---|---|
+| **모델** | 개발 전 구간 `Opus 5` · 제품 런타임 `claude-sonnet-5` · `claude-haiku-4-5`는 검토했으나 미사용 |
+| **모드** | 일반 대화 · **Plan 모드**(설계 확정) · Fast 모드(반복 수정) · **서브에이전트**(격리 탐색) · 백그라운드 작업(274 시나리오 측정) · **Monitor**(서버 로그 감시) · **git worktree**(남의 PR을 내 트리 안 건드리고 검증) |
+| **스킬** | `superpowers:test-driven-development`(검증기를 테스트 먼저) · `verification-before-completion`(증거 없는 완료 보고 차단) · `systematic-debugging` · `brainstorming`(주제 선정) · `artifact-design` |
+| **MCP** | **github**(PR 51개·이슈 16개가 이 경로) · tavily(웹 조사) · context7(라이브러리 문서) · obsidian · Google Drive |
+| **플러그인** | superpowers · context7 · claude-dashboard · notebooklm-ai-plugin · example-skills |
+
+**스킬이 실제로 판단을 바꾼 예**: `test-driven-development`가 RED → GREEN 순서를 강제해서, 검증기를 "통과하는 걸 봤다"가 아니라 **"실패하는 걸 먼저 봤다"** 로 만들었다. 이 습관이 아래 실패 사례 6건을 잡아냈다.
 
 **위임 범위를 측정으로 정했다.** 처음에는 교육과정표 추출도 LLM에 맡길 계획이었다. 그런데 35개 학과 PDF의 헤더를 전수 확인하니 필수 5개 열의 이름이 전부 같았다 — 코드로 읽으면 되는 일이었다. 추출을 코드로 옮기고 LLM은 헤더가 깨진 파일의 폴백으로 남겼다. **폴백 발동 0회**, LLM 예산은 판단이 필요한 로드맵 에이전트에 집중시켰다.
 
@@ -163,7 +232,7 @@ uv run python build_report.py         # 트랙 B 진단 → data/reports/*.json
 
 | | |
 |---|---|
-| 테스트 | 151개 |
+| 테스트 | 153개 |
 | 변이 검사 | 10종, 전부 검출 |
 | 파이프라인 | 34개 학과 · 842과목 · **코드 파싱 100% · LLM 폴백 0회** |
 | `course_id` 충돌 | 776과목 **0건** |
