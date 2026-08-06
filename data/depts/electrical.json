@@ -273,6 +273,12 @@
     "전기제어설계설비원",
     "전력계통해석및설계사"
   ],
+  "talent_types": [
+    "ICT-AI 응용제어운용사",
+    "전기설비시스템실무전문가",
+    "전기제어설계설비원",
+    "전력계통해석및설계사"
+  ],
   "liberal_elective_credits": 16,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0

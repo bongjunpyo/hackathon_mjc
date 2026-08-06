@@ -287,6 +287,10 @@
     "비주얼머천다이징",
     "패션스타일리스트"
   ],
+  "talent_types": [
+    "비주얼머천다이징",
+    "패션스타일리스트"
+  ],
   "liberal_elective_credits": 9,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0

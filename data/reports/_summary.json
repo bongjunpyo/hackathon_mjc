@@ -75,8 +75,8 @@
     "jobs": 1,
     "top_coverage": 100.0,
     "certs_unsupported": 0,
-    "certs_evaluated": 0,
-    "certs_total": 0,
+    "certs_evaluated": 4,
+    "certs_total": 13,
     "ncs_ratio": 73.3
   },
   {
@@ -176,7 +176,7 @@
     "top_coverage": 83.3,
     "certs_unsupported": 0,
     "certs_evaluated": 0,
-    "certs_total": 25,
+    "certs_total": 26,
     "ncs_ratio": 100.0
   },
   {
@@ -246,7 +246,7 @@
     "top_coverage": 100.0,
     "certs_unsupported": 0,
     "certs_evaluated": 0,
-    "certs_total": 23,
+    "certs_total": 9,
     "ncs_ratio": 79.2
   },
   {

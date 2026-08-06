@@ -52,29 +52,82 @@ def dept_name(raw: str) -> str | None:
     return None
 
 
-def _between(text: str, start: str, ends: tuple[str, ...]) -> str:
-    """`start` 뒤부터 `ends` 중 가장 먼저 나오는 것 앞까지를 잘라낸다."""
-    i = text.find(start)
-    if i < 0:
+def _between(text: str, starts: tuple[str, ...], ends: tuple[str, ...]) -> str:
+    """`starts` 중 먼저 나오는 것 뒤부터 `ends` 앞까지를 잘라낸다.
+
+    절 제목 표기가 학과마다 다르다 — 자격증은 `취득 자격증`(28곳)·`취득가능
+    자격증`(1곳)·`자격증 취득`(5곳)이 섞여 있고, 진로도 `교육활동 및 진로`(26곳)와
+    `취업 및 진로`(3곳)로 갈린다. 하나만 보면 그 학과가 통째로 빈다.
+    """
+    # 위치가 아니라 **목록 순서**로 고른다. 뒤쪽 표기일수록 느슨해서, 위치로
+    # 고르면 본문 문장("…자격증 취득과정 및 전공영어 교육으로…")이 절 제목을
+    # 이긴다 — 정보통신공학과가 실제로 그렇게 오염됐다.
+    start = next((s for s in starts if s in text), None)
+    if start is None:
         return ""
-    rest = text[i + len(start) :]
+    rest = text[text.find(start) + len(start) :]
     cuts = [rest.find(e) for e in ends if rest.find(e) > 0]
     return rest[: min(cuts)].strip() if cuts else rest[:600].strip()
 
 
 # 자격증 목록에 섞여 들어오는 안내 문장. "…를 통하여 전자" 같은 조각이 자격증으로 잡힌다.
-_NOT_A_CERT = re.compile(r"통하여|다음과|아래|취득할|응시|가능|바랍니다|참고|등의|및 기타")
+_NOT_A_CERT = re.compile(r"통하여|다음과|아래|취득할|응시|바랍니다|참고|및 기타")
+
+# `(국가자격증)`·`(민간자격증)` 같은 분류 머리말. 자격증명이 아니다.
+_CERT_HEADING = re.compile(r"^\(?(국가|민간|공인)?\s*자격증\)?$")
+
+CERT_STARTS = ("취득 자격증", "취득가능 자격증", "취득 가능 자격증", "자격증 취득")
+CERT_ENDS = ("교육활동", "취업 및 진로", "졸업 후 진로", "교수진", "※")
+CAREER_STARTS = ("교육활동 및 진로", "취업 및 진로", "졸업 후 진로", "진로 및 취업")
+CAREER_ENDS = ("※", "교수진소개", "교과안내", "QUICK")
 
 
 def parse_certificates(text: str) -> list[str]:
-    """'취득 자격증' 절의 쉼표 목록을 쪼갠다."""
-    seg = _between(text, "취득 자격증", ("교육활동", "교수진", "※"))
-    items = [re.sub(r"\s*등$", "", c).strip(" ·,") for c in seg.split(",")]
-    return [c for c in items if 1 < len(c) < 40 and not _NOT_A_CERT.search(c)]
+    """자격증 절의 쉼표 목록을 쪼갠다. `(국가자격증)` 같은 머리말은 버린다."""
+    seg = _between(text, CERT_STARTS, CERT_ENDS)
+    seg = re.sub(r"\((?:국가|민간|공인)\s*자격증\)", ",", seg)
+    items = [re.sub(r"\s*등$", "", c).strip(" ·,.") for c in re.split(r"[,·]", seg)]
+    return [
+        c
+        for c in items
+        if 1 < len(c) < 40 and not _NOT_A_CERT.search(c) and not _CERT_HEADING.match(c)
+    ]
 
 
 def parse_careers(text: str) -> str:
-    return _between(text, "교육활동 및 진로", ("※", "교수진소개", "교과안내", "QUICK"))
+    return _between(text, CAREER_STARTS, CAREER_ENDS)
+
+
+# 진로 산문에서 직업명을 끊어내는 꼬리말. `네트워크 관리자`, `웹 프로그래머` 등.
+_JOB_TAIL = (
+    "엔지니어", "개발자", "프로그래머", "디자이너", "관리자", "전문가", "기술자",
+    "기획자", "컨설턴트", "분석가", "상담사", "교사", "지도사", "조종자", "운용자",
+    "매니저", "크리에이터", "아티스트", "연구원", "공무원", "사무원", "회계사",
+    "중개사", "기사", "산업기사", "치료사", "간호사", "영양사", "제작자",
+)
+_JOB_RE = re.compile(
+    r"[가-힣A-Za-z0-9·/\s]{2,25}?(?:" + "|".join(_JOB_TAIL) + r")"
+)
+
+
+def parse_career_jobs(careers_text: str) -> list[str]:
+    """진로 산문에서 직업명만 추린다.
+
+    학과 소개의 진로는 문장이다 — "…S/W 개발분야 (빅데이터, 인공지능, 모바일 앱
+    프로그래머, 웹프로그래머), 로봇 제어, 네트워크 관리 및 유지/보수 분야…".
+    직업명 꼬리말로 끊어내면 사용자가 고를 수 있는 목록이 된다.
+
+    산문이라 완벽하게는 못 뽑는다. 트랙 B의 축은 `talent_types`(학교가 과목에
+    직접 매긴 라벨)이고, 이 목록은 입력 화면의 선택지 용도다.
+    """
+    jobs = []
+    for m in _JOB_RE.finditer(careers_text):
+        job = " ".join(m.group().split()).lstrip("및,)(· ").strip()
+        # 앞쪽에 딸려온 조사·접속어를 떼어낸다
+        job = re.sub(r"^(?:등|또는|그리고|다양한|각종|관련)\s*", "", job)
+        if 2 < len(job) < 25 and job not in jobs:
+            jobs.append(job)
+    return jobs[:12]
 
 
 def parse_talent_types(raw: str) -> list[dict]:
@@ -133,7 +186,8 @@ def collect(code: str) -> dict | None:
         "faculty_type_code": code,
         "dept_name": name,
         "certificates": parse_certificates(text),
-        "careers_text": parse_careers(text),
+        "careers_text": (careers := parse_careers(text)),
+        "careers": parse_career_jobs(careers),
         "talent_types": parse_talent_types(raw),
         "source_url": f"{BASE}?facultyType={code}&facultyContent=01",
     }

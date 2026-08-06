@@ -252,6 +252,11 @@
     "의료정보관리전문가",
     "의료정보관리전문가및보건교육사"
   ],
+  "talent_types": [
+    "보건교육사",
+    "의료정보관리전문가",
+    "의료정보관리전문가및보건교육사"
+  ],
   "liberal_elective_credits": 21,
   "source_url": "https://www.mjc.ac.kr/bbs/data/list.do?menu_idx=2207",
   "extraction_confidence": 1.0
