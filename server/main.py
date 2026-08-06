@@ -113,9 +113,11 @@ def post_roadmap(req: RoadmapRequest):
     }
 
     result = _generate(spec)
+    # 직무를 지정했든 추천받았든 **항상** 넣는다. 추천일 때만 넣으면 프론트가
+    # body.target_job을 그대로 못 읽고 분기해야 한다
+    result["target_job"] = target_job
     if recommended:
         # 프론트가 "추천된 직무로 짰다"를 표시하고, 다른 후보로 바꿔 재생성할 수 있게
-        result["target_job"] = target_job
         result["job_recommended"] = True
         result["recommended_jobs"] = recommended[:5]
     # 진로에 대응하는 교육과정 라벨이 없을 수 있다. 로드맵은 내되 "직무 맞춤이 안 됐다"를
@@ -145,11 +147,15 @@ def post_roadmap(req: RoadmapRequest):
 
 def _recommend_jobs(dept):
     """직무 미정 학생에게 줄 추천 순위. 라벨별 배정 학점이 근거다 — 트랙 B 커버리지와
-    같은 계산이라, "왜 이 직무냐"에 학과 데이터로 답할 수 있다."""
+    같은 계산이라, "왜 이 직무냐"에 학과 데이터로 답할 수 있다.
+
+    **전공만 센다.** 트랙 B는 분모가 전공 학점이라, 전 과목을 세면 두 화면이 같은
+    직무에 다른 숫자를 말한다 — 유아교육과에서 95학점 중 27학점이 비전공이었다.
+    """
     by_job = {}
     for c in dept["courses"]:
         label = c.get("talent_type")
-        if label:
+        if label and c.get("category") == "전공":
             entry = by_job.setdefault(label, {"job": label, "credits": 0, "courses": 0})
             entry["credits"] += c["credits"]
             entry["courses"] += 1
