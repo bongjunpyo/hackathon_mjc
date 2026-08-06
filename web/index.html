@@ -124,9 +124,12 @@ h1,h2,h3 { margin: 0; line-height: 1.15; letter-spacing: -0.02em; text-wrap: bal
   background: var(--navy); color: #fff;
   font-weight: 700; font-size: var(--t-md);
   cursor: pointer; user-select: none;
-  transition: background .2s;
+  transition-property: background-color, scale;
+  transition-duration: .2s, .15s;
 }
 .ticket .go:hover { background: var(--blue-mid); }
+.ticket .go:active { scale: .96; }
+.ticket .go:focus-visible { outline: 2px solid var(--gold); outline-offset: -4px; }
 .scroll-cue {
   position: absolute; bottom: 3vh; left: 50%; translate: -50% 0;
   font-family: var(--f-mono); font-size: var(--t-xs); letter-spacing: 0.14em;
@@ -177,6 +180,32 @@ h1,h2,h3 { margin: 0; line-height: 1.15; letter-spacing: -0.02em; text-wrap: bal
   );
   opacity: .8;
 }
+/* 승강장 안전선 — 점자블록 (노선 양옆) */
+.tactile {
+  position: absolute; left: 50%; top: 55%;
+  width: 26px; height: var(--depth);
+  transform: rotateX(90deg);
+  transform-origin: top center;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--gold) 72%, transparent) 0 9px,
+    transparent 9px 26px
+  );
+  opacity: .38;
+}
+.tactile.l { translate: calc(-50% - 150px) 0; }
+.tactile.r { translate: calc(-50% + 150px) 0; }
+/* 바닥 조명 풀 — 역마다 하나 */
+.lightpool {
+  position: absolute; left: 50%; top: 55%;
+  width: 340px; height: 220px;
+  translate: -50% 0;
+  transform: rotateX(90deg);
+  transform-origin: top center;
+  background: radial-gradient(ellipse at center,
+    color-mix(in srgb, var(--sky) 22%, transparent), transparent 68%);
+  pointer-events: none;
+}
 
 /* 행선판 */
 .signpost {
@@ -186,45 +215,101 @@ h1,h2,h3 { margin: 0; line-height: 1.15; letter-spacing: -0.02em; text-wrap: bal
   transform-style: preserve-3d;
 }
 .signboard {
-  background: var(--board);
+  position: relative;
+  background: linear-gradient(178deg,
+    color-mix(in srgb, var(--board) 88%, #fff) 0%,
+    var(--board) 22%,
+    color-mix(in srgb, var(--board) 90%, #000) 100%);
   color: var(--board-ink);
-  border-radius: 12px;
-  padding: 16px 20px 14px;
-  box-shadow: 0 18px 48px rgba(0, 26, 61, 0.35);
-  border: 2px solid rgba(255,255,255,0.14);
+  border-radius: 14px;
+  padding: 15px 20px 12px;
+  /* 보더 대신 레이어드 섀도 + 인셋 헤어라인 */
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    0 3px 8px rgba(0, 26, 61, 0.28),
+    0 20px 52px rgba(0, 26, 61, 0.38);
+  border-bottom: 5px solid var(--gold);   /* 노선색 띠 */
 }
+/* 나사 2점 (상단 모서리) */
+.signboard::before, .signboard::after {
+  content: ""; position: absolute; top: 9px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.5), rgba(255,255,255,.12));
+}
+.signboard::before { left: 10px; }
+.signboard::after  { right: 10px; }
 .sign-route {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   font-size: var(--t-xs); color: var(--sky);
-  font-family: var(--f-mono); letter-spacing: 0.04em;
+  font-family: var(--f-mono); letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
-.sign-route .arr { color: var(--gold); }
+.sign-route .dir {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.sign-route .dir i {
+  font-style: normal;
+  width: 17px; height: 17px; border-radius: 50%;
+  display: inline-grid; place-items: center;
+  background: color-mix(in srgb, var(--sky) 22%, transparent);
+  color: var(--sky); font-size: 0.6rem;
+}
+.sign-route .dir.next i { background: var(--gold); color: var(--navy-deep); }
 .sign-name {
   text-align: center;
-  font-size: var(--t-lg); font-weight: 800; letter-spacing: 0.02em;
-  margin-block: 6px 2px;
+  font-size: var(--t-lg); font-weight: 800; letter-spacing: 0.01em;
+  margin-block: 7px 3px;
+  text-wrap: balance;
 }
 .sign-name small {
-  display: block; font-size: var(--t-xs); font-weight: 500;
-  color: var(--sky); letter-spacing: 0.16em; margin-top: 2px;
+  display: block; font-size: 0.6875rem; font-weight: 600;
+  color: color-mix(in srgb, var(--sky) 72%, #fff);
+  letter-spacing: 0.22em; margin-top: 3px;
 }
+/* 역번호 캡슐 — 지하철 문법 */
 .sign-line {
-  position: absolute; top: -13px; left: 50%; translate: -50% 0;
-  width: 26px; height: 26px; border-radius: 50%;
+  position: absolute; top: -14px; left: 50%; translate: -50% 0;
+  height: 26px; padding-inline: 11px;
+  border-radius: 999px;
   background: var(--gold); color: var(--navy-deep);
-  display: grid; place-items: center;
-  font-family: var(--f-mono); font-weight: 800; font-size: var(--t-sm);
-  border: 3px solid var(--hall);
-  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--f-mono); font-weight: 800; font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  box-shadow:
+    0 0 0 3px var(--hall),
+    0 3px 9px rgba(0,0,0,.25);
 }
 .plaque {
   margin-top: 10px;
   background: var(--surface);
   color: var(--ink);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 12px 16px;
-  border: 1px solid var(--edge);
+  box-shadow:
+    inset 0 0 0 1px var(--edge),
+    0 2px 6px rgba(0, 26, 61, 0.08),
+    0 10px 26px rgba(0, 26, 61, 0.12);
   display: flex; flex-direction: column; gap: 7px;
+}
+/* 기둥 — 행선판을 바닥에 앉힌다 (.signpost 기준) */
+.pole {
+  position: absolute; top: 100%; width: 7px; height: 118px;
+  margin-top: -4px;
+  z-index: -1;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--steel) 60%, var(--hall)) 0%,
+    var(--steel) 45%,
+    color-mix(in srgb, var(--steel) 45%, #000) 100%);
+  border-radius: 0 0 3px 3px;
+}
+.pole.l { left: 13%; }
+.pole.r { right: 13%; }
+.pole::after {              /* 바닥 접지 그림자 */
+  content: ""; position: absolute; bottom: -5px; left: 50%;
+  translate: -50% 0;
+  width: 30px; height: 9px; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0,26,61,.32), transparent 70%);
 }
 .plaque ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
 .plaque li { font-size: var(--t-sm); color: var(--ink-2); padding-left: 12px; position: relative; }
@@ -252,11 +337,26 @@ h1,h2,h3 { margin: 0; line-height: 1.15; letter-spacing: -0.02em; text-wrap: bal
 }
 .gate-board {
   background: linear-gradient(160deg, var(--navy), var(--navy-deep));
-  border-radius: 16px;
-  border: 2.5px solid var(--gold);
+  border-radius: 18px;
   color: #fff;
   padding: 34px 30px 30px;
-  box-shadow: 0 30px 80px rgba(0, 26, 61, 0.45);
+  box-shadow:
+    inset 0 0 0 2.5px var(--gold),
+    inset 0 0 0 4px rgba(255,255,255,.12),
+    0 6px 18px rgba(0, 26, 61, 0.3),
+    0 30px 80px rgba(0, 26, 61, 0.45),
+    0 0 64px color-mix(in srgb, var(--gold) 26%, transparent);
+  animation: gate-glow 2.6s ease-in-out infinite;
+}
+@keyframes gate-glow {
+  0%, 100% { box-shadow:
+    inset 0 0 0 2.5px var(--gold), inset 0 0 0 4px rgba(255,255,255,.12),
+    0 6px 18px rgba(0,26,61,.3), 0 30px 80px rgba(0,26,61,.45),
+    0 0 44px color-mix(in srgb, var(--gold) 20%, transparent); }
+  50% { box-shadow:
+    inset 0 0 0 2.5px var(--gold), inset 0 0 0 4px rgba(255,255,255,.12),
+    0 6px 18px rgba(0,26,61,.3), 0 30px 80px rgba(0,26,61,.45),
+    0 0 84px color-mix(in srgb, var(--gold) 38%, transparent); }
 }
 .gate-kicker { font-family: var(--f-mono); font-size: var(--t-xs); letter-spacing: 0.22em; color: var(--sky); }
 .gate-title { font-size: var(--t-xl); font-weight: 800; margin-block: 10px 6px; }
@@ -269,34 +369,32 @@ h1,h2,h3 { margin: 0; line-height: 1.15; letter-spacing: -0.02em; text-wrap: bal
 }
 .gate-sub { color: var(--sky); font-size: var(--t-sm); margin-top: 12px; }
 
-/* 걷는 캐릭터 */
+/* 걷는 캐릭터 — SVG 인물 (등에 가방, 걷기 사이클) */
 .walker {
-  position: absolute; left: 50%; bottom: 9vh;
+  position: absolute; left: 50%; bottom: 8vh;
   translate: -50% 0;
-  width: 46px; height: 74px;
+  width: 74px; height: 118px;
   z-index: 5;
-  filter: drop-shadow(0 10px 8px rgba(0, 26, 61, 0.25));
 }
-.walker .head {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--figure); margin-inline: auto;
-}
-.walker .torso {
-  width: 22px; height: 34px;
-  border-radius: 11px 11px 7px 7px;
-  background: var(--figure);
-  margin: -4px auto 0;
-}
-.walker .bag {
-  position: absolute; top: 30px; left: 2px;
-  width: 10px; height: 20px; border-radius: 5px;
-  background: var(--gold);
-}
-.walker.walking { animation: bob .55s ease-in-out infinite; }
-@keyframes bob {
-  0%, 100% { transform: translateY(0) rotate(-1.2deg); }
-  50%      { transform: translateY(-5px) rotate(1.2deg); }
-}
+.walker svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.w-shadow { fill: rgba(0, 26, 61, 0.28); transition: transform .3s; transform-origin: 30px 94px; }
+.w-figure { fill: var(--figure); }
+.w-bag    { fill: var(--gold); }
+.w-cap    { fill: var(--sky); }
+.w-leg, .w-arm { transform-box: fill-box; transform-origin: 50% 8%; }
+.w-body   { transform-origin: 30px 60px; }
+
+.walker.walking .w-body  { animation: w-bob .62s ease-in-out infinite; }
+.walker.walking .w-shadow{ animation: w-shade .62s ease-in-out infinite; }
+.walker.walking .w-leg.a { animation: w-swing .62s ease-in-out infinite; }
+.walker.walking .w-leg.b { animation: w-swing .62s ease-in-out infinite; animation-delay: -.31s; }
+.walker.walking .w-arm.a { animation: w-swing-s .62s ease-in-out infinite; animation-delay: -.31s; }
+.walker.walking .w-arm.b { animation: w-swing-s .62s ease-in-out infinite; }
+
+@keyframes w-bob   { 0%,100% { transform: translateY(0) }  50% { transform: translateY(-3.5px) } }
+@keyframes w-shade { 0%,100% { transform: scaleX(1) }      50% { transform: scaleX(.86) } }
+@keyframes w-swing   { 0%,100% { transform: rotate(24deg) } 50% { transform: rotate(-24deg) } }
+@keyframes w-swing-s { 0%,100% { transform: rotate(15deg) } 50% { transform: rotate(-15deg) } }
 
 /* 진행 HUD — 지하철 노선도식 */
 .hud {
@@ -401,7 +499,21 @@ footer {
     </div>
 
     <div class="walker" id="walker" aria-hidden="true">
-      <div class="head"></div><div class="torso"></div><div class="bag"></div>
+      <svg viewBox="0 0 60 100" fill="none">
+        <ellipse class="w-shadow" cx="30" cy="94" rx="17" ry="4.2"/>
+        <g class="w-body">
+          <g class="w-leg a"><rect class="w-figure" x="22.5" y="60" width="7" height="27" rx="3.5"/></g>
+          <g class="w-leg b"><rect class="w-figure" x="30.5" y="60" width="7" height="27" rx="3.5"/></g>
+          <g class="w-arm a"><rect class="w-figure" x="14.5" y="38" width="6" height="22" rx="3" opacity=".82"/></g>
+          <g class="w-arm b"><rect class="w-figure" x="39.5" y="38" width="6" height="22" rx="3" opacity=".82"/></g>
+          <rect class="w-figure" x="17" y="32" width="26" height="33" rx="10"/>
+          <rect class="w-bag" x="8.5" y="36" width="11" height="23" rx="5.5"/>
+          <rect class="w-figure" x="20" y="37" width="4" height="19" rx="2" opacity=".55"/>
+          <circle class="w-figure" cx="30" cy="17" r="11.5"/>
+          <path class="w-cap" d="M18.5 15.5 a11.5 11.5 0 0 1 23 0 l-2.5 1.2 a9 9 0 0 0 -18 0 z"/>
+          <rect class="w-cap" x="27" y="4.2" width="11" height="3.6" rx="1.8" transform="rotate(-8 32 6)"/>
+        </g>
+      </svg>
     </div>
 
     <div class="hud" id="hud" aria-label="노선 진행 상태"></div>
@@ -458,10 +570,10 @@ const posts = SEMESTERS.map((s, i) => {
   el.dataset.z = z;
   el.innerHTML = `
     <div class="signboard">
-      <span class="sign-line">${s.line}</span>
+      <span class="sign-line">MJ<b>0${s.line}</b></span>
       <div class="sign-route">
-        <span>${prev ? "◀ " + prev.name : "출발"}</span>
-        <span class="arr">${next ? next.name + " ▶" : "행선지 ▶"}</span>
+        <span class="dir prev"><i>◀</i>${prev ? prev.name : "출발"}</span>
+        <span class="dir next">${next ? next.name : "행선지"}<i>▶</i></span>
       </div>
       <div class="sign-name">${s.name}<small>${s.en}</small></div>
     </div>
@@ -469,10 +581,22 @@ const posts = SEMESTERS.map((s, i) => {
       <div class="row"><b>이수 과목</b><span class="credits">${s.credits}학점</span></div>
       <ul>${s.courses.map(c => `<li>${c}</li>`).join("")}</ul>
       ${s.cert ? `<span class="cert">🎫 ${s.cert}</span>` : ""}
-    </div>`;
+    </div>
+    <span class="pole l"></span><span class="pole r"></span>`;
   scene.insertBefore(el, gate);
+  /* 역마다 바닥 조명 풀 */
+  const pool = document.createElement("div");
+  pool.className = "lightpool";
+  pool.style.transform = `translateZ(${z}px) rotateX(90deg)`;
+  scene.insertBefore(pool, gate);
   return el;
 });
+/* 안전선(점자블록) 2줄 */
+for (const side of ["l", "r"]) {
+  const t = document.createElement("div");
+  t.className = "tactile " + side;
+  scene.insertBefore(t, gate);
+}
 gate.dataset.z = -(SEMESTERS.length + 0.9) * GAP;
 gate.style.transform = `translate3d(-50%, -50%, ${gate.dataset.z}px)`;
 /* 카메라는 게이트 420px 앞에서 멈춘다 — 게이트를 지나치면 도착 장면이 사라진다 */
