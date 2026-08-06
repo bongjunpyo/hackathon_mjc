@@ -120,9 +120,9 @@ export default function Roadmap() {
         <h2 className="text-2xl font-extrabold tracking-tight">
           {input.targetJob}까지의 노선
         </h2>
-        {roadmap.source === "mock" && (
+        {roadmap.source === "curriculum" && (
           <span className="rounded-md bg-gold/25 px-2 py-0.5 font-mono text-xs font-bold text-navy">
-            목데이터 — 서버 미연결
+            교육과정표 표준 경로 — AI 재배치 전
           </span>
         )}
       </div>

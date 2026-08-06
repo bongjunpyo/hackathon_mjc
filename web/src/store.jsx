@@ -13,7 +13,7 @@ export function AppProvider({ children }) {
     year: 1,
     semester: 1,
     completedCourses: [], // course_id 배열
-    targetJob: "네트워크 엔지니어",
+    targetJob: "시스템응용SW개발엔지니어",
   });
   const [roadmap, setRoadmap] = useState(null);
   const [loading, setLoading] = useState(false);

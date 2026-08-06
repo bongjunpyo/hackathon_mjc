@@ -1,10 +1,26 @@
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../store";
-import { JOBS } from "../lib/mock";
+import { DEPTS, DEPT_BY_ID, creditGap, yearsOf } from "../lib/depts";
 
 export default function Input() {
   const { input, setInput, generate, loading } = useApp();
   const navigate = useNavigate();
+
+  const dept = DEPT_BY_ID[input.deptId] ?? DEPTS[0];
+  const gap = creditGap(dept);
+
+  /* 학과를 바꾸면 학년·직무가 그 학과 기준으로 다시 잡혀야 한다.
+     3학년이던 학생이 2년제 학과를 고르면 없는 학년이 남는다. */
+  function pickDept(deptId) {
+    const next = DEPT_BY_ID[deptId];
+    setInput({
+      ...input,
+      deptId,
+      deptName: next.name,
+      year: Math.min(input.year, next.years),
+      targetJob: next.careers[0] ?? "",
+    });
+  }
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -24,10 +40,14 @@ export default function Input() {
         <select
           id="dept"
           className={field}
-          value={input.deptId}
-          onChange={(e) => setInput({ ...input, deptId: e.target.value })}
+          value={dept.id}
+          onChange={(e) => pickDept(e.target.value)}
         >
-          <option value="itc">정보통신공학과</option>
+          {DEPTS.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.name} ({d.years}년제)
+            </option>
+          ))}
         </select>
       </div>
 
@@ -40,7 +60,9 @@ export default function Input() {
             value={input.year}
             onChange={(e) => setInput({ ...input, year: Number(e.target.value) })}
           >
-            {[1, 2, 3].map((y) => <option key={y} value={y}>{y}학년</option>)}
+            {yearsOf(dept).map((y) => (
+              <option key={y} value={y}>{y}학년</option>
+            ))}
           </select>
         </div>
         <div>
@@ -63,15 +85,33 @@ export default function Input() {
           className={field}
           value={input.targetJob}
           onChange={(e) => setInput({ ...input, targetJob: e.target.value })}
+          disabled={dept.careers.length === 0}
         >
-          {JOBS.map((j) => <option key={j} value={j}>{j}</option>)}
+          {dept.careers.length === 0 ? (
+            <option>이 학과는 인재양성유형이 교육과정표에 없습니다</option>
+          ) : (
+            dept.careers.map((j) => <option key={j} value={j}>{j}</option>)
+          )}
         </select>
+        <p className="mt-1.5 font-mono text-xs text-steel">
+          학교가 교육과정표 인재양성유형 열에 직접 붙인 직무입니다 · 이 학과 {dept.careers.length}종
+        </p>
       </div>
 
-      {/* TODO: 이수 과목 체크 — data/courses.json(P1) 도착 후 course_id 기반으로 */}
+      {/* 교육과정표만으로 전공 요건을 못 채우는 학과는 사실대로 알린다 */}
+      {gap && (
+        <p className="rounded-lg border border-gold/60 bg-gold/15 p-3 text-sm text-navy">
+          <b>이 학과는 교육과정표만으로 전공 요건을 채울 수 없습니다.</b>{" "}
+          표에 실린 전공이 {gap.have}학점인데 졸업요건은 {gap.need}학점입니다. 로드맵을 만들면
+          검증기가 {gap.short}학점 미달로 잡습니다 — 데이터가 아니라 교육과정 자체의 공백이라
+          학교용 리포트에서 다루는 사안입니다.
+        </p>
+      )}
+
+      {/* TODO: 이수 과목 체크 — course_id 기반, data/depts/*.json의 courses 사용 */}
       <p className="rounded-lg border border-dashed border-edge bg-sky-soft/60 p-3 font-mono text-xs text-steel">
-        이수 과목 체크는 학과 교육과정 데이터 연동 후 추가됩니다. 지금은 1학년 1학기 기준으로
-        전체 노선을 생성합니다.
+        이수 과목 체크는 다음 단계입니다. 지금은 {input.year}학년 {input.semester}학기 기준으로
+        남은 전체 노선을 생성합니다.
       </p>
 
       <button
