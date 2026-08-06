@@ -144,6 +144,8 @@ export default function Corridor({ semesters, targetJob, stats, onSelect }) {
           <Skyline />
           <div className="cloud c1" aria-hidden="true" />
           <div className="cloud c2" aria-hidden="true" />
+          {/* .scene보다 먼저 — 3D 노면이 이 위에 덮인다 */}
+          <div className="nearfield" aria-hidden="true" />
 
           <div className="scene" ref={sceneRef} style={{ "--depth": `${depth}px` }}>
             {ground.map((g, i) => (
@@ -278,7 +280,8 @@ function Walker({ ref }) {
   return (
     <div className="walker" ref={ref} aria-hidden="true">
       <svg viewBox="0 0 60 100" fill="none">
-        <ellipse className="w-shadow" cx="30" cy="94" rx="17" ry="4.2" />
+        {/* 다리 끝이 y=87 — 그림자를 그보다 아래에 두면 확대했을 때 발과 분리돼 뜬다 */}
+        <ellipse className="w-shadow" cx="30" cy="88" rx="17" ry="4.2" />
         <g className="w-body">
           <g className="w-leg a"><rect className="w-figure" x="22.5" y="60" width="7" height="27" rx="3.5" /></g>
           <g className="w-leg b"><rect className="w-figure" x="30.5" y="60" width="7" height="27" rx="3.5" /></g>
