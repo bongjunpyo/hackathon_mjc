@@ -212,6 +212,8 @@ uv run python build_report.py         # 트랙 B 진단 → data/reports/*.json
 
 **층위를 구분한다.** `Claude Code (Opus 5)`는 우리가 코드를 쓸 때 쓴 **개발 도구**이고, `claude-sonnet-5`는 제품이 런타임에 호출하는 **기능**이다(`server/agent.py`). 심사에서 "AI를 어디에 썼나"는 두 질문이고 답이 다르다.
 
+아래 표는 **P2(`server/`) 세션 기준**이다 — 실제로 쓴 것만 적었다. P1·P3 세션 내역은 [`docs/REPORT.md`](docs/REPORT.md) §2.11에서 합친다.
+
 | 구분 | 무엇을 썼나 |
 |---|---|
 | **모델** | 개발 전 구간 `Opus 5` · 제품 런타임 `claude-sonnet-5` · `claude-haiku-4-5`는 검토했으나 미사용 |
