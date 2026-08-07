@@ -13,17 +13,17 @@ const STEPS = [
   {
     n: "STEP 1",
     title: "학과·직무 선택",
-    body: "34개 전 학과. 학교가 교육과정표에 직접 붙인 직무 라벨 그대로 씁니다",
+    body: "34개 전 학과. 직무를 아직 못 정했어도 학과 데이터로 추천받을 수 있습니다",
   },
   {
     n: "STEP 2",
-    title: "엔진이 길을 놓습니다",
+    title: "길을 자동으로 놓아 드립니다",
     body: "학기별 수강 계획 + 자격증 준비 시점 + 현장실습 타이밍",
   },
   {
     n: "STEP 3",
-    title: "검증기가 확인합니다",
-    body: "졸업요건 미달이면 스스로 다시 짭니다 — LLM 없는 순수 규칙 코드",
+    title: "졸업까지 확인합니다",
+    body: "졸업 학점이 모자라면 스스로 다시 짭니다 — 끝까지 졸업이 되는 계획만 보여 드립니다",
   },
 ];
 
@@ -31,9 +31,9 @@ const STEPS = [
 function TrackPreview() {
   const nodes = [
     { x: 90, label: "입학", done: true },
-    { x: 290, label: "1-2", done: true },
+    { x: 290, label: "1-1", done: true },
     { x: 490, label: "2-1" },
-    { x: 690, label: "3-2" },
+    { x: 690, label: "3-1" },
   ];
   return (
     <div className="rounded-3xl bg-sky-soft p-8 inset-ring inset-ring-edge sm:p-10">
@@ -108,8 +108,9 @@ export default function Landing() {
             졸업까지의 <span className="mark-gold text-navy">길</span>이 그려집니다
           </h1>
           <p className="max-w-[46ch] text-xl leading-relaxed text-ink-2 text-pretty">
-            전문대 3년, 되돌아올 시간은 없습니다. 학기별 수강 · 자격증 · 현장실습 타이밍을
-            엔진이 짜고, <b className="text-navy">졸업요건 검증기</b>가 확인합니다.
+            전문대 2·3년, 되돌아올 시간은 없습니다. 어떤 과목을 언제 듣고 자격증은 언제
+            준비할지 — 학기별 계획을 자동으로 짜 주고, <b className="text-navy">졸업이 되는
+            계획인지까지</b> 확인해 드립니다.
           </p>
           <div className="flex flex-wrap gap-3">
             <button
