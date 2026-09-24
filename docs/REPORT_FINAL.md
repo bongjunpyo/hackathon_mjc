@@ -71,7 +71,7 @@
 
 | 구성 | 사용한 것 | 누가 · 어디에 |
 |---|---|---|
-| **모델** | **Opus 5** (전원 주력) · **Fable 5** (P3, `/model`로 구간 전환) | 설계·디버깅·리뷰 / 빠른 반복 수정 |
+| **모델** | **Opus 5** (P1·P2 주력, P3 반복 수정) · **Fable 5** (P3 설계, `/model`로 구간 전환) | 설계·디버깅·리뷰(P1·P2) · 반복 수정(P3) / 설계(P3) |
 | | `claude-sonnet-5` (제품 런타임) · `claude-haiku-4-5` (검토 후 **미사용** — 대량·저지연 구간이 생기지 않았다) | 로드맵 LLM 에이전트 |
 | **모드** | 일반 대화(페어 프로그래밍) · **Plan 모드**(설계 확정) · Fast 모드 · 서브에이전트(격리 탐색) · 백그라운드(서버 상주·274개 시나리오 측정) · Monitor(서버 로그 감시) · **Git worktree**(남의 PR을 내 트리 안 건드리고 검증) | 전원 / P2 중심 |
 | **스킬** | `brainstorming`(주제 선정) · `test-driven-development`(검증기 RED→GREEN 강제) · `verification-before-completion`(증거 없는 완료 보고 차단) · `systematic-debugging`(.env 무시 원인 추적) · `claude-api`(`agent.py` 최신 SDK 패턴) · `artifact-design`(클릭형 화면 프로토타입으로 팀 합의) · `notebooklm`(타대학 수상작 43개 소스 분석) · `make-interfaces-feel-better`(UI 디테일 — scale 0.96·tabular-nums·힛에어리어 40px) | P1·P2 / P2 / P2 / P2 / P2 / P1·P3 / P1·P3 / P3 |
