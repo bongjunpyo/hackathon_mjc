@@ -271,7 +271,7 @@ uv run python build_report.py         # 트랙 B 진단 → data/reports/*.json
 
 | 구성 | 사용 | 용도 |
 |---|---|---|
-| 모델 | Claude **Opus 5** · **Fable 5** (세션 — `/model`로 구간별 전환) / **Sonnet 5** (제품 내 LLM 비교 모드) | 설계·디버깅은 Opus, 빠른 반복은 Fable / 로드맵 에이전트 |
+| 모델 | Claude **Opus 5** · **Fable 5** (세션 — `/model`로 구간별 전환) / **Sonnet 5** (제품 내 LLM 비교 모드) | P1·P2는 Opus 주력, P3는 설계 Fable · 반복 수정 Opus / 로드맵 에이전트 |
 | 모드 | 플랜 모드(분석·계획) · 대화형 페어 프로그래밍(구현) | 수상작 분석·설계 / 코딩 전 과정 |
 | 스킬 | `brainstorming` · `claude-api` · `artifact-design` · `notebooklm` · `make-interfaces-feel-better` | 주제 선정 / `agent.py` / 화면 프로토타입 / 수상작 43소스 분석 / UI 디테일 점검 |
 | 플러그인 | `superpowers` | 스킬 우선 실행 규율 |
